@@ -300,13 +300,41 @@ Setf-able.  Valid values are determined by the `cookie-policy' type."))
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil when BUFFER is focused."))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (setf (gethash 'js-return parenscript::*special-statement-operators*)
+        (lambda (&rest whole)
+          (destructuring-bind (&optional (value nil value?)) whole
+            (if value?
+                `(ps-js:return ,(parenscript::compile-expression value))
+                '(ps-js:return))))))
+
+(-> buffer-selection-javascript () string)
+(defun buffer-selection-javascript ()
+  "Return the page script that reads the current selection."
+  (ps:ps
+    (funcall
+     (lambda ()
+       (ps:var element (ps:@ document active-element))
+       (if (and element
+                (or (eql (ps:@ element tag-name) "INPUT")
+                    (eql (ps:@ element tag-name) "TEXTAREA"))
+                (eql (ps:typeof (ps:@ element selection-start)) "number"))
+           (js-return (ps:chain (|String| (or (ps:@ element value) ""))
+                                (slice (ps:@ element selection-start)
+                                       (ps:@ element selection-end))))
+           (progn
+             (ps:var selection (ps:chain window (get-selection)))
+             (js-return (if selection
+                            (ps:chain selection (to-string))
+                            ""))))))))
+
 (defun buffer-selection-text (buffer)
   "Return the selected text in BUFFER.
 Input and textarea selections are included; `window.getSelection' misses those."
   (let ((value (ignore-errors
                 (ffi-buffer-evaluate-javascript
                  buffer
-                 "(function(){var el=document.activeElement;if(el&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA')&&typeof el.selectionStart==='number'){return String(el.value||'').slice(el.selectionStart,el.selectionEnd);}var selection=window.getSelection();return selection?selection.toString():'';})()"))))
+                 (buffer-selection-javascript)))))
     (cond
       ((stringp value) value)
       ((and (consp value) (stringp (first value))) (first value))

@@ -201,6 +201,10 @@ This is the expanded `download-directory'."
       (setf path (xdg-download-dir)))
     (ensure-directories-exist (uiop:ensure-directory-pathname path))))
 
+(defun install-extension-request-decider ()
+  "Installed by the extension bridge once that file is loaded."
+  nil)
+
 (defmethod ffi-initialize ((browser cef-browser) urls startup-timestamp)
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing CEF Interface")
@@ -239,6 +243,7 @@ This is the expanded `download-directory'."
     (cef:launch interface)
     (when (adblocking-enabled-p browser)
       (cef:default-block (make-instance 'cef:adblocker)))
+    (install-extension-request-decider)
     (maphash (lambda (scheme-name callbacks)
                (ffi-register-custom-scheme
                 (make-instance 'scheme
@@ -459,7 +464,9 @@ view before those threads run, and a call into the missing view has no method."
                         (setf (nyxt::status buffer) :loading)
                         (let ((url (event-url data)))
                           (run-buffer-thread "load-started" buffer
-                            (on-signal-load-started buffer url)))))
+                            (on-signal-load-started buffer url)
+                            (when *extension-tab-hook*
+                              (funcall *extension-tab-hook* buffer))))))
     (cef:add-listener buffer :did-redirect-navigation
                       (lambda (buffer data)
                         (let ((url (event-url data)))
@@ -472,7 +479,9 @@ view before those threads run, and a call into the missing view has no method."
                         (let ((url (event-url data)))
                           (run-buffer-thread "load-finished" buffer
                             (setf (url buffer) url)
-                            (on-signal-load-finished buffer url (ffi-buffer-title buffer))))))
+                            (on-signal-load-finished buffer url (ffi-buffer-title buffer))
+                            (when *extension-tab-hook*
+                              (funcall *extension-tab-hook* buffer))))))
     (cef:add-listener buffer :did-fail-load
                       (lambda (buffer data)
                         ;; ERR_ABORTED (-3) is a navigation that was replaced.
@@ -717,27 +726,7 @@ CEF's isolated worlds are not available through this bridge."
                      '("http://*/*" "https://*/*")))
         (exclude (nyxt/mode/user-script:exclude script))
         (code (nyxt/mode/user-script:code script)))
-    (format nil "(function(){
-var href = location.href;
-var include = ~a;
-var exclude = ~a;
-function match(pattern) {
-  var source = '^';
-  for (var i = 0; i < pattern.length; i++) {
-    var c = pattern.charAt(i);
-    if (c === '*') source += '.*';
-    else if ('\\\\.^$+?()[]{}|'.indexOf(c) >= 0) source += '\\\\' + c;
-    else source += c;
-  }
-  return new RegExp(source + '$').test(href);
-}
-if (include.length && !include.some(match)) return;
-if (exclude.some(match)) return;
-~a
-})();"
-            (cl-json:encode-json-to-string include)
-            (cl-json:encode-json-to-string exclude)
-            code)))
+    (user-script-javascript include exclude code)))
 
 (defmethod ffi-buffer-add-user-script ((buffer cef-buffer) (script cef-user-script))
   (if-let ((code (nyxt/mode/user-script:code script)))
@@ -1026,6 +1015,12 @@ re-enters CEF."
             (nyxt::print-message (str:concat "→ " url))
             (setf (url-at-point buffer) (quri:uri url)))))))
 
+(defvar *extension-tab-hook* nil
+  "Function of one buffer, called when that buffer starts or finishes loading.")
+
+(defvar *extension-context-menu-hook* nil
+  "Function of no arguments returning (label . command) pairs for the context menu.")
+
 (defvar *context-menu-commands-by-id* (make-hash-table)
   "Command id assigned while a context menu is open, to the command it runs.")
 
@@ -1056,7 +1051,10 @@ re-enters CEF."
                     (cef:menu-add-separator)
                     (loop for (command command-label) in function
                           do (add (format nil "~a: ~a" label command-label) command)))))
-               nyxt::*context-menu-commands*))))
+               nyxt::*context-menu-commands*)
+      (when *extension-context-menu-hook*
+        (dolist (entry (funcall *extension-context-menu-hook*))
+          (add (car entry) (cdr entry)))))))
 
 (defun run-context-menu-command (data)
   (let* ((raw (assoc-value data :command-id))

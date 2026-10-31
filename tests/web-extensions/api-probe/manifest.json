@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Nyxt API probe",
+  "version": "1.0.0",
+  "description": "Checks the Chrome extension APIs Nyxt has to provide.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "alarms",
+    "contextMenus",
+    "notifications",
+    "downloads",
+    "cookies",
+    "history",
+    "bookmarks",
+    "topSites",
+    "sessions",
+    "tabGroups",
+    "management",
+    "proxy",
+    "sidePanel",
+    "offscreen",
+    "identity",
+    "idle",
+    "declarativeNetRequest",
+    "webNavigation",
+    "tts",
+    "browsingData"
+  ],
+  "commands": {
+    "nyxt-probe": {
+      "description": "Probe command",
+      "suggested_key": {
+        "default": "Alt+Shift+P"
+      }
+    }
+  },
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Nyxt API probe",
+    "default_popup": "page.html",
+    "default_icon": "icon.png"
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }]
+}

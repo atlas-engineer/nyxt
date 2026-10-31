@@ -362,7 +362,10 @@
   :pathname #p"NYXT:source;"
   :serial t
   :components ((:file "renderer/cef")
-               (:file "renderer/web-extension")))
+               (:file "renderer/web-extension")
+               (:file "renderer/extension-script")
+               (:file "renderer/extension-bridge")
+               (:file "renderer/extension-apis")))
 
 (defsystem "nyxt/cef-application"
   :defsystem-depends-on ("nasdf")

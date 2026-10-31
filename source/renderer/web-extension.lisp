@@ -407,6 +407,50 @@ merged value is the one CEF keeps."
             (when items
               (list (uiop:strcat prefix (str:join "," items)))))))
 
+(-> disabled-extensions-file () (or null pathname))
+(defun disabled-extensions-file ()
+  (let ((root (web-extensions-directory-path)))
+    (when root
+      (uiop:merge-pathnames* #p"disabled" root))))
+
+(-> disabled-extension-ids () list)
+(defun disabled-extension-ids ()
+  "Return extension ids the user has turned off."
+  (let ((file (disabled-extensions-file)))
+    (if (and file (uiop:file-exists-p file))
+        (handler-case
+            (remove-if #'uiop:emptyp
+                       (mapcar (lambda (line)
+                                 (string-trim '(#\space #\tab) line))
+                               (uiop:split-string (uiop:read-file-string file)
+                                                  :separator '(#\newline #\return))))
+          (error ()
+            '()))
+        '())))
+
+(-> extension-enabled-p (web-extension) boolean)
+(defun extension-enabled-p (extension)
+  "Return T when EXTENSION is turned on.
+The choice is kept in the web-extensions directory and applies on the next start."
+  (not (member (extension-id extension) (disabled-extension-ids) :test #'string=)))
+
+(-> set-extension-enabled (string boolean) boolean)
+(defun set-extension-enabled (extension-id enabled)
+  "Remember whether the extension EXTENSION-ID is turned on."
+  (let ((file (disabled-extensions-file))
+        (ids (remove extension-id (disabled-extension-ids) :test #'string=)))
+    (unless enabled
+      (push extension-id ids))
+    (when file
+      (ensure-directories-exist file)
+      (with-open-file (out file :direction :output
+                                :if-exists :supersede
+                                :if-does-not-exist :create
+                                :external-format :utf-8)
+        (dolist (id ids)
+          (write-line id out))))
+    enabled))
+
 (-> configure-web-extensions (cef-browser cef:interface) list)
 (defun configure-web-extensions (browser interface)
   "Pass unpacked Manifest V2 and V3 extensions to CEF before it starts.
@@ -417,9 +461,15 @@ which CEF 150 still honors for unpacked directories."
   (when (switch-present-p (cef:launch-options interface) "disable-extensions")
     (log:warn "Web extensions were not loaded because --disable-extensions is set.")
     (return-from configure-web-extensions '()))
+  (dolist (directory (extension-directories browser))
+    (install-extension-shim directory))
+  (reset-extension-service-workers)
   (let* ((found (remove nil (mapcar #'extension-from-directory
                                     (extension-directories browser))))
-         (loadable (remove-if-not #'extension-load-path found)))
+         (loadable (remove-if-not (lambda (extension)
+                                    (and (extension-load-path extension)
+                                         (extension-enabled-p extension)))
+                                  found)))
     (setf (web-extensions browser) loadable)
     (when loadable
       (setf (cef:launch-options interface)
@@ -455,9 +505,13 @@ which CEF 150 still honors for unpacked directories."
 (-> web-extension-detail (web-extension) string)
 (defun web-extension-detail (extension)
   (format nil "~aManifest V~d · ~a"
-          (if (extension-loaded-p extension)
-              ""
-              "Starts on next launch · ")
+          (cond
+            ((not (extension-enabled-p extension))
+             "Off · next start · ")
+            ((extension-loaded-p extension)
+             "")
+            (t
+             "Starts on next launch · "))
           (manifest-version extension)
           (version extension)))
 
@@ -1073,8 +1127,12 @@ for info in z.infolist():
 
 (-> open-web-extension-page (web-extension buffer) t)
 (defun open-web-extension-page (extension buffer)
-  "Open EXTENSION's page in BUFFER."
+  "Open EXTENSION's page in BUFFER.
+The page load is the toolbar click, which this window cannot show.
+The click is delivered once that page has loaded."
   (when-let ((url-string (web-extension-url extension)))
+    (hooks:once-on (buffer-loaded-hook buffer) (loaded)
+      (deliver-extension-action extension loaded))
     (ffi-buffer-load buffer (url url-string))))
 
 (-> openable-web-extensions () list)
@@ -1099,6 +1157,36 @@ for info in z.infolist():
     (prompt1 :prompt "Open web extension"
              :sources (make-instance 'web-extension-source
                                      :constructor extensions))))
+
+(-> extension-worker-stamp-file () pathname)
+(defun extension-worker-stamp-file ()
+  (uiop:xdg-cache-home "nyxt/extension-worker-stamp"))
+
+(-> reset-extension-service-workers () null)
+(defun reset-extension-service-workers ()
+  "Drop cached extension service workers once after the shim changes.
+Chromium keeps a failed registration and will not start the new worker."
+  (let ((stamp (extension-worker-stamp-file))
+        (workers (uiop:xdg-cache-home "cl-cef/Default/Service Worker/")))
+    (unless (and (uiop:file-exists-p stamp)
+                 (handler-case
+                     (string= (string-trim '(#\newline #\return #\space #\tab)
+                                           (uiop:read-file-string stamp))
+                              "6")
+                   (error ()
+                     nil)))
+      (handler-case
+          (progn
+            (delete-tree workers)
+            (ensure-directories-exist stamp)
+            (with-open-file (out stamp :direction :output
+                                      :if-exists :supersede
+                                      :if-does-not-exist :create
+                                      :external-format :utf-8)
+              (write-string "6" out)))
+        (error (condition)
+          (log:warn "Could not reset extension service workers: ~a." condition)))))
+  nil)
 
 (define-command-global open-web-extension (&optional extension)
   "Open a web extension by name."
@@ -1125,6 +1213,27 @@ for info in z.infolist():
       (echo-warning "Could not open the web extension: ~a" condition)
       nil)))
 
+(defvar *extension-flip-at* (make-hash-table :test 'equal)
+  "Last time each extension's enabled choice was flipped, in internal time units.")
+
+(defvar *extension-flip-lock* (bt:make-lock "extension enabled"))
+
+(-> flip-extension-enabled (web-extension) null)
+(defun flip-extension-enabled (extension)
+  "Turn EXTENSION on or off. The running browser keeps the previous choice until the next start.
+A second report of the same click is ignored."
+  (bt:with-lock-held (*extension-flip-lock*)
+    (let* ((id (extension-id extension))
+           (now (get-internal-real-time))
+           (previous (gethash id *extension-flip-at*)))
+      (setf (gethash id *extension-flip-at*) now)
+      (when (and previous
+                 (< (- now previous) internal-time-units-per-second))
+        (return-from flip-extension-enabled nil))
+      (set-extension-enabled id (not (extension-enabled-p extension)))
+      (reload-web-extension-pages)
+      nil)))
+
 (defun web-extension-row (extension buffer)
   (let ((url (when (extension-loaded-p extension)
                (web-extension-url extension)))
@@ -1143,6 +1252,19 @@ for info in z.infolist():
                       nil)
            (:span (extension-name extension))
            (:span (web-extension-detail extension)))
+       (:button :class "enable"
+                :type "button"
+                :title "Applies on the next start."
+                :onclick (ps:ps
+                           (ps:chain event (prevent-default))
+                           (ps:chain event (stop-propagation))
+                           (nyxt/ps:lisp-eval
+                            (:title "Toggle web extension"
+                             :buffer buffer)
+                            (flip-extension-enabled extension)))
+                (if (extension-enabled-p extension)
+                    "On"
+                    "Off"))
        (when (managed-extension-p (path extension))
          (:button :class "close"
                   :type "button"
@@ -1198,7 +1320,7 @@ for info in z.infolist():
           :outline-color ,theme:action-color
           :outline-offset "2px")
         '("ul.list > li > a"
-          :padding-right "62px")
+          :padding-right "120px")
         `("ul.list > li:hover > a"
           :background-color ,theme:background-color-
           :opacity "1")
@@ -1206,6 +1328,32 @@ for info in z.infolist():
           :background-color "transparent")
         '("ul.list > li:has(+ li:hover)::after"
           :background-color "transparent")
+        `("ul.list button.enable"
+          :position "absolute"
+          :z-index "1"
+          :top "13px"
+          :right "52px"
+          :display "flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :height "28px"
+          :margin "0"
+          :padding "0 10px"
+          :border "none"
+          :border-radius "14px"
+          :appearance "none"
+          :background-color "transparent"
+          :color ,theme:primary-color
+          :font-family ,theme:font-family
+          :font-size "13px"
+          :line-height "17px"
+          :cursor "pointer")
+        `("ul.list > li:not(:has(> button.close)) > button.enable"
+          :right "17px")
+        `("ul.list button.enable:hover"
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color)
         `("ul.list button.close"
           :position "absolute"
           :z-index "1"
