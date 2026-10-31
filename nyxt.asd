@@ -170,7 +170,6 @@
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "visual")
                  (:file "vi")
-                 (:file "watch")
                  (:file "blocker")
                  (:file "certificate-exception")
                  (:file "force-https")

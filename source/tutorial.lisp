@@ -314,7 +314,6 @@ automate the reading experience:")
                                      nyxt/mode/bookmarklets::toggle-checkboxes)))
         (:p "In addition, it is possible to automate actions over time: "
             (:ul
-             (list-command-information '(nyxt/mode/watch:watch-mode))
              (:li (:nxref :command 'nyxt/mode/repeat:repeat-every) ": "
                   (command-docstring-first-sentence 'nyxt/mode/repeat:repeat-every
                                                     :sentence-case-p t))))
