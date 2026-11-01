@@ -149,6 +149,25 @@ defaults, which resolve next to the cl-cef system."
                 (cef:locales-dir-path interface)
                 (uiop:merge-pathnames* #p"locales/" root)))))))
 
+(-> configure-flatpak-cef (cef:interface) null)
+(defun configure-flatpak-cef (interface)
+  "Point INTERFACE at the CEF runtime inside a Flatpak.
+FLATPAK_ID is set by the Flatpak runtime. Development builds leave the
+defaults, which resolve next to the cl-cef system."
+  (let ((flatpak-id (uiop:getenv "FLATPAK_ID")))
+    (when (and flatpak-id (plusp (length flatpak-id)))
+      (let* ((root (uiop:ensure-directory-pathname #p"/app/lib/cef/"))
+             (helper (uiop:merge-pathnames* #p"cl-cef-helper" root))
+             (library (uiop:merge-pathnames* #p"libcl-cef.so" root)))
+        (when (and (uiop:file-exists-p helper)
+                   (uiop:file-exists-p library))
+          (setf (uiop:getenv "CL_CEF_LIBRARY") (uiop:native-namestring library))
+          (setf (cef:subprocess-path interface) helper
+                (cef:resources-dir-path interface) root
+                (cef:locales-dir-path interface)
+                (uiop:merge-pathnames* #p"locales/" root))))))
+  nil)
+
 (-> macos-bundle-contents () (or null pathname))
 (defun macos-bundle-contents ()
   "Contents directory when this executable is inside a macOS app bundle."
@@ -207,6 +226,7 @@ This is the expanded `download-directory'."
   (let ((interface (make-instance 'cef:interface)))
     (setf cef:*interface* interface)
     (configure-appimage-cef interface)
+    (configure-flatpak-cef interface)
     (configure-macos-cef interface)
     (let ((directory (cef-download-directory)))
       (log:debug "Saving downloads to ~s." directory)

@@ -149,7 +149,7 @@ This is useful to run scripts for instance.")
   "Shared libraries opened while the image was built.
 SBCL reopens saved libraries before `sb-ext:*init-hooks*' run, using the
 path from the build machine. These are left out of the image and loaded
-again from that path when it still exists, or from the AppImage.")
+again from that path when it still exists, or from the AppImage or Flatpak.")
 
 (defun relocatable-library-p (namestring)
   "Whether NAMESTRING is a library this image opened, rather than the loader."
@@ -165,6 +165,15 @@ again from that path when it still exists, or from the AppImage.")
     (when (search "libcl-clipboard" base)
       (when-let ((override (uiop:getenv "CL_CLIPBOARD_LIBRARY")))
         (push override candidates)))
+    (when-let ((flatpak-id (uiop:getenv "FLATPAK_ID")))
+      (when (plusp (length flatpak-id))
+        (dolist (directory '("/app/lib/" "/app/lib/cef/" "/app/bin/"))
+          (push (uiop:native-namestring
+                 (uiop:merge-pathnames*
+                  base
+                  (uiop:ensure-directory-pathname
+                   (uiop:parse-native-namestring directory))))
+                candidates))))
     (when-let ((appdir (uiop:getenv "APPDIR")))
       (let ((root (uiop:ensure-directory-pathname
                    (uiop:parse-native-namestring appdir))))

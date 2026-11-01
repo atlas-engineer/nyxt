@@ -1,0 +1,55 @@
+id: engineer.atlas.Nyxt
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+command: nyxt
+branch: stable
+separate-locales: false
+build-options:
+  strip: false
+  no-debuginfo: true
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --socket=pulseaudio
+  - --socket=cups
+  - --device=dri
+  - --device=all
+  - --talk-name=org.freedesktop.Notifications
+  - --talk-name=org.freedesktop.FileManager1
+  - --talk-name=org.freedesktop.ScreenSaver
+  - --talk-name=org.freedesktop.secrets
+  - --system-talk-name=org.freedesktop.GeoClue2
+  - --filesystem=home
+  - --filesystem=xdg-download
+  - --filesystem=xdg-run/pipewire-0
+  - --env=CL_CEF_LIBRARY=/app/lib/cef/libcl-cef.so
+  - --env=CL_CLIPBOARD_LIBRARY=/app/lib/libcl-clipboard.so
+modules:
+  - name: nyxt
+    buildsystem: simple
+    build-options:
+      strip: false
+      no-debuginfo: true
+    build-commands:
+      - mkdir -p /app/bin /app/lib/cef /app/share/applications /app/share/metainfo /app/share/icons/hicolor/16x16/apps /app/share/icons/hicolor/32x32/apps /app/share/icons/hicolor/128x128/apps /app/share/icons/hicolor/256x256/apps /app/share/icons/hicolor/512x512/apps
+      - install -Dm755 nyxt /app/bin/nyxt
+      - cp -a lib/. /app/lib/
+      - cp -a cef/. /app/lib/cef/
+      - install -Dm644 engineer.atlas.Nyxt.desktop /app/share/applications/engineer.atlas.Nyxt.desktop
+      - install -Dm644 engineer.atlas.Nyxt.metainfo.xml /app/share/metainfo/engineer.atlas.Nyxt.metainfo.xml
+      - install -Dm644 nyxt_16x16.png /app/share/icons/hicolor/16x16/apps/engineer.atlas.Nyxt.png
+      - install -Dm644 nyxt_32x32.png /app/share/icons/hicolor/32x32/apps/engineer.atlas.Nyxt.png
+      - install -Dm644 nyxt_128x128.png /app/share/icons/hicolor/128x128/apps/engineer.atlas.Nyxt.png
+      - install -Dm644 nyxt_256x256.png /app/share/icons/hicolor/256x256/apps/engineer.atlas.Nyxt.png
+      - install -Dm644 nyxt_512x512.png /app/share/icons/hicolor/512x512/apps/engineer.atlas.Nyxt.png
+      - chmod 755 /app/bin/nyxt /app/lib/cef/cl-cef-helper /app/lib/cef/chrome-sandbox /app/lib/cef/libcl-cef.so /app/lib/cef/libcef.so /app/lib/libcl-clipboard.so
+      - |
+        if ldd /app/bin/nyxt /app/lib/cef/libcef.so /app/lib/cef/libcl-cef.so /app/lib/cef/cl-cef-helper /app/lib/libcl-clipboard.so /app/lib/libfixposix.so /app/lib/libenchant-2.so | grep -E 'not found|undefined symbol'; then
+          exit 1
+        fi
+    sources:
+      - type: dir
+        path: ../../build/flatpak/stage
