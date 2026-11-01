@@ -3,4 +3,4 @@
 
 (uiop:define-package :analysis
   (:use :cl)
-  (:import-from :serapeum #:export-always))
+  (:import-from :serapeum #:export-always #:->))

@@ -358,22 +358,78 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 (defmethod title ((heading heading))
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
+(-> parent-node (plump:node) (or null plump:node))
+(defun parent-node (node)
+  (when (plump:child-node-p node)
+    (plump:parent node)))
+
+(-> node-after (plump:node) (or null plump:node))
+(defun node-after (node)
+  "Return the next sibling of NODE, or of the nearest ancestor that has one."
+  (loop for current = node then (parent-node current)
+        while (parent-node current)
+        for sibling = (plump:next-sibling current)
+        when sibling
+          return sibling))
+
+(-> skipped-element-p (plump:node) boolean)
+(defun skipped-element-p (node)
+  (and (plump:element-p node)
+       (not (null (member (plump:tag-name node)
+                          '("script" "style" "noscript" "template" "svg")
+                          :test #'string-equal)))))
+
+(-> next-document-node (plump:node) (or null plump:node))
+(defun next-document-node (node)
+  "Return the next node in document order after NODE.
+Children of script, style, and similar elements are not visited."
+  (or (and (plump:nesting-node-p node)
+           (not (skipped-element-p node))
+           (plump:first-child node))
+      (node-after node)))
+
+(-> heading-section-text (plump:element (or null plump:element)) string)
+(defun heading-section-text (heading next-heading)
+  "Return the text between HEADING and NEXT-HEADING.
+The walk stops at NEXT-HEADING and skips script, style, and similar elements.
+NEXT-HEADING may be NIL, in which case the text runs to the end of the document."
+  (str:collapse-whitespaces
+   (str:trim
+    (with-output-to-string (stream)
+      (loop for node = (node-after heading) then (next-document-node node)
+            while (and node (not (eq node next-heading)))
+            when (plump:text-node-p node)
+              do (write-string (plump:text node) stream)
+                 (write-char #\Space stream))))))
+
+(-> heading-keyword-lists (list) list)
+(defun heading-keyword-lists (elements)
+  "Return a keyword alist for each heading in ELEMENTS.
+Keywords come from the text that follows that heading and stop at the next
+heading. They are scored across ELEMENTS, so a term that appears under every
+heading sinks."
+  (analysis:extract-keywords
+   (loop for (heading . rest) on elements
+         collect (heading-section-text heading (first rest)))
+   :limit 5))
+
 (defun get-headings (&key (buffer (current-buffer)))
-  (ps-labels :buffer buffer
-    ((heading-scroll-position
-      :buffer buffer (element)
-      (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
-                (get-bounding-client-rect) y)))
-    (map 'list
-         (lambda (e)
-           (make-instance 'heading :inner-text (plump:text e)
-                                   :element e
+  (let ((elements (coerce (clss:ordered-select "h1, h2, h3, h4, h5, h6"
+                                               (document-model buffer))
+                          'list)))
+    (ps-labels :buffer buffer
+      ((heading-scroll-position
+        :buffer buffer (element)
+        (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
+                  (get-bounding-client-rect) y)))
+      (loop for element in elements
+            for keywords in (heading-keyword-lists elements)
+            collect (make-instance 'heading
+                                   :inner-text (plump:text element)
+                                   :element element
                                    :buffer buffer
-                                   :keywords (ignore-errors
-                                              (analysis:extract-keywords
-                                               (plump:text (plump:next-element e))))
-                                   :scroll-position (heading-scroll-position e)))
-         (clss:ordered-select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
+                                   :keywords keywords
+                                   :scroll-position (heading-scroll-position element))))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
   (when-let* ((scroll-position (document-scroll-position buffer))
