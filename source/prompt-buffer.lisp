@@ -472,7 +472,8 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
-    (push prompt-buffer (active-prompt-buffers window))
+    (unless (find prompt-buffer (active-prompt-buffers window))
+      (push prompt-buffer (active-prompt-buffers window)))
     (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window)))
   ;; Height attachment can replace the document, so draw the skeleton after
   ;; the view is in the window. On CEF a write before that has no HTML element.
@@ -910,30 +911,36 @@ See `update-prompt-input' to update the changes visually."
   (update-prompt-input prompt-buffer input))
 
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
-  "Block and return PROMPT-BUFFER results."
+  "Block and return PROMPT-BUFFER results.
+Leave the prompt stack when waiting ends, including when the prompt fails."
   (when (prompt-buffer-p prompt-buffer)
-    (show-prompt-buffer prompt-buffer)
-    ;; A return writes the result before the interrupt. Take the result when
-    ;; both are waiting so a completed prompt is not reported as a cancel.
-    (loop
-      (multiple-value-bind (results received-p)
-          (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                         :timeout 0)
-        (when received-p
-          (hide-prompt-buffer prompt-buffer)
-          (return results)))
-      (multiple-value-bind (interrupted received-p)
-          (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
-                                         :timeout 0.05)
-        (declare (ignore interrupted))
-        (when received-p
-          (multiple-value-bind (results result-received-p)
-              (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                             :timeout 0)
-            (hide-prompt-buffer prompt-buffer)
-            (if result-received-p
-                (return results)
-                (error 'prompt-buffer-canceled))))))))
+    (unwind-protect
+         (progn
+           (show-prompt-buffer prompt-buffer)
+           ;; A return writes the result before the interrupt. Take the result
+           ;; when both are waiting so a completed prompt is not reported as a
+           ;; cancel.
+           (loop
+             (multiple-value-bind (results received-p)
+                 (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                                :timeout 0)
+               (when received-p
+                 (return results)))
+             (multiple-value-bind (interrupted received-p)
+                 (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
+                                                :timeout 0.05)
+               (declare (ignore interrupted))
+               (when received-p
+                 (multiple-value-bind (results result-received-p)
+                     (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                                    :timeout 0)
+                   (if result-received-p
+                       (return results)
+                       (error 'prompt-buffer-canceled)))))))
+      (when (and (window prompt-buffer)
+                 (find prompt-buffer
+                       (active-prompt-buffers (window prompt-buffer))))
+        (hide-prompt-buffer prompt-buffer)))))
 
 (eval-always
   (defvar %prompt-args
