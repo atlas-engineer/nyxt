@@ -567,20 +567,27 @@ by default."
 
 (serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
 (defun %nbutton-onclick (title buffer clauses)
-  "Produce Parenscript to run Lisp CLAUSES in BUFFER.
+  "Produce Parenscript to schedule Lisp CLAUSES in BUFFER.
 TITLE is the debuggable name for the callback."
   (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(nyxt/ps:lisp-eval
-       (:title ,(format nil "nbutton ~a" title)
-               ,@(when buffer
-                   (list :buffer buffer)))
-       ,@clauses))))
+    ;; Button fetches do not consume a result. Interactive actions must not
+    ;; occupy CEF's single scheme worker while waiting for more UI requests.
+    (alexandria:with-gensyms (action-buffer)
+      (ps:ps*
+       `(nyxt/ps:lisp-eval
+         (:title ,(format nil "nbutton ~a" title)
+                 ,@(when buffer
+                     (list :buffer buffer)))
+         (let ((,action-buffer (nyxt:current-buffer)))
+           (nyxt:run-thread "button action"
+             (nyxt:with-current-buffer ,action-buffer
+               ,@clauses)))
+         nil)))))
 
 (deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer
                        &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
-Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
+Schedules BODY asynchronously in BUFFER via `nyxt/ps:lisp-eval' when clicked.
 
 BODY can consist of quoted lists or forms producing those. These will be
 compiled, so, if you want to close over some value, inject a closure right

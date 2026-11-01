@@ -195,6 +195,7 @@
                (:file "prompt-buffer")
                (:file "urls")
                (:file "user-script-parsing")
+               (:file "spinneret-tags")
                (:file "history")
                (:file "buffer")
                (:file "command")
