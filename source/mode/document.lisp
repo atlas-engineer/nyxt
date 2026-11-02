@@ -872,13 +872,9 @@ heading sinks."
 
 (-> activate-frame-prompt (prompt-buffer) t)
 (defun activate-frame-prompt (prompt)
-  "Focus PROMPT and keep it fully opaque."
+  "Focus PROMPT and mark it as the buffer with the keyboard."
   (ffi-within-renderer-thread (lambda () (ffi-focus-buffer prompt)))
-  (ps-eval :buffer prompt
-    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")
-    (ps:let ((input (nyxt/ps:qs document "#input")))
-      (when input
-        (ps:chain input (focus))))))
+  (indicate-prompt-buffer-focus prompt t))
 
 (-> replace-frame-suggestions (prompter:source list) t)
 (defun replace-frame-suggestions (source urls)
@@ -890,11 +886,6 @@ heading sinks."
                          (prompter:marks source)))
     (bt:with-lock-held ((slot-value source 'prompter::initial-suggestions-lock))
       (setf (slot-value source 'prompter::initial-suggestions) wrapped))))
-
-(defun keep-frame-prompt-opaque (prompt)
-  "Leave PROMPT undimmed while the pointer is on the page."
-  (ps-eval :async t :buffer prompt
-    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")))
 
 (-> watch-frame-selection (prompter:source buffer window) t)
 (defun watch-frame-selection (source buffer window)
@@ -922,13 +913,10 @@ heading sinks."
                (handler-case
                    (with-current-buffer buffer
                      (let* ((state (frame-element-state))
-                            (dragging (and state (cdr (assoc :dragging state))))
                             (ready (and state (cdr (assoc :ready state))))
                             (ended (or (and state (cdr (assoc :ended state))) 0))
                             (urls (when ready
                                     (frame-source-selection))))
-                       (when dragging
-                         (keep-frame-prompt-opaque prompt))
                        (when (and ready (not (equal urls last-urls)))
                          (setf last-urls urls)
                          (replace-frame-suggestions source (or urls '()))

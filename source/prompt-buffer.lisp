@@ -241,6 +241,10 @@ some point.")
                                        (- 1 (cl-colors-ng:rgb-green rgb))
                                        (- 1 (cl-colors-ng:rgb-blue rgb)))
                      :print-alpha nil)))
+        `("html.prompt-unfocused #input"
+          :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
+                                     theme:secondary-color+
+                                     theme:background-color))
         `("button:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
@@ -861,7 +865,46 @@ so the columns line up. Shorter rows leave the extra cells empty."
   (ps-eval :async t :buffer prompt-buffer
     (let ((input (ps:chain (nyxt/ps:qs document "#input"))))
       (ps:chain input (focus))
-      (ps:chain input (select)))))
+      (ps:chain input (select)))
+    (unless (ps:@ window nyxt-prompt-focus-watch)
+      (setf (ps:@ window nyxt-prompt-focus-watch) t)
+      (ps:chain window
+                (add-event-listener
+                 "blur"
+                 (lambda ()
+                   (ps:chain document document-element class-list
+                             (add "prompt-unfocused")))))
+      (ps:chain window
+                (add-event-listener
+                 "focus"
+                 (lambda ()
+                   (ps:chain document document-element class-list
+                             (remove "prompt-unfocused"))))))))
+
+(-> prompt-buffer-focused-p (prompt-buffer) boolean)
+(defun prompt-buffer-focused-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER's document has keyboard focus."
+  (ps-eval :buffer prompt-buffer
+    (ps:chain document (has-focus))))
+
+(export-always 'indicate-prompt-buffer-focus)
+(-> indicate-prompt-buffer-focus (prompt-buffer boolean) t)
+(defun indicate-prompt-buffer-focus (prompt-buffer focused-p)
+  "Show that PROMPT-BUFFER has keyboard focus when FOCUSED-P is non-nil.
+The caret and the input's fill are the marks."
+  (if focused-p
+      (ps-eval :buffer prompt-buffer
+        (setf (ps:@ document document-element style opacity) "")
+        (ps:chain document document-element class-list (remove "prompt-unfocused"))
+        (ps:let ((input (nyxt/ps:qs document "#input")))
+          (when input
+            (ps:chain input (focus)))))
+      (ps-eval :buffer prompt-buffer
+        (setf (ps:@ document document-element style opacity) "")
+        (ps:chain document document-element class-list (add "prompt-unfocused"))
+        (ps:let ((input (nyxt/ps:qs document "#input")))
+          (when input
+            (ps:chain input (blur)))))))
 
 (defun update-prompt-input (prompt-buffer &optional input)
   "This blocks and updates the view.
