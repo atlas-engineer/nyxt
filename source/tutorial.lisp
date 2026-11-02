@@ -200,6 +200,7 @@ the URL.")
         (:p "Annotate-related commands")
         (:ul
          (list-command-information '(nyxt/mode/annotate:annotate-current-url nyxt/mode/annotate:annotate-highlighted-text
+                                     nyxt/mode/annotate:edit-annotation nyxt/mode/annotate:delete-annotation
                                      nyxt/mode/annotate:show-annotation nyxt/mode/annotate:show-annotations nyxt/mode/annotate:show-annotations-for-current-url))))
 
       (:nsection :title "Passthrough mode"
