@@ -23,17 +23,30 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
             `(defmethod (setf ,name) (value ,@arguments)
                (declare (ignore value ,@arguments))))))))
 
+(defvar *window-delete-lock* (bt:make-lock "nyxt-window-delete"))
+
 (define-ffi-generic ffi-window-delete (window)
   (:method :around ((window window))
-    (with-slots (windows) *browser*
-      (cond ((or *quitting-nyxt-p*
-                 (> (hash-table-count windows) 1))
-             (hooks:run-hook (window-delete-hook window) window)
-             (remhash (id window) windows)
-             (call-next-method))
-            (t
-             (echo "Can't delete sole window.")))))
-  (:documentation "Delete WINDOW."))
+    (bt:with-lock-held (*window-delete-lock*)
+      (with-slots (windows last-active-window) *browser*
+        (cond ((not (gethash (id window) windows))
+               nil)
+              ((or *quitting-nyxt-p*
+                   (> (hash-table-count windows) 1))
+               (hooks:run-hook (window-delete-hook window) window)
+               (remhash (id window) windows)
+               (call-next-method)
+               (when (eq last-active-window window)
+                 (setf last-active-window (first (window-list))))
+               (setf (active-prompt-buffers window) '())
+               t)
+              (t
+               (echo "Can't delete sole window.")
+               nil)))))
+  (:documentation "Delete WINDOW.
+Page buffers that WINDOW was showing stay in the browser and can be shown in
+another window. Status, message, and prompt views that belong to WINDOW are
+closed with it."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
@@ -84,7 +97,7 @@ Setf-able."))
     (setf (slot-value browser 'last-active-window)
           (call-next-method)))
   (:method ((browser t))
-    (or (slot-value browser 'last-active-window)
+    (or (find (slot-value browser 'last-active-window) (window-list))
         (first (window-list))))
   (:documentation "Return the focused window.
 

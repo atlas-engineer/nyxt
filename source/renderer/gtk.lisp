@@ -406,6 +406,10 @@ response.  The BODY is wrapped with `with-protect'."
                                  prompt-buffer-view
                                  :expand t)
          (gtk:gtk-container-add gtk-object root-box-layout)
+         (connect-signal window "delete-event" nil (widget event)
+           (declare (ignore widget event))
+           (ffi-window-delete window)
+           t)
          (connect-signal window "destroy" nil (widget)
            (declare (ignore widget))
            (on-signal-destroy window))
@@ -431,9 +435,10 @@ response.  The BODY is wrapped with `with-protect'."
   (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
-  ;; Then remove buffer from window container to avoid corruption of buffer.
-  (gtk:gtk-container-remove (main-buffer-container window)
-                            (gtk-object (active-buffer window))))
+  (when-let ((buffer (active-buffer window)))
+    (when-let ((widget (gtk-object buffer)))
+      (g:g-object-ref (g:pointer widget))
+      (gtk:gtk-container-remove (main-buffer-container window) widget))))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
   (gtk:gtk-widget-destroy (gtk-object window)))

@@ -848,31 +848,43 @@ Each bar is a fixed height."
     (cef:add-view window status-buffer)
     (cef:add-view window message-buffer)))
 
+(-> defer-window-delete (cef-window) *)
+(defun defer-window-delete (window)
+  "Delete WINDOW once the CEF UI thread has left its close callback.
+`ffi-window-delete' calls back into CEF. Running it on that callback never
+returns to the message loop."
+  (run-thread "window-close"
+    (sleep 0.05)
+    (ffi-window-delete window)))
+
 (defmethod initialize-instance :after ((window cef-window) &key)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
     (setf (set-height message-buffer) (height message-buffer))
     (setf (set-height status-buffer) (height status-buffer))
     (cef:add-listener
-     window :close
+     window :close-request
      (lambda (window data)
        (declare (ignore data))
-       (when (current-view window)
-         (let ((id (id (current-view window))))
-           (run-thread "window-close"
-             (nyxt::buffer-delete id))))))))
+       (defer-window-delete window)))))
 
 (defmethod ffi-window-delete ((window cef-window))
-  ;; Close the browsers before the window. Closing the window first detaches
-  ;; the views and leaves the Chromium processes running.
-  (let ((views (list (message-buffer window)
-                     (status-buffer window)
-                     (current-view window))))
-    (when-let ((prompt (current-prompt-buffer)))
-      (push prompt views))
-    (dolist (view views)
-      (when view
-        (ignore-errors (cef:kill view)))))
+  (dolist (view (cef:views window))
+    (when (panel-buffer-p view)
+      (ignore-errors (cef:kill view))))
+  (dolist (prompt (nyxt::active-prompt-buffers window))
+    (when (and prompt (cef:web-contents prompt))
+      (ignore-errors (cef:kill prompt))))
+  (setf (nyxt::active-prompt-buffers window) '())
+  (dolist (view (list (status-buffer window) (message-buffer window)))
+    (when (and view (ignore-errors (cef:web-contents view)))
+      (ignore-errors (cef:kill view))))
+  (when-let ((page (or (current-view window) (active-buffer window))))
+    (when (and (not (panel-buffer-p page))
+               (ignore-errors (cef:web-contents page))
+               (find page (cef:views window)))
+      (ignore-errors (cef:remove-view window page :kill-view-p nil))))
+  (setf (current-view window) nil)
   (cef:kill window))
 
 (defmethod ffi-window-to-foreground ((window cef-window))

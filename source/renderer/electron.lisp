@@ -447,6 +447,9 @@ height of the status/prompt/message buffer."
   (echo "Setting Proxy per buffer not supported by the Electron back-end.")
   (error "Setting Proxy per buffer not supported by the Electron back-end."))
 
+(defvar *electron-windows-closing* (make-hash-table :test 'eq)
+  "Windows whose native close is already the result of `ffi-window-delete'.")
+
 (define-class electron-window (electron:window)
   ((electron:options
     "{autoHideMenuBar: true,
@@ -481,18 +484,37 @@ height of the status/prompt/message buffer."
                                         (set-height message-buffer)))
                                :width (assoc-value bounds :width)
                                :height (set-height status-buffer))
-    ;; TODO: Fix buffer deletion. We CANNOT hook on close to remove the view
-    ;; from the window because it is too late. Ergo, we must manually delete the
-    ;; currently viewed buffer without trying to mutate it via JS.
+    (electron::message
+     window
+     (format nil "~a.on('close', (event) => { if (!~a.__nyxtAllowClose) event.preventDefault(); })"
+             (electron:remote-symbol window)
+             (electron:remote-symbol window)))
     (electron:add-listener
      window :close
-     (lambda (_) (declare (ignore _))
-       (when (current-view window)
-         (nyxt::buffer-delete (id (current-view window))))))))
+     (lambda (_)
+       (declare (ignore _))
+       (if (gethash window *electron-windows-closing*)
+           (remhash window *electron-windows-closing*)
+           (run-thread "window-close"
+             (ffi-window-delete window)))))))
 
 (defmethod ffi-window-delete ((window electron-window))
-  (when (current-view window)
-    (electron:remove-view window (current-view window) :kill-view-p nil))
+  (when (gethash window *electron-windows-closing*)
+    (return-from ffi-window-delete nil))
+  (setf (gethash window *electron-windows-closing*) t)
+  (dolist (prompt (nyxt::active-prompt-buffers window))
+    (when prompt
+      (ignore-errors (electron:kill prompt))))
+  (setf (nyxt::active-prompt-buffers window) '())
+  (dolist (panel (list (message-buffer window) (status-buffer window)))
+    (when panel
+      (ignore-errors (electron:remove-view window panel :kill-view-p t))))
+  (when-let ((page (current-view window)))
+    (ignore-errors (electron:remove-view window page :kill-view-p nil))
+    (setf (current-view window) nil))
+  (electron::message
+   window
+   (format nil "~a.__nyxtAllowClose = true" (electron:remote-symbol window)))
   (electron:kill window))
 
 (defmethod ffi-window-title ((window electron-window))
