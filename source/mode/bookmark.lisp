@@ -317,26 +317,30 @@ URLS-OR-BOOKMARK-ENTRIES could be a list or a single URL/`bookmark-entry'."
                                               :enable-marks-p t))))
         (delete-bookmark entries))))
 
+(-> edit-bookmark-entry (bookmark-entry) t)
+(defun edit-bookmark-entry (bookmark)
+  "Prompt for a new title and tags for BOOKMARK and store them."
+  (let* ((url (url bookmark))
+         (title (prompt1
+                 :prompt (format nil "Title for ~a" (render-url url))
+                 :input (title bookmark)
+                 :sources (make-instance 'prompter:raw-source
+                                         :name "Title")))
+         (tags (prompt
+                :prompt (format nil "Tag(s) for ~a" (render-url url))
+                :sources (list
+                          (make-instance 'new-tag-source)
+                          (make-instance 'tag-source
+                                         :marks (url-bookmark-tags url))))))
+    (persist-bookmark url :title title :tags tags)))
+
 (define-command edit-bookmark ()
   "Edit bookmark(s)."
-  (let ((bookmarks (prompt
-                    :prompt "Edit bookmark(s)"
-                    :sources (make-instance 'bookmark-source
-                                            :enable-marks-p t))))
-    (loop for bookmark in bookmarks do
-      (let* ((url (url bookmark))
-             (title (prompt1
-                     :prompt (format nil  "Title for ~a" (render-url url))
-                     :input (title bookmark)
-                     :sources (make-instance 'prompter:raw-source
-                                             :name "Title")))
-             (tags (prompt
-                    :prompt (format nil  "Tag(s) for ~a" (render-url url))
-                    :sources (list
-                              (make-instance 'new-tag-source)
-                              (make-instance 'tag-source
-                                             :marks (url-bookmark-tags url))))))
-        (persist-bookmark url :title title :tags tags)))))
+  (dolist (bookmark (prompt
+                     :prompt "Edit bookmark(s)"
+                     :sources (make-instance 'bookmark-source
+                                             :enable-marks-p t)))
+    (edit-bookmark-entry bookmark)))
 
 (define-command set-url-from-bookmark ()
   "Set the URL for the current buffer from a bookmark.
@@ -363,7 +367,7 @@ buffers in the background."
   "List all bookmarks in a new buffer.
 Splits bookmarks into groups by tags."
   (labels ((bookmark-row (bookmark)
-             "Present BOOKMARK as a title, its URL, and a delete control."
+             "Present BOOKMARK as a title, its URL, and edit and delete controls."
              (let* ((url (render-url (url bookmark)))
                     (title (title bookmark))
                     (heading (if (str:emptyp title) url title))
@@ -375,7 +379,18 @@ Splits bookmarks into groups by tags."
                       :title (or detail heading)
                       (:span heading)
                       (:span detail))
-                  (:button :class "close"
+                  (:button :class "control edit"
+                           :type "button"
+                           :title "Edit"
+                           :onclick
+                           (ps:ps
+                             (nyxt/ps:lisp-eval
+                              (:title "edit-bookmark"
+                               :buffer bookmarks-buffer)
+                              (edit-bookmark-entry bookmark)
+                              (ffi-buffer-reload bookmarks-buffer)))
+                           (:raw (gethash "edit.svg" *static-data*)))
+                  (:button :class "control close"
                            :type "button"
                            :title "Delete"
                            :onclick
@@ -388,11 +403,12 @@ Splits bookmarks into groups by tags."
                            "×"))))))
     (let ((groups (bookmark-groups bookmarks-buffer)))
       (spinneret:with-html-string
-        ;; Close control is 28px inside a 17px inset. 17 + 28 + 17 = 62.
-        ;; The control sits on the link, so the link's own hover ends there.
+        ;; Edit and delete are 28px with 7px between them, in a 17px inset.
+        ;; 17 + 28 + 7 + 28 + 17 = 97.
+        ;; The controls sit on the link, so the link's own hover ends there.
         (:nstyle
           '("ul.list > li > a"
-            :padding-right "62px")
+            :padding-right "97px")
           `("ul.list > li:hover > a"
             :background-color ,theme:background-color-
             :opacity "1")
@@ -400,7 +416,7 @@ Splits bookmarks into groups by tags."
             :background-color "transparent")
           '("ul.list > li:has(+ li:hover)::after"
             :background-color "transparent")
-          `("ul.list button.close"
+          `("ul.list button.control"
             :position "absolute"
             :z-index "1"
             :top "13px"
@@ -423,12 +439,18 @@ Splits bookmarks into groups by tags."
             :cursor "pointer"
             :opacity "0"
             :transition "opacity 120ms ease, background-color 120ms ease")
-          '("ul.list > li:hover > button.close, ul.list button.close:focus-visible"
+          '("ul.list button.edit"
+            :right "52px")
+          '("ul.list button.edit svg"
+            :display "block"
+            :width "17px"
+            :height "17px")
+          '("ul.list > li:hover > button.control, ul.list button.control:focus-visible"
             :opacity "1")
-          `("ul.list button.close:hover"
+          `("ul.list button.control:hover"
             :background-color ,theme:background-color
             :color ,theme:on-background-color)
-          `("ul.list button.close:focus-visible"
+          `("ul.list button.control:focus-visible"
             :outline "2px solid"
             :outline-color ,theme:action-color
             :outline-offset "2px")
