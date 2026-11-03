@@ -539,7 +539,7 @@ height of the status/prompt/message buffer."
                                            (if-let ((prompt (current-prompt-buffer)))
                                              (ffi-height prompt)
                                              0))))
-  (when focus (electron:focus buffer))
+  (when focus (ffi-focus-buffer buffer))
   (setf (current-view window) buffer)
   buffer)
 
@@ -635,9 +635,6 @@ Return nil when key must be discarded, e.g. for modifiers."
                                        :modifiers (input-modifier-translator sender modifiers)
                                        :status :pressed)))
         (when key-string
-          (alex:appendf (key-stack sender)
-                        (list (key)))
-          (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
-          (dispatch-input-event event sender))))))
+          (dispatch-key-press sender event (key)))))))
 
 ;; TODO on-signal-* methods

@@ -521,30 +521,18 @@ Return nil when key must be discarded, e.g. for modifiers."
                                               key-string)
                                    :modifiers modifiers
                                    :status :pressed)))
-          (alex:appendf (key-stack sender)
-                        (list (key)))
-          (run-thread "on-signal-key-press"
-            (on-signal-key-press sender (key)))
-          (dispatch-input-event event sender))
+          (dispatch-key-press sender event (key)))
         t)))
 
 (define-ffi-method on-signal-button-press-event ((sender gtk-buffer) event)
   (let ((key-string (format nil "button~s" (gdk:gdk-event-button-button event)))
-        (modifiers (input-modifier-translator sender (gdk:gdk-event-button-state event)))
-        (buffer (or (current-prompt-buffer) sender)))
-    ;; Handle mode-specific logic here (e.g. VI switch to insertion) to not
-    ;; interfere with regular keybinding logic.
+        (modifiers (input-modifier-translator sender (gdk:gdk-event-button-state event))))
     (flet ((key ()
-             ;; It's a function so we instantiate multiple objects and avoid sharing.
              (keymaps:make-key :value key-string
                                :modifiers modifiers
                                :status :pressed)))
-      (run-thread "on-signal-button-press"
-        (on-signal-button-press buffer (key)))
       (when key-string
-        (alex:appendf (key-stack buffer)
-                      (list (key)))
-        (dispatch-input-event event sender)))))
+        (dispatch-pointer-press sender event (key))))))
 
 (define-ffi-method on-signal-scroll-event ((sender gtk-buffer) event)
   (let* ((button (match (gdk:gdk-event-scroll-direction event)
@@ -974,7 +962,7 @@ with this scheme.")
                           (gtk-object buffer)
                           :expand t :fill t)
   (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
-  (when focus (gtk:gtk-widget-grab-focus (gtk-object buffer))))
+  (when focus (ffi-focus-buffer buffer)))
 
 (define-ffi-method ffi-height ((buffer prompt-buffer))
   (gtk:gtk-widget-height-request (prompt-buffer-container (window buffer))))

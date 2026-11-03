@@ -694,19 +694,41 @@ Return BUFFER."
         (t nil))
   buffer)
 
+(-> window-shows-buffer-p (window buffer) boolean)
+(defun window-shows-buffer-p (window buffer)
+  "Return non-nil when BUFFER is a view WINDOW is showing."
+  (not (null
+        (and buffer
+             (or (find buffer (active-prompt-buffers window))
+                 (eq buffer (active-buffer window))
+                 (eq buffer (status-buffer window))
+                 (eq buffer (message-buffer window)))))))
+
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
-  "Return the current prompt-buffer."
-  (first (active-prompt-buffers (current-window))))
+  "Return the prompt buffer that keyboard input acts on.
+Inside `with-current-buffer' on a prompt, that prompt. Otherwise the prompt
+that has keyboard focus, or the most recently opened prompt when focus is on
+another view."
+  (let ((buffer %buffer))
+    (if (prompt-buffer-p buffer)
+        buffer
+        (let ((window (current-window)))
+          (when window
+            (let ((keyboard (keyboard-buffer window)))
+              (if (and (prompt-buffer-p keyboard)
+                       (find keyboard (active-prompt-buffers window)))
+                  keyboard
+                  (first (active-prompt-buffers window)))))))))
 
 (export-always 'focused-buffer)
-(defun focused-buffer (&optional (window (current-window)) )
-  "Return the currently focused buffer."
-  (find-if #'ffi-focused-p
-           (list (first (active-prompt-buffers window))
-                 (active-buffer window)
-                 (status-buffer window)
-                 (message-buffer window))))
+(defun focused-buffer (&optional (window (current-window)))
+  "Return the buffer in WINDOW that has keyboard focus."
+  (when window
+    (let ((keyboard (keyboard-buffer window)))
+      (if (window-shows-buffer-p window keyboard)
+          keyboard
+          (active-buffer window)))))
 
 (export-always 'render-menu)
 (defun render-menu (mode-symbol &optional (buffer (current-buffer)))

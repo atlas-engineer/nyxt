@@ -669,7 +669,7 @@ so the columns line up. Shorter rows leave the extra cells empty."
                                            (class-name (class-of source))
                                            suggestion-index)
                                           (prompter:run-action-on-return
-                                           (nyxt::current-prompt-buffer))))))
+                                           prompt-buffer)))))
                                     text))))))))))
 
 (defun render-attributes (source prompt-buffer)
@@ -751,7 +751,7 @@ so the columns line up. Shorter rows leave the extra cells empty."
                                      (class-name (class-of source))
                                      suggestion-index)
                                     (prompter:run-action-on-return
-                                     (nyxt::current-prompt-buffer))))))
+                                     prompt-buffer)))))
                               attribute)))))))))
 
 (export 'prompt-render-suggestions)

@@ -908,7 +908,7 @@ returns to the message loop."
     (setf (panel-views-p window) t)
     (nyxt::print-status (status-buffer window))
     (ffi-print-message (message-buffer window) "Ready."))
-  (when focus (cef:focus buffer))
+  (when focus (ffi-focus-buffer buffer))
   (setf (current-view window) buffer)
   buffer)
 
@@ -999,23 +999,17 @@ Return nil when key must be discarded, e.g. for modifiers."
                                  :modifiers (input-modifier-translator sender modifiers)
                                  :status :pressed)))
         (when key-string
-          (alex:appendf (key-stack sender) (list (key)))
-          (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
-          (dispatch-input-event event sender))))))
+          (dispatch-key-press sender event (key)))))))
 
 (defmethod on-signal-button-press-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))
-        (modifiers (input-modifier-translator sender (event-modifiers event)))
-        (buffer (or (current-prompt-buffer) sender)))
+        (modifiers (input-modifier-translator sender (event-modifiers event))))
     (flet ((key ()
              (keymaps:make-key :value key-string
                                :modifiers modifiers
                                :status :pressed)))
-      (run-thread "on-signal-button-press"
-        (on-signal-button-press buffer (key)))
       (when key-string
-        (alex:appendf (key-stack buffer) (list (key)))
-        (dispatch-input-event event sender)))))
+        (dispatch-pointer-press sender event (key))))))
 
 (defmethod on-signal-scroll-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))

@@ -23,10 +23,7 @@
 
 (export-always 'current-keymaps)
 (defun current-keymaps
-    (&optional (buffer (let ((prompt-buffer (current-prompt-buffer)))
-                         (if (and prompt-buffer (ffi-focused-p prompt-buffer))
-                             prompt-buffer
-                             (current-buffer)))))
+    (&optional (buffer (or (focused-buffer) (current-buffer))))
   "Return the list of `keymap' for the current buffer, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
@@ -122,10 +119,89 @@ Return nil to forward to renderer or non-nil otherwise."
                         (keyspecs key-stack translated-key) bound-function)
              (setf (last-key buffer) (first key-stack))
              (run-thread "run-command"
-               (unwind-protect (funcall (command-dispatcher *browser*) command)
-                 (setf key-stack nil)))
+               (with-current-buffer buffer
+                 (unwind-protect (funcall (command-dispatcher *browser*) command)
+                   (setf key-stack nil))))
              t))
           (t
            (log:debug "Fallback forward key ~s." (keyspecs key-stack))
            (setf key-stack nil)
            nil))))))
+
+(defmethod ffi-focus-buffer :after (buffer)
+  (when-let ((window (ignore-errors (window buffer))))
+    (setf (keyboard-buffer window) buffer)))
+
+(-> keyboard-buffer-for (buffer) buffer)
+(defun keyboard-buffer-for (sender)
+  "Return the buffer that handles a key event delivered to SENDER.
+The buffer that has keyboard focus wins. SENDER is used when no focus has
+been recorded, because the renderer delivered the event to that view."
+  (let ((window (ignore-errors (window sender))))
+    (or (and window
+             (let ((keyboard (keyboard-buffer window)))
+               (and (window-shows-buffer-p window keyboard)
+                    keyboard)))
+        sender)))
+
+(-> select-keyboard-buffer (buffer) buffer)
+(defun select-keyboard-buffer (buffer)
+  "Give BUFFER keyboard focus so later key presses are routed to it."
+  (when-let ((window (ignore-errors (window buffer))))
+    (setf (keyboard-buffer window) buffer))
+  (ffi-focus-buffer buffer)
+  buffer)
+
+(-> insert-forwarded-key (buffer keymaps:key) boolean)
+(defun insert-forwarded-key (buffer key)
+  "Insert KEY's character into BUFFER when the renderer delivered it elsewhere.
+Control and meta chords are left alone. Shift uppercases a single letter."
+  (let ((value (keymaps:key-value key))
+        (modifiers (keymaps:key-modifiers key)))
+    (flet ((has-modifier-p (name)
+             (fset:do-set (modifier modifiers)
+               (when (keymaps:modifier= modifier name)
+                 (return t)))))
+      (when (and (stringp value)
+                 (= (length value) 1)
+                 (not (or (has-modifier-p keymaps:+control+)
+                          (has-modifier-p keymaps:+meta+)
+                          (has-modifier-p keymaps:+super+)
+                          (has-modifier-p "alt"))))
+        (ffi-buffer-paste buffer
+                          (if (has-modifier-p keymaps:+shift+)
+                              (string-upcase value)
+                              value))
+        t))))
+
+(export-always 'dispatch-key-press)
+(-> dispatch-key-press (buffer t keymaps:key) *)
+(defun dispatch-key-press (sender event key)
+  "Route KEY to the focused buffer.
+SENDER is the view the renderer delivered the event to. When keyboard focus
+is on another view, the event is handled there and consumed for SENDER.
+A character that the focused buffer does not bind is inserted there."
+  (let ((buffer (keyboard-buffer-for sender)))
+    (alex:appendf (key-stack buffer) (list (keymaps:copy-key key)))
+    (multiple-value-bind (bound-function)
+        (keymaps:lookup-key (key-stack buffer) (current-keymaps buffer))
+      (when (and (not (eq buffer sender))
+                 (null bound-function))
+        (insert-forwarded-key buffer key)))
+    (run-thread "on-signal-key-press"
+      (on-signal-key-press buffer key))
+    (let ((consumed (dispatch-input-event event buffer)))
+      (if (eq buffer sender)
+          consumed
+          t))))
+
+(export-always 'dispatch-pointer-press)
+(-> dispatch-pointer-press (buffer t keymaps:key) *)
+(defun dispatch-pointer-press (sender event key)
+  "Route a pointer press to SENDER and make SENDER the keyboard focus.
+The view under the pointer receives the event."
+  (select-keyboard-buffer sender)
+  (alex:appendf (key-stack sender) (list (keymaps:copy-key key)))
+  (run-thread "on-signal-button-press"
+    (on-signal-button-press sender key))
+  (dispatch-input-event event sender))

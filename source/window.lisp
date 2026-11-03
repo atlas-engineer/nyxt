@@ -26,6 +26,13 @@ Not to be confused with `current-buffer' or `focused-buffer'.")
     '()
     :export nil
     :documentation "The stack of current prompt buffers.")
+   (keyboard-buffer
+    nil
+    :type (or null buffer)
+    :export nil
+    :documentation "The buffer that receives key presses.
+Showing a buffer in the window selects it, as does a pointer press on a view.
+Key presses are routed here.")
    (prompt-buffer-ready-channel
     (make-channel)
     :export nil
