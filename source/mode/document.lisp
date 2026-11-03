@@ -14,7 +14,7 @@ Important pieces of functionality are:
 - Page scrolling and zooming. A zoom level is remembered for each host, as in
 Firefox, and reused for every page on that host.
 - QR code generation.
-- view-source: for URLs.
+- Page source.
 - Buffer content summarization.
 - Heading navigation.
 - Frame selection."
@@ -219,28 +219,45 @@ Warning: URL is a string."
   (buffer-load-internal-page-focus 'show-url-qrcode :url (quri:render-uri (url buffer))))
 
 (export-always 'get-url-source)
+(-> get-url-source (t) (values string &optional))
 (defun get-url-source (url)
-  "Get HTML source for URL page, as a string."
-  (let ((buffer (find url (buffer-list) :test #'quri:uri= :key #'url)))
+  "Return the HTML source of the buffer open at URL."
+  (let* ((url (url url))
+         (buffer (find url (buffer-list) :test #'quri:uri= :key #'url)))
     (unless buffer
-      (return-from get-url-source (echo-warning "No buffer loaded URL: ~a" url)))
+      (echo-warning "No buffer loaded URL: ~a" url)
+      (return-from get-url-source (format nil "No buffer loaded URL: ~a" url)))
     (let ((dom (if (web-buffer-p buffer)
-                   (nyxt/dom:copy (document-model buffer))
-                   (plump:parse (ffi-buffer-get-document buffer)))))
+                   (when-let ((model (document-model buffer)))
+                     (nyxt/dom:copy model))
+                   (handler-case (plump:parse (ffi-buffer-get-document buffer))
+                     (error () nil)))))
+      (unless dom
+        (return-from get-url-source
+          (handler-case (or (ffi-buffer-get-document buffer) "")
+            (error () ""))))
       (loop for e across (clss:select "[nyxt-identifier]" dom)
             do (plump:remove-attribute e "nyxt-identifier"))
       (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
       (plump:serialize dom nil))))
 
-(define-internal-scheme "view-source"
+(-> source-url (t) (values string &optional))
+(defun source-url (url)
+  "Return the page URL embedded in a `nyxt-source' URL.
+The page URL is the text after the scheme colon, so its query is preserved."
+  (let ((spec (if (stringp url) url (render-url url))))
+    (if-let ((colon (position #\: spec)))
+      (subseq spec (1+ colon))
+      spec)))
+
+(define-internal-scheme "nyxt-source"
     (lambda (url)
-      (values (get-url-source (quri:uri-path (quri:uri url)))
-              "text/plain")))
+      (values (get-url-source (source-url url)) "text/plain")))
 
 (define-command-global view-source (&key (url (url (current-buffer))))
   "View source of the URL (by default current page) in a separate buffer."
-  (make-buffer-focus :url (quri:make-uri :scheme "view-source"
-                                         :path (quri:render-uri url))))
+  (make-buffer-focus :url (quri:make-uri :scheme "nyxt-source"
+                                         :path (render-url (url url)))))
 
 (define-command scroll-to-top (&key (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll to the top of the current page."

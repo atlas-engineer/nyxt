@@ -48,10 +48,18 @@
                                   nyxt/mode/user-script:renderer-user-style
                                   nyxt/mode/user-script:renderer-user-script))))
 
-(defvar +scheme-privileges+
+(defvar *default-scheme-privileges*
   "{standard:true,secure:true,corsEnabled:true,supportFetchAPI:true}"
-  "Privilege string for Nyxt's internal schemes.
-`standard' lets CEF parse the URLs. `lisp' pages also need CORS and fetch.")
+  "Privilege string for a custom scheme with no `*scheme-privileges*' entry.
+The scheme is standard, so CEF parses its URLs. It is also secure, CORS-enabled,
+and fetch-enabled. `lisp' pages need CORS and fetch.")
+
+(defvar *scheme-privileges*
+  (sera:dict "nyxt-source" "{}")
+  "CEF privilege string for a custom scheme name.
+A name that is absent uses `*default-scheme-privileges*'.
+`nyxt-source' has no privileges. A standard parser rewrites
+`nyxt-source:https://example.com/' and the page URL is lost.")
 
 (define-class cef-scheme (cef:protocol)
   ()
@@ -237,7 +245,9 @@ This is the expanded `download-directory'."
           (loop for name being the hash-key of nyxt::*schemes*
                 collect (make-instance 'cef:protocol
                                        :scheme-name name
-                                       :privileges +scheme-privileges+)))
+                                       :privileges (gethash name
+                                                            *scheme-privileges*
+                                                            *default-scheme-privileges*))))
     ;; CEF 150's Wayland backend crashes when Vulkan is the GL implementation.
     (when (and (uiop:getenv "WAYLAND_DISPLAY")
                (not (some (lambda (option)

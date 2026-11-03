@@ -654,7 +654,7 @@ with this scheme.")
   (match (name scheme)
     ("nyxt-resource" (setf (secure-p scheme) t))
     ("lisp" (setf (cors-enabled-p scheme) t))
-    ("view-source" (setf (no-access-p scheme) t))
+    ("nyxt-source" (setf (no-access-p scheme) t))
     (_ t)))
 
 ;; From https://github.com/umpirsky/language-list/tree/master/data directory

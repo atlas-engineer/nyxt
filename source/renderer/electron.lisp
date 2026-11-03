@@ -91,7 +91,7 @@
                              :scheme-name "lisp"
                              :privileges "{supportFetchAPI:true,corsEnabled:true}")
               (make-instance 'electron:protocol
-                             :scheme-name "view-source"
+                             :scheme-name "nyxt-source"
                              :privileges "{}")
               (make-instance 'electron:protocol
                              :scheme-name "gopher"
