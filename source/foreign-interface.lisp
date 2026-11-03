@@ -113,10 +113,12 @@ The `:around' method ensures that `last-active-window' is set."))
       (setf (last-access buffer) (time:now)))
     (call-next-method)
     buffer)
-  (:method :after ((window window) (buffer buffer) &key focus &allow-other-keys)
-    (declare (ignore focus))
-    (setf (active-buffer window) buffer))
+  (:method :after ((window window) (buffer buffer) &key (focus t) &allow-other-keys)
+    (setf (active-buffer window) buffer)
+    (when focus
+      (setf (keyboard-buffer window) buffer)))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
+When FOCUS is non-nil, the default, BUFFER receives keyboard focus.
 Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 
 (define-ffi-generic ffi-focus-buffer (buffer)
