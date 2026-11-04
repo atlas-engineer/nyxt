@@ -390,9 +390,6 @@ response.  The BODY is wrapped with `with-protect'."
          (gtk:gtk-box-pack-end root-box-layout
                                message-container
                                :expand nil)
-         (gtk:gtk-box-pack-start root-box-layout
-                                 message-container
-                                 :expand nil)
          (gtk:gtk-box-pack-start message-container
                                  (gtk-object message-buffer)
                                  :expand t)
