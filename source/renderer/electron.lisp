@@ -417,16 +417,50 @@ height of the status/prompt/message buffer."
 ;; (defmethod ffi-buffer-remove-user-script ((buffer electron-buffer) script))
 
 
-;; TODO: Implement image / javascript disabling by deleting/recreating the view
+;; TODO: Implement javascript disabling by deleting/recreating the view
 ;; with the appropriate WebPreferences. It is not possible to enable/disable
 ;; WebPreferences in real-time due to limitations in Electron.
 (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer electron-buffer))
-  (echo "Disabling images not supported by Electron back-end.")
-  (error "Disabling images not supported by Electron back-end."))
+  (let ((contents (electron:web-contents buffer)))
+    (string-equal
+     "true"
+     (electron::message
+      contents
+      (format nil
+              "(function () {
+                 const contents = ~a;
+                 return !globalThis.__nyxtImageBlock
+                     || !globalThis.__nyxtImageBlock.has(contents.id);
+               })()"
+              (electron:remote-symbol contents))))))
+
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer electron-buffer))
-  (declare (ignore buffer value))
-  (echo "Disabling images not supported by Electron back-end.")
-  (error "Disabling images not supported by Electron back-end."))
+  (let ((contents (electron:web-contents buffer)))
+    (electron::message
+     contents
+     (format nil
+             "(function () {
+                const contents = ~a;
+                if (!globalThis.__nyxtImageBlock)
+                  globalThis.__nyxtImageBlock = new Set();
+                const session = contents.session;
+                if (!session.__nyxtImageBlockInstalled) {
+                  session.__nyxtImageBlockInstalled = true;
+                  session.webRequest.onBeforeRequest({urls: ['<all_urls>']}, (details, callback) => {
+                    const blocked = details.resourceType === 'image'
+                        && globalThis.__nyxtImageBlock.has(details.webContentsId);
+                    callback(blocked ? {cancel: true} : {});
+                  });
+                }
+                if (~a)
+                  globalThis.__nyxtImageBlock.delete(contents.id);
+                else
+                  globalThis.__nyxtImageBlock.add(contents.id);
+                return true;
+              })()"
+             (electron:remote-symbol contents)
+             (if value "true" "false"))))
+  value)
 
 (defmethod ffi-buffer-javascript-markup-enabled-p ((buffer electron-buffer))
   (echo "Disabling JavaScript not supported by Electron back-end.")
