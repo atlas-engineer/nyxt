@@ -174,7 +174,6 @@
                  (:file "certificate-exception")
                  (:file "no-image")
                  (:file "no-script")
-                 (:file "no-webgl")
                  (:file "user-script"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
@@ -227,7 +226,6 @@
                  (:file "no-image")
                  (:file "no-script")
                  (:file "no-sound")
-                 (:file "no-webgl")
                  (:file "passthrough")
                  (:file "password")
                  (:file "process")

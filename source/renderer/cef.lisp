@@ -802,11 +802,6 @@ if (exclude.some(match)) return;
 (defmethod (setf ffi-buffer-media-enabled-p) (value (buffer cef-buffer))
   (setf (media-enabled-p buffer) value))
 
-(defmethod ffi-buffer-webgl-enabled-p ((buffer cef-buffer))
-  (cef:webgl-enabled-p (cef:web-contents buffer)))
-(defmethod (setf ffi-buffer-webgl-enabled-p) (value (buffer cef-buffer))
-  (cef:set-webgl-enabled (cef:web-contents buffer) value))
-
 (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer cef-buffer))
   (cef:images-enabled-p (cef:web-contents buffer)))
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer cef-buffer))

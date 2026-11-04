@@ -436,14 +436,6 @@ height of the status/prompt/message buffer."
   (echo "Disabling JavaScript not supported by Electron back-end.")
   (error "Disabling JavaScript not supported by Electron back-end."))
 
-(defmethod ffi-buffer-webgl-enabled-p ((buffer electron-buffer))
-  (echo "Disabling WebGL not supported by Electron back-end.")
-  (error "Disabling WebGL not supported by Electron back-end."))
-(defmethod (setf ffi-buffer-webgl-enabled-p) (value (buffer electron-buffer))
-  (declare (ignore buffer value))
-  (echo "Disabling WebGL not supported by Electron back-end.")
-  (error "Disabling WebGL not supported by Electron back-end."))
-
 (defvar *electron-windows-closing* (make-hash-table :test 'eq)
   "Windows whose native close is already the result of `ffi-window-delete'.")
 

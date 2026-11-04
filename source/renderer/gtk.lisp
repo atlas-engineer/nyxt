@@ -1533,7 +1533,6 @@ with this scheme.")
 (define-ffi-settings-accessor javascript-markup-enabled-p webkit:webkit-settings-enable-javascript-markup)
 (define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
 (define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
-(define-ffi-settings-accessor webgl-enabled-p webkit:webkit-settings-enable-webgl)
 (define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))

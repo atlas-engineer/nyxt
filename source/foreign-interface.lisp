@@ -214,10 +214,6 @@ Setf-able."))
   (:setter-p t)
   (:documentation "Return non-nil when video and audio playback are enabled in BUFFER.
 Setf-able."))
-(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when WebGL is enabled in BUFFER.
-Setf-able."))
 (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
   (:setter-p t)
   (:documentation "Return non-nil when images are displayed in BUFFER.
