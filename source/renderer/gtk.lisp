@@ -201,18 +201,26 @@ the renderer thread, use `defmethod' instead."
   "gtk:within-main-loop handles all the GTK initialization."
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing GTK Interface")
-  (if gtk-running-p
-      (within-gtk-thread (call-next-method))
-      (progn
-        (setf gtk-running-p t)
-        (glib:g-set-prgname "nyxt")
-        (gdk:gdk-set-program-class "Nyxt")
-        (gtk:within-main-loop
-          (with-protect ("Error on GTK thread: ~a" :condition)
-            (call-next-method)))
-        (unless nyxt::*run-from-repl-p*
-          (gtk:join-gtk-main)
-          (uiop:quit (nyxt:exit-code browser) #+bsd nil)))))
+  (labels ((ignore-divide-by-zero ()
+             #+sbcl
+             (sb-int:set-floating-point-modes
+              :traps (remove :divide-by-zero
+                             (getf (sb-int:get-floating-point-modes) :traps))))
+           (start-in-renderer ()
+             (ignore-divide-by-zero)
+             (call-next-method)))
+    (if gtk-running-p
+        (within-gtk-thread (start-in-renderer))
+        (progn
+          (setf gtk-running-p t)
+          (glib:g-set-prgname "nyxt")
+          (gdk:gdk-set-program-class "Nyxt")
+          (gtk:within-main-loop
+            (with-protect ("Error on GTK thread: ~a" :condition)
+              (start-in-renderer)))
+          (unless nyxt::*run-from-repl-p*
+            (gtk:join-gtk-main)
+            (uiop:quit (nyxt:exit-code browser) #+bsd nil))))))
 
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   (gtk:leave-gtk-main))
