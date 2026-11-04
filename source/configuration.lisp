@@ -300,7 +300,7 @@ while `%slot-value%' is replaced by the slot's current value .
 Example:
 
 \(define-configuration web-buffer
-  ((default-modes (pushnew 'nyxt/mode/force-https:force-https-mode %slot-value%))))
+  ((default-modes (pushnew 'nyxt/mode/no-sound:no-sound-mode %slot-value%))))
 
 Example to get the `blocker-mode' command to use a new default hostlists:
 
