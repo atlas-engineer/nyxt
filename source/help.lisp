@@ -414,23 +414,10 @@ to the next."
      (:p :class "detail" (render-url url))
      (:p :class "summary"
          "The address you are trying to visit has an invalid
-certificate. By default Nyxt refuses to establish a secure connection
+certificate. Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
-compromised.")
-     (:p :class "summary"
-         "If you trust the address nonetheless, you can add an exception
-for the current hostname with the "
-         (:code "add-domain-to-certificate-exceptions")
-         " command.  The "
-         (:code "certificate-exception-mode")
-         " must be active for the current buffer (which is the
-default).")
-     (:p :class "summary"
-         "To persist hostname exceptions in your initialization
-file, see the "
-         (:code "add-domain-to-certificate-exceptions")
-         " documentation."))
+compromised."))
    buffer))
 
 (-> network-error-html (buffer string) (values string &optional))

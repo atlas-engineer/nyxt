@@ -739,11 +739,7 @@ Example:
 \(defmethod configure-instance ((buffer buffer))
   (reduce #'hooks:add-hook
           '(old-reddit-handler auto-proxy-handler)
-          :initial-value (request-resource-hook buffer)))")
-   (certificate-exceptions
-    '()
-    :type (list-of string)
-    :documentation "A list of hostnames for ignoring certificate errors."))
+          :initial-value (request-resource-hook buffer)))"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

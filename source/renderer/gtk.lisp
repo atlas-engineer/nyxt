@@ -758,22 +758,10 @@ with this scheme.")
 (define-ffi-method ffi-buffer-title ((buffer gtk-buffer))
   (or (webkit:webkit-web-view-title (gtk-object buffer)) ""))
 
-(define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) certificate url)
+(define-ffi-method on-signal-load-failed-with-tls-errors ((buffer gtk-buffer) url)
   "Return nil to propagate further (i.e. raise load-failed signal), T otherwise."
-  (let ((context (webkit:webkit-web-view-web-context (gtk-object buffer)))
-        (host (quri:uri-host url)))
-    (if (and (certificate-exceptions buffer)
-             (member host (certificate-exceptions buffer) :test #'string=))
-        (progn
-          (webkit:webkit-web-context-allow-tls-certificate-for-host
-           context
-           (gobject:pointer certificate)
-           host)
-          (ffi-buffer-load buffer url)
-          t)
-        (progn
-          (nyxt::tls-help buffer url)
-          t))))
+  (nyxt::tls-help buffer url)
+  t)
 
 (define-ffi-method on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
   (let ((is-known-type t) (event-type :other) (modifiers ())
@@ -1240,9 +1228,9 @@ with this scheme.")
   (connect-signal-function buffer "show-notification" #'process-notification)
   ;; TLS certificate handling
   (connect-signal buffer "load-failed-with-tls-errors" nil (web-view failing-url certificate errors)
-    (declare (ignore web-view errors))
+    (declare (ignore web-view certificate errors))
     (on-signal-load-failed buffer (quri:uri failing-url))
-    (on-signal-load-failed-with-tls-errors buffer certificate (quri:uri failing-url)))
+    (on-signal-load-failed-with-tls-errors buffer (quri:uri failing-url)))
   (connect-signal buffer "notify::uri" nil (web-view param-spec)
     (declare (ignore web-view param-spec))
     (on-signal-notify-uri buffer nil))
