@@ -16,7 +16,10 @@ Mainly used on `list-messages' page."
 (define-command clear-messages ()
   "Clear the *Messages* buffer and the underlying message data."
   (setf (slot-value *browser* 'messages-content) '())
-  (echo "Messages cleared."))
+  (echo "Messages cleared.")
+  (dolist (buffer (buffer-list))
+    (when (eq 'list-messages (internal-page-name (url buffer)))
+      (ffi-buffer-reload buffer))))
 
 (-> message-parts (string) (values string string &optional))
 (defun message-parts (message)
