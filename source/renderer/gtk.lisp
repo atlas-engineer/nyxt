@@ -225,6 +225,13 @@ the renderer thread, use `defmethod' instead."
 (define-ffi-method ffi-kill-browser ((browser gtk-browser))
   (gtk:leave-gtk-main))
 
+(define-ffi-method ffi-clear-cache ((browser gtk-browser))
+  (maphash (lambda (name context)
+             (declare (ignore name))
+             (webkit:webkit-web-context-clear-cache context))
+           (web-contexts browser))
+  t)
+
 (define-class gtk-extensions-directory (nyxt-file)
   ((files:name "gtk-extensions")
    (files:base-path (uiop:merge-pathnames* "nyxt/" nasdf:*libdir*)))

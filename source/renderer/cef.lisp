@@ -296,6 +296,10 @@ This is the expanded `download-directory'."
   (declare (ignore browser))
   (cef:terminate))
 
+(defmethod ffi-clear-cache ((browser cef-browser))
+  (declare (ignore browser))
+  (cef:clear-cache))
+
 (defvar *exit-lock* (bt:make-lock "nyxt-cef-exit"))
 (defvar *exit-requested* nil)
 

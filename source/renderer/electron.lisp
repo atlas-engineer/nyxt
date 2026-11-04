@@ -151,6 +151,11 @@
   (declare (ignore browser))
   (electron:terminate))
 
+(defmethod ffi-clear-cache ((browser electron-browser))
+  (declare (ignore browser))
+  (electron:clear-cache (electron:default-session electron:*interface*))
+  t)
+
 (define-class electron-buffer (electron:view)
   ((electron:options
     ""

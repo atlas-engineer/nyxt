@@ -279,6 +279,14 @@ specific threads."))
 (define-ffi-generic ffi-kill-browser (browser)
   (:documentation "Terminate the renderer process."))
 
+(define-ffi-generic ffi-clear-cache (browser)
+  (:documentation "Clear the HTTP cache held by BROWSER's renderer."))
+
+(define-command-global clear-renderer-cache ()
+  "Clear the renderer's HTTP cache."
+  (ffi-clear-cache *browser*)
+  (echo "Renderer cache cleared."))
+
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)
     (finalize-startup browser urls startup-timestamp))
