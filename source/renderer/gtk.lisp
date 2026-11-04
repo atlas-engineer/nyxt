@@ -428,7 +428,7 @@ response.  The BODY is wrapped with `with-protect'."
              (unless fullscreen-p (ffi-window-unfullscreen window :user-event-p nil))
              (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
            nil))
-       (unless *headless-p* (gtk:gtk-widget-show-all gtk-object))))))
+       (gtk:gtk-widget-show-all gtk-object)))))
 
 (defmethod update-instance-for-redefined-class :after ((window window) added deleted plist &key)
   (declare (ignore added deleted plist))
@@ -939,7 +939,7 @@ with this scheme.")
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
   "Show window in foreground."
-  (unless *headless-p* (gtk:gtk-window-present (gtk-object window)))
+  (gtk:gtk-window-present (gtk-object window))
   (call-next-method))
 
 (define-ffi-method ffi-window-title ((window gtk-window))
@@ -961,7 +961,7 @@ with this scheme.")
   (gtk:gtk-box-pack-start (main-buffer-container window)
                           (gtk-object buffer)
                           :expand t :fill t)
-  (unless *headless-p* (gtk:gtk-widget-show (gtk-object buffer)))
+  (gtk:gtk-widget-show (gtk-object buffer))
   (when focus (ffi-focus-buffer buffer)))
 
 (define-ffi-method ffi-height ((buffer prompt-buffer))

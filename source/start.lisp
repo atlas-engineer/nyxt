@@ -101,10 +101,6 @@ Without --quit or --remote, the loading is done after parsing the config file
 Unless --quit is specified, also send s-expressions from the standard input.
 The remote instance must be listening on a socket which you can specify with
 --socket and have the `remote-execution-p' browser slot to non-nil.")
-      (:name :headless
-       :long "headless"
-       :description "Start Nyxt without showing any graphical element.
-This is useful to run scripts for instance.")
       (:name :electron-opts
        :long "electron-opts"
        :arg-parser #'identity
@@ -345,11 +341,10 @@ The OPTIONS are the same as the command line options.
   (initialize-lparallel-kernel)
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
-  (destructuring-bind (&key (headless *headless-p*) verbose help version
+  (destructuring-bind (&key verbose help version
                          system-information load eval quit remote
                        &allow-other-keys)
       options
-    (setf *headless-p* headless)
     (if verbose
         (progn
           (log:config :debug)

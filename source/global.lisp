@@ -26,11 +26,6 @@ For user-facing controls, see `*run-from-repl-p*'.")
   #-(or linux bsd darwin) nil
   "The program to open unsupported files with.")
 
-(export-always '*headless-p*)
-(defvar *headless-p* nil
-  "If non-nil, don't display anything.
-This is convenient for testing purposes or to drive Nyxt programmatically.")
-
 (export-always '*quitting-nyxt-p*)
 (defvar *quitting-nyxt-p* nil
   "When non-nil, Nyxt is quitting.")
