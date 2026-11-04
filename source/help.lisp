@@ -52,6 +52,33 @@ Prompt for a new value with prompt SOURCES and type-check
          (auto-configure :class-name class :slot slot :slot-value input)
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
+(-> default-new-buffer-url-configuration-form (string) list)
+(defun default-new-buffer-url-configuration-form (url-string)
+  "Return a `define-configuration' form that sets the homepage to URL-STRING.
+The value is a `quri:uri'."
+  `(define-configuration browser
+     ((default-new-buffer-url (quri:uri ,(render-url (url url-string)))))))
+
+(defun configure-default-new-buffer-url ()
+  "Prompt for the homepage and save it in `*auto-config-file*'.
+The saved form sets `default-new-buffer-url' to a `quri:uri'."
+  (let* ((input (prompt
+                 :prompt "Configure slot value default-new-buffer-url"
+                 :input (render-url (default-new-buffer-url *browser*))
+                 :sources (list
+                           (make-instance 'prompter:raw-source
+                                          :name "New URL")
+                           (make-instance 'global-history-source
+                                          :enable-marks-p nil
+                                          :actions-on-return #'identity))))
+         (selection (if (serapeum:single input)
+                        (first input)
+                        input))
+         (url-string (render-url (url selection))))
+    (auto-configure :form (default-new-buffer-url-configuration-form url-string))
+    (echo "Update slot ~s to ~s. You might need to restart to experience the change."
+          'default-new-buffer-url url-string)))
+
 (define-internal-page-command-global common-settings (&key (section 'keybindings))
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
   "Display an interface to tweak frequently sought-after user options.
@@ -355,18 +382,7 @@ to the next."
                             :text "Set default URL"
                             :title "Choose the address a new buffer opens."
                             :buffer buffer
-                            '(nyxt::configure-slot 'default-new-buffer-url 'browser
-                              :sources (list
-                                        (make-instance
-                                         'prompter:raw-source
-                                         :name "New URL")
-                                        (make-instance
-                                         'global-history-source
-                                         :enable-marks-p nil
-                                         :actions-on-return #'identity))
-                              :input (render-url (default-new-buffer-url *browser*))
-                              :postprocess (lambda (url-or-history-entry)
-                                             (render-url (url url-or-history-entry)))))))
+                            '(nyxt::configure-default-new-buffer-url))))
                      (:tr
                       (:td :class "setting"
                            (:span :class "name" "Modes")
