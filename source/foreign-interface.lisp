@@ -227,14 +227,6 @@ Setf-able."))
   (:documentation "Return non-nil when the sound is enabled in BUFFER.
 Setf-able."))
 
-(define-ffi-generic ffi-buffer-proxy (buffer)
-  (:setter-p t)
-  (:documentation "Return the proxy URL as a `quri:uri'.
-Return the list of ignored hosts (list of strings) as a second value.
-
-Setf-able.  The value is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS).
-PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
-
 (define-ffi-generic ffi-buffer-download (buffer url)
   (:documentation "Download URL using the BUFFER web view."))
 

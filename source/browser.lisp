@@ -14,24 +14,6 @@ Returns:
   "Hook acting on `browser' (likely `*browser*').")
 (export-always '(hook-resource))
 
-(define-class proxy ()
-  ((url
-    (quri:uri "socks5://127.0.0.1:9050")
-    :documentation "The address of the proxy server.
-It's made of three components: protocol, host and port.
-Example: \"http://192.168.1.254:8080\".")
-   (allowlist
-    '("localhost" "localhost:8080")
-    :type (list-of string)
-    :documentation "A list of URIs not to forward to the proxy.")
-   (proxied-downloads-p
-    t
-    :documentation "Non-nil if downloads should also use the proxy."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:documentation "Enable forwarding of all network requests to a specific host.
-This can apply to specific buffer."))
-
 (export-always 'combine-composed-hook-until-nil)
 (defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
   "Return the composition of the HOOK handlers on ARG, from oldest to youngest.

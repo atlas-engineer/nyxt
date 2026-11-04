@@ -402,12 +402,6 @@ the default height.")
    (listeners-p
     nil
     :documentation "Whether input and load listeners have been registered.")
-   (cef-proxy-url
-    (quri:uri "")
-    :documentation "Proxy URL last applied to this buffer.")
-   (cef-proxy-ignored-hosts
-    '()
-    :documentation "Hosts that bypass the proxy.")
    (smooth-scrolling-p
     t
     :documentation "Remembered smooth-scrolling setting. CEF has no matching preference.")
@@ -817,21 +811,6 @@ if (exclude.some(match)) return;
   (cef:images-enabled-p (cef:web-contents buffer)))
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer cef-buffer))
   (cef:set-images-enabled (cef:web-contents buffer) value))
-
-(defmethod ffi-buffer-proxy ((buffer cef-buffer))
-  (values (cef-proxy-url buffer)
-          (cef-proxy-ignored-hosts buffer)))
-
-(defmethod (setf ffi-buffer-proxy) (proxy-specifier (buffer cef-buffer))
-  (let* ((spec (alex:ensure-list proxy-specifier))
-         (proxy-url (or (first spec) (quri:uri "")))
-         (ignore-hosts (second spec)))
-    (setf (cef-proxy-url buffer) proxy-url
-          (cef-proxy-ignored-hosts buffer) ignore-hosts)
-    (cef:set-proxy (cef:web-contents buffer)
-                   (if (url-empty-p proxy-url) "" (render-url proxy-url))
-                   (format nil "~{~a~^,~}" ignore-hosts))
-    proxy-specifier))
 
 (defmethod ffi-buffer-cookie-policy ((buffer cef-buffer))
   (cef:cookie-policy (cef:web-contents buffer)))

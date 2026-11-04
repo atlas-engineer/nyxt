@@ -175,7 +175,6 @@
                  (:file "no-image")
                  (:file "no-script")
                  (:file "no-webgl")
-                 (:file "proxy")
                  (:file "user-script"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
@@ -233,7 +232,6 @@
                  (:file "password")
                  (:file "process")
                  (:file "prompt-buffer")
-                 (:file "proxy")
                  (:file "reading-line")
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.

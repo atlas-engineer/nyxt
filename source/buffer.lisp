@@ -740,11 +740,6 @@ Example:
   (reduce #'hooks:add-hook
           '(old-reddit-handler auto-proxy-handler)
           :initial-value (request-resource-hook buffer)))")
-   (proxy
-    nil
-    :accessor nil
-    :type (or proxy null)
-    :documentation "Proxy for buffer.")
    (certificate-exceptions
     '()
     :type (list-of string)
@@ -870,18 +865,6 @@ In case the page changed more than `document-model-delta-threshold', runs
                     (update-document-model :buffer buffer)
                     (slot-value buffer 'document-model))))))))
 
-(defmethod proxy ((buffer buffer))
-  (slot-value buffer 'proxy))
-
-(defmethod (setf proxy) (proxy (buffer buffer))
-  (setf (slot-value buffer 'proxy) proxy)
-  (if proxy
-      (setf (ffi-buffer-proxy buffer)
-            (list (url proxy)
-                  (allowlist proxy)))
-      (setf (ffi-buffer-proxy buffer)
-            (quri:uri ""))))
-
 (defmethod keywords ((buffer web-buffer))
   "Return the terms that best describe the contents of BUFFER."
   (or (slot-value buffer 'keywords)
@@ -902,17 +885,6 @@ In case the page changed more than `document-model-delta-threshold', runs
                            (mapcar #'first (nyxt::keywords (buffer source))))))
   (:export-class-name-p t)
   (:documentation "Source listing the keywords for source `buffer'."))
-
-(-> proxy-url (buffer &key (:downloads-only boolean)) *)
-(defun proxy-url (buffer &key (downloads-only nil))
-  "Return the proxy address, nil if not set.
-If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
-when `proxied-downloads-p' is true."
-  (let* ((proxy (and buffer (proxy buffer)))
-         (proxied-downloads (and proxy (proxied-downloads-p proxy))))
-    (when (or (and (not downloads-only) proxy)
-              proxied-downloads)
-      (url proxy))))
 
 (defun load-failed-p (buffer)
   "Only `network-buffer' loads can fail."
