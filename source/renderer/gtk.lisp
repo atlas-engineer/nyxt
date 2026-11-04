@@ -1394,33 +1394,34 @@ with this scheme.")
   (%within-renderer-thread
    (lambda (&optional channel)
      (when (gtk-object buffer)
-       (webkit2:webkit-web-view-evaluate-javascript
-        (gtk-object buffer)
-        javascript
-        (if channel
-            (lambda (result jsc-result)
-              (declare (ignore jsc-result))
-              (lparallel.queue:push-queue result channel))
-            (lambda (result jsc-result)
-              (declare (ignore jsc-result))
-              result))
-        (lambda (condition)
-          (nyxt::javascript-error-handler condition)
-          ;; Notify the listener that we are done.
-          (when channel
-            (lparallel.queue:push-queue nil channel)))
-        world-name)))))
+       (apply #'webkit2:webkit-web-view-evaluate-javascript
+              (gtk-object buffer)
+              javascript
+              (if channel
+                  (lambda (result jsc-result)
+                    (declare (ignore jsc-result))
+                    (lparallel.queue:push-queue result channel))
+                  (lambda (result jsc-result)
+                    (declare (ignore jsc-result))
+                    result))
+              (lambda (condition)
+                (nyxt::javascript-error-handler condition)
+                (when channel
+                  (lparallel.queue:push-queue nil channel)))
+              (when world-name
+                (list world-name)))))))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer gtk-buffer) javascript &optional world-name)
   (%within-renderer-thread-async
    (lambda ()
      (when (gtk-object buffer)
-       (webkit2:webkit-web-view-evaluate-javascript
-        (gtk-object buffer)
-        javascript
-        nil
-        #'nyxt::javascript-error-handler
-        world-name)))))
+       (apply #'webkit2:webkit-web-view-evaluate-javascript
+              (gtk-object buffer)
+              javascript
+              nil
+              #'nyxt::javascript-error-handler
+              (when world-name
+                (list world-name)))))))
 
 (defun list-of-string-to-foreign (list)
   (if list
