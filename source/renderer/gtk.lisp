@@ -671,7 +671,7 @@ with this scheme.")
   ;; - nyxt scheme pages are linkable from pages of other schemes.
   (match (name scheme)
     ("nyxt-resource" (setf (secure-p scheme) t))
-    ("lisp" (setf (cors-enabled-p scheme) t))
+    ((or "lisp" "nyxt-terminal") (setf (cors-enabled-p scheme) t))
     ("nyxt-source" (setf (no-access-p scheme) t))
     (_ t)))
 

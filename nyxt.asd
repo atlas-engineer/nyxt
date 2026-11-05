@@ -66,6 +66,7 @@
                nyxt/download-manager
                nyxt/password-manager
                nyxt/text-buffer
+               nyxt/terminal
                nyxt/theme
                nyxt/user-interface)
   :pathname #p"NYXT:source;"
@@ -168,6 +169,7 @@
                  (:file "repeat")
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
+                 (:file "terminal")
                  (:file "visual")
                  (:file "vi")
                  (:file "blocker")
@@ -178,6 +180,7 @@
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
+                         (test-op "nyxt/terminal")
                          (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/tests"
@@ -234,6 +237,7 @@
                  (:file "small-web")
                  (:file "spell-check")
                  (:file "style")
+                 (:file "terminal")
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.
@@ -281,6 +285,7 @@
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
+                         (test-op "nyxt/terminal")
                          (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/gi-gtk/tests"
@@ -422,6 +427,28 @@
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
+
+(defsystem "nyxt/terminal"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
+  :depends-on (babel
+               bordeaux-threads
+               cffi
+               nclasses
+               serapeum
+               uiop)
+  :pathname #p"NYXT:libraries;terminal;"
+  :components ((:file "package")
+               (:file "terminal" :depends-on ("package")))
+  :in-order-to ((test-op (test-op "nyxt/terminal/tests"))))
+
+(defsystem "nyxt/terminal/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/terminal lisp-unit2)
+  :pathname #p"NYXT:libraries;terminal;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :terminal/tests))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on ("nasdf")

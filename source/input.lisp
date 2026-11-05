@@ -102,6 +102,8 @@ Return nil to forward to renderer or non-nil otherwise."
                      (not (str:starts-with-p "passthrough-mode"
                                              (keymaps:name matching-keymap)))
                      (not (str:starts-with-p "vi-insert-mode"
+                                             (keymaps:name matching-keymap)))
+                     (not (str:starts-with-p "terminal-mode"
                                              (keymaps:name matching-keymap)))))
            (log:debug "Forward key ~s." (keyspecs key-stack))
            (setf key-stack nil)
