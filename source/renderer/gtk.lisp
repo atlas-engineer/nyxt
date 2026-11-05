@@ -822,7 +822,7 @@ with this scheme.")
             (input-modifier-translator buffer
                                  (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
-    (when (host-blocked-p (blocked-host-set buffer) (quri:uri-host url))
+    (when (nyxt/mode/blocker:host-blocked-p (blocked-host-set buffer) (quri:uri-host url))
       (webkit:webkit-policy-decision-ignore response-policy-decision)
       (return nil))
     (setf request-headers
@@ -1191,7 +1191,7 @@ with this scheme.")
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
-    (when (request-blocked-p (blocked-host-set buffer)
+    (when (nyxt/mode/blocker:request-blocked-p (blocked-host-set buffer)
                              (webkit:webkit-uri-request-get-uri request))
       (webkit:webkit-uri-request-set-uri request "data:,"))
     (let* ((response (webkit:webkit-web-resource-response resource))
@@ -1649,7 +1649,7 @@ WebKit's filter language accepts a restricted regular expression."
 (defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer gtk-buffer))
   (setf (blocked-hosts buffer) hosts
         (blocked-host-set buffer) (when hosts
-                                    (blocked-host-table hosts)))
+                                    (nyxt/mode/blocker:blocked-host-table hosts)))
   (if hosts
       (install-blocked-host-filter buffer hosts)
       (clear-blocked-host-filter buffer))
