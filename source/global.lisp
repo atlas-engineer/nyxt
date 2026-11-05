@@ -96,7 +96,12 @@ See `parse-version' for details on the returned values."
 (defvar *static-data* (make-hash-table :test 'equal)
   "Static data for usage in Nyxt.")
 
+(export-always 'load-assets)
+(-> load-assets (string function) (values list &optional))
 (defun load-assets (subdirectory read-function)
+  "Read every file in `assets/SUBDIRECTORY/' into `*static-data*'.
+READ-FUNCTION reads one pathname. Each file is stored under its filename and a
+lowercased alias."
   (mapcar (lambda (i)
             (let* ((name (file-namestring i))
                    (content (funcall read-function i)))
