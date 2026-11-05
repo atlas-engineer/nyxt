@@ -764,7 +764,9 @@ if (exclude.some(match)) return;
 ~a
 })();"
             (cl-json:encode-json-to-string include)
-            (cl-json:encode-json-to-string exclude)
+            (if exclude
+                (cl-json:encode-json-to-string exclude)
+                "[]")
             code)))
 
 (defmethod ffi-buffer-add-user-script ((buffer cef-buffer) (script cef-user-script))
