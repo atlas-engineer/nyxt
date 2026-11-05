@@ -103,10 +103,7 @@
                     (handler-case
                         (nyxt:start :no-config t
                                     :no-auto-config t
-                                    :socket *socket-path*
-                                    :electron-opts
-                                    (format nil "--user-data-dir=~a"
-                                            *electron-data-directory*))
+                                    :socket *socket-path*)
                       (error (condition) (setf failure condition))))
                   :name "nyxt-integration-start")))
     (wait-until (lambda ()

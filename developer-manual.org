@@ -12,7 +12,7 @@
   - [[#common-lisp][Common Lisp]]
   - [[#web-renderers][Web renderers]]
     - [[#webkitgtk][WebKitGTK]]
-    - [[#electron][Electron]]
+    - [[#cef][CEF]]
   - [[#other][Other]]
 - [[#development-environment][Development environment]]
   - [[#tests][Tests]]
@@ -81,9 +81,11 @@ following plugins:
 - gst-plugins-good
 - gst-plugins-ugly
 
-*** Electron
+*** CEF
 
-Experimental support for [[https://www.electronjs.org/][Electron]].  Further documentation soon.
+[[https://bitbucket.org/chromiumembedded/cef][CEF]] is the default renderer.
+Pass =CEF_ROOT= to =make= so the build can compile =libcl-cef.so= against the
+CEF SDK.
 
 ** Other
 

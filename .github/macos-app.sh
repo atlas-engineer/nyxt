@@ -107,7 +107,7 @@ if [ -d /opt/local/lib/pkgconfig ]; then
     export DYLD_LIBRARY_PATH="/opt/local/lib${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"
 fi
 
-make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" NODE_SETUP=false nyxt
+make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" nyxt
 
 cef_rel=$(awk -F', ' '$1 == "cl-cef" { print $3; exit }' ocicl.csv)
 cef_build="$root/ocicl/$(dirname "$cef_rel")/build"

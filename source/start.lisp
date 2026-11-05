@@ -100,11 +100,7 @@ Without --quit or --remote, the loading is done after parsing the config file
        "Send the --eval and --load arguments to the running instance of Nyxt.
 Unless --quit is specified, also send s-expressions from the standard input.
 The remote instance must be listening on a socket which you can specify with
---socket and have the `remote-execution-p' browser slot to non-nil.")
-      (:name :electron-opts
-       :long "electron-opts"
-       :arg-parser #'identity
-       :description "Command-line options to pass to Electron"))))
+--socket and have the `remote-execution-p' browser slot to non-nil."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (eval-always (define-opts))

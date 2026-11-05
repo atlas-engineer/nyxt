@@ -298,11 +298,6 @@
                (:file "buffer"))
   :test-suite-args (:package :nyxt/tests/renderer))
 
-(defsystem "nyxt/electron"
-  :depends-on (nyxt cl-electron)
-  :pathname #p"NYXT:source;renderer;"
-  :components ((:file "electron")))
-
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to
 ;; know the name of the output.  But ASDF/SYSTEM::COMPONENT-BUILD-PATHNAME is
@@ -328,19 +323,11 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/electron-application"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (nyxt/electron)
-  :build-operation "program-op"
-  :build-pathname "nyxt"
-  :entry-point "nyxt:entry-point")
-
 (defsystem "nyxt/integration"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/electron lisp-unit2)
-  :description "Browse through the Electron UI: prompts, pages, and status."
+  :depends-on (nyxt/cef lisp-unit2)
+  :description "Browse through the UI: prompts, pages, and status."
   :pathname #p"NYXT:tests;integration;"
   :serial t
   :components ((:file "package")

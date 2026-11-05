@@ -52,7 +52,6 @@ cl-cookie, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f
 cl-cookie-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cookie/cl-cookie-test.asd
 cl-custom-hash-table, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-custom-hash-table/cl-custom-hash-table.asd
 cl-custom-hash-table-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-custom-hash-table/cl-custom-hash-table-test.asd
-cl-electron, git+https://github.com/atlas-engineer/cl-electron@eabe1ea01320b136cb0664851d3c8196fd881c60#ref=eabe1ea01320b136cb0664851d3c8196fd881c60, cl-electron-eabe1ea/cl-electron.asd
 cl-gobject-introspection, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gobject-introspection/cl-gobject-introspection.asd
 cl-gobject-introspection-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gobject-introspection/cl-gobject-introspection-test.asd
 cl-gopher, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gopher/cl-gopher.asd

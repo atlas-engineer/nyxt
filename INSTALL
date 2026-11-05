@@ -14,7 +14,7 @@ Lisp dependencies are pinned in ocicl.csv and fetched by Ocicl into ./ocicl
 (not committed).  Make runs `ocicl install` before compiling.  Systems the OCI
 registry does not publish are pinned in ocicl.csv as Git repositories.
 
-NYXT_RENDERER sets the renderer, by default "electron".
+NYXT_RENDERER sets the renderer, by default "cef". WebKitGTK remains available as "gtk" or "gi-gtk".
 
 NYXT_VERSION forces the version number, in the rare eventuality that it can't be
 fetched in another way.

@@ -53,7 +53,7 @@ if [ -z "${CEF_ROOT:-}" ]; then
     CEF_ROOT="$work/$name"
 fi
 
-make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" NODE_SETUP=false nyxt
+make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" nyxt
 
 stage="$work/stage"
 rm -rf "$stage"

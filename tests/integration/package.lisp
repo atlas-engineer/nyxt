@@ -4,8 +4,8 @@
 (nyxt:define-package :nyxt/tests/integration
   (:use :lisp-unit2)
   (:documentation "Integration tests that browse through Nyxt's own UI.
-The suite starts the Electron renderer and drives the prompt buffer, the page,
-and the status bar. It is separate from the unit tests in :nyxt/tests."))
+The suite starts Nyxt and drives the prompt buffer, the page, and the status
+bar. It is separate from the unit tests in :nyxt/tests."))
 
 #+sb-package-locks
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -25,9 +25,13 @@ Truenamed so it still matches paths after Nyxt resolves symlinks.")
 (defvar *socket-path*
   (namestring (uiop:merge-pathnames* "nyxt.socket" *data-directory*)))
 
-(defvar *electron-data-directory*
-  (namestring (ensure-directories-exist
-               (uiop:merge-pathnames* #p"electron/" *data-directory*))))
+(defvar *cache-directory*
+  (namestring
+   (ensure-directories-exist
+    (uiop:merge-pathnames* #p"cache/" *data-directory*)))
+  "Private renderer cache so the suite does not open the user's browser profile.")
+
+(setf (uiop:getenv "XDG_CACHE_HOME") *cache-directory*)
 
 (defmethod files:resolve ((profile nyxt:nyxt-profile) (file nyxt:history-file))
   (uiop:merge-pathnames* #p"history.lisp" *data-directory*))

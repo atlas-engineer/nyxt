@@ -41,7 +41,7 @@ if [ -z "${CEF_ROOT:-}" ]; then
     CEF_ROOT="$root/build/appimage/$name"
 fi
 
-make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" NODE_SETUP=false nyxt
+make NYXT_RENDERER=cef CEF_ROOT="$CEF_ROOT" nyxt
 
 stage="$root/build/appimage/AppDir"
 rm -rf "$stage"
