@@ -788,16 +788,6 @@ if (exclude.some(match)) return;
     (cef:remove-user-script (cef:web-contents buffer) (script-id script))
     (setf (script-id script) nil)))
 
-(defmethod ffi-buffer-javascript-enabled-p ((buffer cef-buffer))
-  (cef:javascript-enabled-p (cef:web-contents buffer)))
-(defmethod (setf ffi-buffer-javascript-enabled-p) (value (buffer cef-buffer))
-  (cef:set-javascript-enabled (cef:web-contents buffer) value))
-
-(defmethod ffi-buffer-javascript-markup-enabled-p ((buffer cef-buffer))
-  (ffi-buffer-javascript-enabled-p buffer))
-(defmethod (setf ffi-buffer-javascript-markup-enabled-p) (value (buffer cef-buffer))
-  (setf (ffi-buffer-javascript-enabled-p buffer) value))
-
 (defmethod ffi-buffer-smooth-scrolling-enabled-p ((buffer cef-buffer))
   (smooth-scrolling-p buffer))
 (defmethod (setf ffi-buffer-smooth-scrolling-enabled-p) (value (buffer cef-buffer))

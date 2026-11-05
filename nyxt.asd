@@ -172,7 +172,6 @@
                  (:file "vi")
                  (:file "blocker")
                  (:file "no-image")
-                 (:file "no-script")
                  (:file "user-script"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
@@ -222,7 +221,6 @@
                  (:file "keyscheme")
                  (:file "message")
                  (:file "no-image")
-                 (:file "no-script")
                  (:file "no-sound")
                  (:file "passthrough")
                  (:file "password")

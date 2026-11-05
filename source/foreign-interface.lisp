@@ -198,14 +198,6 @@ See `scheme'."))
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
   (:documentation "Remove the SCRIPT installed with `ffi-buffer-add-user-script'."))
 
-(define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when JavaScript is enabled in BUFFER.
-Setf-able."))
-(define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when JavaScript can mutate the BUFFER' contents.
-Setf-able."))
 (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
   (:setter-p t)
   (:documentation "Return non-nil when smooth scrolling is enabled in BUFFER.

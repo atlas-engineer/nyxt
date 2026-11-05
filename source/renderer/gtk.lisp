@@ -1532,8 +1532,6 @@ with this scheme.")
                 (webkit:webkit-web-view-get-settings (gtk-object buffer)))
                value)))))
 
-(define-ffi-settings-accessor javascript-enabled-p webkit:webkit-settings-enable-javascript)
-(define-ffi-settings-accessor javascript-markup-enabled-p webkit:webkit-settings-enable-javascript-markup)
 (define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
 (define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
 (define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
