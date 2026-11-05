@@ -1541,10 +1541,118 @@ with this scheme.")
 (defmethod ffi-buffer-blocked-hosts ((buffer gtk-buffer))
   (blocked-hosts buffer))
 
+(defvar *blocked-host-filter-store* nil)
+
+(defun blocked-host-filter-store ()
+  (or *blocked-host-filter-store*
+      (setf *blocked-host-filter-store*
+            (webkit:webkit-user-content-filter-store-new
+             (uiop:native-namestring
+              (ensure-directories-exist
+               (uiop:merge-pathnames* #p"nyxt/blocked-hosts/"
+                                      (uiop:xdg-cache-home))))))))
+
+(defun json-string (string)
+  (with-output-to-string (out)
+    (write-char #\" out)
+    (loop for char across string
+          do (case char
+               (#\\ (write-string "\\\\" out))
+               (#\" (write-string "\\\"" out))
+               (otherwise (write-char char out))))
+    (write-char #\" out)))
+
+(defun host-url-filter (host)
+  "Return a WebKit url-filter that matches HOST and nothing under another name.
+WebKit's filter language accepts a restricted regular expression."
+  (if (find #\: host)
+      (format nil "^https?://\\[~a\\]" (ppcre:quote-meta-chars host))
+      (format nil "^https?://~a[:/]" (ppcre:quote-meta-chars host))))
+
+(defun blocked-host-rules (hosts)
+  (with-output-to-string (out)
+    (write-char #\[ out)
+    (loop for host in hosts
+          for first = t then nil
+          do (unless first
+               (write-char #\, out))
+             (format out "{\"trigger\":{\"url-filter\":~a,\"url-filter-is-case-sensitive\":false},\"action\":{\"type\":\"block\"}}"
+                     (json-string (host-url-filter host))))
+    (write-char #\] out)))
+
+(defun blocked-host-filter-identifier (buffer)
+  (format nil "nyxt-blocked-hosts-~a" (id buffer)))
+
+(defstruct blocked-host-filter-save
+  channel
+  buffer
+  identifier
+  store)
+
+(defvar *blocked-host-filter-saves* (make-hash-table))
+(defvar *blocked-host-filter-save-id* 0)
+
+(cffi:defcallback blocked-host-filter-saved :void
+    ((source :pointer) (result :pointer) (user-data :pointer))
+  (declare (ignore source))
+  (let* ((id (cffi:pointer-address user-data))
+         (save (gethash id *blocked-host-filter-saves*)))
+    (remhash id *blocked-host-filter-saves*)
+    (when save
+      (lparallel.queue:push-queue
+       (handler-case
+           (let ((filter (webkit:webkit-user-content-filter-store-save-finish
+                          (blocked-host-filter-save-store save)
+                          result))
+                 (manager (webkit:webkit-web-view-get-user-content-manager
+                           (gtk-object (blocked-host-filter-save-buffer save)))))
+             (webkit:webkit-user-content-manager-remove-filter-by-id
+              manager (blocked-host-filter-save-identifier save))
+             (webkit:webkit-user-content-manager-add-filter manager filter)
+             (webkit:webkit-user-content-filter-unref filter)
+             t)
+         (error (condition) condition))
+       (blocked-host-filter-save-channel save)))))
+
+(defun clear-blocked-host-filter (buffer)
+  (when (gtk-object buffer)
+    (within-gtk-thread
+      (webkit:webkit-user-content-manager-remove-filter-by-id
+       (webkit:webkit-web-view-get-user-content-manager (gtk-object buffer))
+       (blocked-host-filter-identifier buffer)))))
+
+(defun install-blocked-host-filter (buffer hosts)
+  (let* ((identifier (blocked-host-filter-identifier buffer))
+         (octets (babel:string-to-octets (blocked-host-rules hosts) :encoding :utf-8))
+         (channel (nyxt::make-channel 1))
+         (save-id (incf *blocked-host-filter-save-id*))
+         (save (make-blocked-host-filter-save :channel channel
+                                              :buffer buffer
+                                              :identifier identifier)))
+    (setf (gethash save-id *blocked-host-filter-saves*) save)
+    (within-gtk-thread
+      (let ((bytes (cffi:with-pointer-to-vector-data (data octets)
+                     (webkit::g-bytes-new data (length octets)))))
+        (setf (blocked-host-filter-save-store save) (blocked-host-filter-store))
+        (webkit:webkit-user-content-filter-store-save
+         (blocked-host-filter-save-store save)
+         identifier
+         bytes
+         (cffi:null-pointer)
+         (cffi:callback blocked-host-filter-saved)
+         (cffi:make-pointer save-id))
+        (cffi:foreign-funcall "g_bytes_unref" :pointer bytes :void)))
+    (let ((result (lparallel.queue:pop-queue channel)))
+      (when (typep result 'error)
+        (error result)))))
+
 (defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer gtk-buffer))
   (setf (blocked-hosts buffer) hosts
         (blocked-host-set buffer) (when hosts
                                     (blocked-host-table hosts)))
+  (if hosts
+      (install-blocked-host-filter buffer hosts)
+      (clear-blocked-host-filter buffer))
   hosts)
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
