@@ -108,7 +108,15 @@ disconnect the signal handler when the object is finalized.")
     nil
     :documentation "Whether permission requests are handled.
 When non-nil, they are handled by `process-permission-request'.  Otherwise, all
-requests are denied."))
+requests are denied.")
+   (blocked-hosts
+    nil
+    :export nil
+    :documentation "Normalized host names this buffer refuses to load.")
+   (blocked-host-set
+    nil
+    :export nil
+    :documentation "Equal table of `blocked-hosts' for an exact match."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -764,6 +772,7 @@ with this scheme.")
   t)
 
 (define-ffi-method on-signal-decide-policy ((buffer gtk-buffer) response-policy-decision policy-decision-type-response)
+  (block nil
   (let ((is-known-type t) (event-type :other) (modifiers ())
         is-new-window navigation-action navigation-type
         mouse-button url request mime-type method request-headers response-headers
@@ -813,6 +822,9 @@ with this scheme.")
             (input-modifier-translator buffer
                                  (webkit:webkit-navigation-action-get-modifiers navigation-action))))
     (setf url (quri:uri (webkit:webkit-uri-request-uri request)))
+    (when (host-blocked-p (blocked-host-set buffer) (quri:uri-host url))
+      (webkit:webkit-policy-decision-ignore response-policy-decision)
+      (return nil))
     (setf request-headers
           (let ((headers (webkit:webkit-uri-request-get-http-headers request)))
             (unless (cffi:null-pointer-p headers)
@@ -894,7 +906,7 @@ with this scheme.")
         (log:info "Cannot redirect to ~a in an iframe, forwarding to the original URL (~a)."
                   (render-url (url request-data))
                   (webkit:webkit-uri-request-uri request))
-        (webkit:webkit-policy-decision-use response-policy-decision))))))
+        (webkit:webkit-policy-decision-use response-policy-decision)))))))
 
 ;; See https://webkitgtk.org/reference/webkit2gtk/stable/WebKitWebView.html#WebKitLoadEvent
 (defmethod on-signal-load-changed ((buffer gtk-buffer) load-event)
@@ -1179,6 +1191,9 @@ with this scheme.")
   (connect-signal-function buffer "decide-policy" (make-decide-policy-handler buffer))
   (connect-signal buffer "resource-load-started" nil (web-view resource request)
     (declare (ignore web-view))
+    (when (request-blocked-p (blocked-host-set buffer)
+                             (webkit:webkit-uri-request-get-uri request))
+      (webkit:webkit-uri-request-set-uri request "data:,"))
     (let* ((response (webkit:webkit-web-resource-response resource))
            (request-data (make-instance
                           'request-data
@@ -1522,6 +1537,15 @@ with this scheme.")
 (define-ffi-settings-accessor smooth-scrolling-enabled-p webkit:webkit-settings-enable-smooth-scrolling)
 (define-ffi-settings-accessor media-enabled-p webkit:webkit-settings-enable-media)
 (define-ffi-settings-accessor auto-load-image-enabled-p webkit:webkit-settings-auto-load-images)
+
+(defmethod ffi-buffer-blocked-hosts ((buffer gtk-buffer))
+  (blocked-hosts buffer))
+
+(defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer gtk-buffer))
+  (setf (blocked-hosts buffer) hosts
+        (blocked-host-set buffer) (when hosts
+                                    (blocked-host-table hosts)))
+  hosts)
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer gtk-buffer))
   (not (webkit:webkit-web-view-get-is-muted (gtk-object buffer))))

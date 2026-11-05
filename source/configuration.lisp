@@ -302,11 +302,10 @@ Example:
 \(define-configuration web-buffer
   ((default-modes (pushnew 'nyxt/mode/no-sound:no-sound-mode %slot-value%))))
 
-Example to get the `blocker-mode' command to use a new default hostlists:
+Example to block one more host:
 
 \(define-configuration nyxt/mode/blocker:blocker-mode
-  ((nyxt/mode/blocker:hostlists (append (list *my-blocked-hosts*) %slot-default%)
-                                :doc \"You have to define *my-blocked-hosts* first.\")))
+  ((nyxt/mode/blocker:hosts (append '(\"ads.example\") %slot-default%))))
 
 To discover the default value of a slot or all slots of a class, use the
 `describe-slot' or `describe-class' commands, respectively."

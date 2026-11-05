@@ -407,7 +407,11 @@ the default height.")
     :documentation "Remembered smooth-scrolling setting. CEF has no matching preference.")
    (media-enabled-p
     t
-    :documentation "Remembered media setting. CEF has no matching preference."))
+    :documentation "Remembered media setting. CEF has no matching preference.")
+   (blocked-hosts
+    nil
+    :export nil
+    :documentation "Normalized host names this buffer refuses to load."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -808,6 +812,14 @@ if (exclude.some(match)) return;
   (cef:images-enabled-p (cef:web-contents buffer)))
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer cef-buffer))
   (cef:set-images-enabled (cef:web-contents buffer) value))
+
+(defmethod ffi-buffer-blocked-hosts ((buffer cef-buffer))
+  (blocked-hosts buffer))
+(defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer cef-buffer))
+  (setf (blocked-hosts buffer) hosts)
+  (when-let ((contents (cef:web-contents buffer)))
+    (cef:set-blocked-hosts contents (format nil "~{~a~^~%~}" hosts)))
+  hosts)
 
 (defmethod ffi-buffer-cookie-policy ((buffer cef-buffer))
   (cef:cookie-policy (cef:web-contents buffer)))
