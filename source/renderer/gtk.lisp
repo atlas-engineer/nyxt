@@ -1743,9 +1743,13 @@ WebKit's filter language accepts a restricted regular expression."
 (define-ffi-method ffi-buffer-zoom-ratio ((buffer gtk-buffer))
   (webkit:webkit-web-view-zoom-level (gtk-object buffer)))
 (define-ffi-method (setf ffi-buffer-zoom-ratio) (value (buffer gtk-buffer))
-  (if (and (floatp value) (plusp value))
-      (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value)
-      (echo-warning "Zoom ratio must be a positive floating point number.")))
+  (cond
+    ((and (floatp value) (plusp value))
+     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) value))
+    ((and (floatp value) (zerop value))
+     (setf (webkit:webkit-web-view-zoom-level (gtk-object buffer)) 1.0))
+    (t
+     (echo-warning "Zoom ratio must be a non-negative floating point number."))))
 
 (define-ffi-method ffi-inspector-show ((buffer gtk-buffer))
   (webkit:webkit-web-inspector-show

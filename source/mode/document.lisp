@@ -11,8 +11,7 @@ This is typically for HTML pages, but other formats could be supported too.
 It does not assume being online.
 
 Important pieces of functionality are:
-- Page scrolling and zooming. A zoom level is remembered for each host, as in
-Firefox, and reused for every page on that host.
+- Page scrolling and zooming.
 - QR code generation.
 - Page source.
 - Buffer content summarization.
@@ -173,16 +172,6 @@ Only includes the strings that were pasted/copied inside Nyxt."))
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
 
-(defmethod nyxt:on-signal-load-finished ((mode document-mode) url title)
-  (declare (ignore title))
-  (with-slots (buffer) mode
-    ;; The renderer resets zoom when a page loads. A host gets the ratio
-    ;; remembered for it, or the buffer default. Other URLs keep the zoom
-    ;; already set on this buffer.
-    (setf (ffi-buffer-zoom-ratio buffer)
-          (zoom-ratio-for-url url buffer)))
-  url)
-
 (define-internal-page show-url-qrcode (&key url)
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
@@ -319,49 +308,21 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
-(defun apply-host-zoom (buffer zoom)
-  "Set ZOOM on BUFFER and on every other page open on the same host.
-When the page has a host, remember ZOOM for later pages on that host."
-  (if (and (realp zoom) (plusp zoom))
-      (let* ((zoom (float zoom 1.0))
-             (host (zoom-host (url buffer))))
-        (when host
-          (remember-zoom (url buffer) zoom))
-        (dolist (other (if host
-                           (adjoin buffer (buffers-on-host host))
-                           (list buffer)))
-          (setf (ffi-buffer-zoom-ratio other) zoom)))
-      (setf (ffi-buffer-zoom-ratio buffer) zoom)))
-
 (define-command zoom-page (&key (buffer (current-buffer)))
-  "Zoom in the current page.
-The new ratio is remembered for this host and applied to every open page on
-it. Later pages on the host use the same ratio."
-  (apply-host-zoom buffer
-                   (+ (ffi-buffer-zoom-ratio buffer)
-                      (zoom-ratio-step buffer))))
+  "Zoom in the current page."
+  (setf (ffi-buffer-zoom-ratio buffer)
+        (+ (ffi-buffer-zoom-ratio buffer)
+           (zoom-ratio-step buffer))))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
-  "Zoom out the current page.
-The new ratio is remembered for this host and applied to every open page on
-it. Later pages on the host use the same ratio."
-  (apply-host-zoom buffer
-                   (- (ffi-buffer-zoom-ratio buffer)
-                      (zoom-ratio-step buffer))))
+  "Zoom out the current page."
+  (setf (ffi-buffer-zoom-ratio buffer)
+        (- (ffi-buffer-zoom-ratio buffer)
+           (zoom-ratio-step buffer))))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer)))
-  "Reset this host to the default zoom.
-The remembered ratio is forgotten, so later pages use `zoom-ratio-default'.
-Other hosts are left unchanged."
-  ;; Delete `zoom-ratio-default' slot when we are able to get the initform of a
-  ;; slot set by `define-configuration'.
-  (let ((host (zoom-host (url buffer))))
-    (when host
-      (remember-zoom (url buffer) nil))
-    (dolist (other (if host
-                       (adjoin buffer (buffers-on-host host))
-                       (list buffer)))
-      (setf (ffi-buffer-zoom-ratio other) (zoom-ratio-default other)))))
+  "Reset the current page zoom to 0."
+  (setf (ffi-buffer-zoom-ratio buffer) 0.0))
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")

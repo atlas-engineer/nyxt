@@ -596,10 +596,8 @@ view before those threads run, and a call into the missing view has no method."
 
 (defmethod (setf ffi-buffer-zoom-ratio) (value (buffer cef-buffer))
   (cond
-    ((not (and (floatp value) (plusp value)))
-     (echo-warning "Zoom ratio must be a positive floating point number."))
-    ;; `document-mode' applies the zoom from `on-signal-load-finished'. That
-    ;; thread can still be running after delete has cleared the view.
+    ((not (and (floatp value) (or (zerop value) (plusp value))))
+     (echo-warning "Zoom ratio must be a non-negative floating point number."))
     (t
      (when-let ((contents (cef:web-contents buffer)))
        (cef:set-zoom-factor contents value)))))

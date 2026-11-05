@@ -604,17 +604,11 @@ buffer.")
     :reader t
     :export t
     :documentation "The current zoom ratio as per `ffi-buffer-zoom-ratio'.
-It is an implementation detail and must not be set by the user. For the
-user-facing default, see `zoom-ratio-default'. The ratio remembered for a
-host lives in the browser's `zoom-ratios'.")
+It is an implementation detail and must not be set by the user.")
    (zoom-ratio-step
     0.1
     :type float
     :documentation "The step size for zooming in and out.")
-   (zoom-ratio-default
-    1.0
-    :type float
-    :documentation "The default zoom ratio.")
    (page-scroll-ratio
     0.90
     :type float

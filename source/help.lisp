@@ -349,24 +349,6 @@ to the next."
                                :form '(define-configuration (web-buffer)
                                        ((default-modes (pushnew 'nyxt/mode/style:dark-mode
                                                                 %slot-value%)))))))))
-                     (:tr
-                      (:td :class "setting"
-                           (:span :class "name" "Zoom")
-                           (:span :class "detail" "Used when a site has no saved zoom."))
-                      (:td :class "control"
-                           (:nselect
-                            :id "default-zoom-ratio"
-                            :buffer buffer
-                            :default (format nil "~d%"
-                                             (round (* 100 (zoom-ratio-default (current-buffer)))))
-                            (loop for number in '(30 50 67 80 90 100
-                                                  110 120 133 150 170
-                                                  200 240 300 400 500)
-                                  collect `((,number ,(format nil "~a%" number))
-                                            (nyxt::auto-configure
-                                             :class-name 'document-buffer
-                                             :slot 'zoom-ratio-default
-                                             :slot-value ,(/ number 100.0)))))))
                      (:tr :class "group"
                           (:th :colspan 2 :scope "rowgroup" "Buffers"))
                      (:tr
@@ -621,8 +603,8 @@ The value is saved to clipboard."
                      "Detailed Nyxt documentation, including configuration guides."
                      (nyxt-url 'manual))
            (page-row "Settings"
-                     "Shortcuts, homepage, and zoom"
-                     "Set keyboard shortcuts, the homepage URL, or zoom."
+                     "Shortcuts and homepage"
+                     "Set keyboard shortcuts or the homepage URL."
                      (nyxt-url 'common-settings))
            (page-row "Keyboard shortcuts"
                      "Bindings for this buffer"
