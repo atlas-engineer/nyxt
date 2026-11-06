@@ -46,6 +46,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-`" 'switch-buffer-last
        "C-pageup" 'switch-buffer-previous
        "C-w" 'delete-current-buffer
+       "M-t" 'nyxt/mode/terminal:terminal
        "C-n" 'make-window
        "C-W" 'delete-current-window
        "M-w" 'delete-window
@@ -67,6 +68,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-x k" 'delete-buffer
        "C-x C-k" 'delete-current-buffer
        "C-x C-b" 'nyxt/mode/buffer-listing::list-buffers
+       "C-x t" 'nyxt/mode/terminal:terminal
        "C-M-l" 'copy-url
        "C-M-t" 'copy-title
        "C-h t" 'tutorial
@@ -109,6 +111,7 @@ This mode is a good candidate to be passed to `make-buffer'."
        "d" 'delete-buffer
        "D" 'delete-current-buffer
        "B" 'make-buffer-focus
+       "T" 'nyxt/mode/terminal:terminal
        "W" 'make-window
        "C-w C-w" 'make-window
        "C-w q" 'delete-current-window

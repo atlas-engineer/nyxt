@@ -18,3 +18,16 @@
            (nyxt/mode/terminal:toggle-terminal-keys buffer)
            (assert-true (forward-input-events-p buffer)))
       (disable-modes* 'nyxt/mode/terminal:terminal-mode buffer))))
+
+(define-test terminal-open-bindings ()
+  (let* ((buffer (make-instance 'input-and-modable-buffer))
+         (base (make-instance 'base-mode :buffer buffer)))
+    (flet ((binding (keyscheme keyspec)
+             (setf (keyscheme buffer) keyscheme)
+             (keymaps:lookup-key keyspec (keymap base))))
+      (assert-eq 'nyxt/mode/terminal:terminal
+                 (binding keyscheme:emacs "C-x t"))
+      (assert-eq 'nyxt/mode/terminal:terminal
+                 (binding keyscheme:cua "M-t"))
+      (assert-eq 'nyxt/mode/terminal:terminal
+                 (binding keyscheme:vi-normal "T")))))

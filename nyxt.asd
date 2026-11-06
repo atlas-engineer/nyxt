@@ -139,7 +139,8 @@
                  (:file "hint-prompt-buffer" :depends-on ("prompt-buffer"))
                  (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "download" :depends-on ("file-manager"))))
-               (:file "mode/base" :depends-on ("Core modes"))
+               (:file "mode/terminal" :depends-on ("Core modes"))
+               (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
                (:file "status" :depends-on ("Core"))
                (:module "Help"
                 :pathname ""
@@ -169,7 +170,6 @@
                  (:file "repeat")
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
-                 (:file "terminal")
                  (:file "visual")
                  (:file "vi")
                  (:file "blocker")
