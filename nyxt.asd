@@ -140,7 +140,8 @@
                  (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/terminal" :depends-on ("Core modes"))
-               (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
+               (:file "mode/editor" :depends-on ("Core modes"))
+               (:file "mode/base" :depends-on ("Core modes" "mode/terminal" "mode/editor"))
                (:file "status" :depends-on ("Core"))
                (:module "Help"
                 :pathname ""
@@ -238,6 +239,7 @@
                  (:file "spell-check")
                  (:file "style")
                  (:file "terminal")
+                 (:file "editor")
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.

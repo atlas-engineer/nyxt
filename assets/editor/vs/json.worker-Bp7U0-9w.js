@@ -1,0 +1,1 @@
+define("vs/json.worker-Bp7U0-9w", ["require", "exports"], (function(require, r){"use strict";const e=""+new URL(require.toUrl("./assets/json.worker-Csf_TLih.js"),document.baseURI).href;r.__worker_url_0__=e}));

@@ -1,0 +1,1 @@
+define("vs/html.worker-C1TNvQ72", ["require", "exports"], (function(require, r){"use strict";const e=""+new URL(require.toUrl("./assets/html.worker-CLuInTTy.js"),document.baseURI).href;r.__worker_url_0__=e}));

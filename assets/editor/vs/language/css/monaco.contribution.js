@@ -1,0 +1,1 @@
+define("vs/language/css/monaco.contribution",["exports","../../monaco.contribution-C7tY_xnl"],(function(s,l){"use strict";s.cssDefaults=l.cssDefaults,s.lessDefaults=l.lessDefaults,s.scssDefaults=l.scssDefaults,Object.defineProperty(s,Symbol.toStringTag,{value:"Module"})}));
