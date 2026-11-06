@@ -218,6 +218,31 @@ Helper bundles are named after the nyxt executable."
           (setf (cef:locales-dir-path interface) locales)))))
   nil)
 
+(-> css-color-argb (string) (unsigned-byte 32))
+(defun css-color-argb (color)
+  "Return COLOR as an opaque ARGB integer, or 0 when COLOR cannot be read."
+  (let ((rgb (ignore-errors (cl-colors-ng:as-rgb color))))
+    (if rgb
+        (logior #xff000000
+                (ash (round (* 255 (cl-colors-ng:rgb-red rgb))) 16)
+                (ash (round (* 255 (cl-colors-ng:rgb-green rgb))) 8)
+                (round (* 255 (cl-colors-ng:rgb-blue rgb))))
+        0)))
+
+(-> canvas-color (t) (unsigned-byte 32))
+(defun canvas-color (buffer)
+  "Return the color shown before BUFFER's document paints.
+A web buffer with `nyxt/mode/style:dark-mode' uses #222222, which is the color
+that mode paints. Every other buffer uses the theme background."
+  (if (and *browser* (theme *browser*))
+      (css-color-argb
+       (if (and (web-buffer-p buffer)
+                (find "DARK-MODE" (default-modes buffer)
+                      :key #'symbol-name :test #'string=))
+           "#222222"
+           (theme:background-color (theme *browser*))))
+      0))
+
 (-> cef-download-directory () (values pathname &optional))
 (defun cef-download-directory ()
   "Return the directory downloaded files are written to.
@@ -266,6 +291,9 @@ This is the expanded `download-directory'."
     (cef:set-window-class "nyxt")
     (install-window-icon)
     (configure-web-extensions browser interface)
+    (when-let ((color (canvas-color browser)))
+      (when (plusp color)
+        (cef:set-default-background-color color)))
     (cef:launch interface)
     (when (adblocking-enabled-p browser)
       (cef:default-block (make-instance 'cef:adblocker)))
@@ -425,12 +453,25 @@ the default height.")
 
 (defvar *defer-native-view-p* nil
   "When non-nil, initializing a `cef:view' does not create a native browser.
-A prompt buffer shares the window's prompt view, so it must not build one.")
+A prompt buffer shares the window's prompt view, so it must not build one.
+A web buffer waits until `default-modes' is configured, so its canvas color
+can follow a dark theme or `nyxt/mode/style:dark-mode'.")
+
+(-> defer-native-view-p (cef-buffer list) boolean)
+(defun defer-native-view-p (buffer initargs)
+  "Whether BUFFER's browser is created after its modes are configured.
+A prompt adopts the window's view. A web buffer's canvas color depends on
+`default-modes', which configuration sets after initialization."
+  (or (web-buffer-p buffer)
+      (and (prompt-buffer-p buffer)
+           (getf initargs :window)
+           t)))
 
 (defmethod initialize-instance :after ((view cef:view) &key (url "about:blank"))
   "Create VIEW's browser unless one is already attached or creation is deferred."
   (unless (or *defer-native-view-p* (cef:web-contents view))
-    (cef:ensure-view view :url (or url "about:blank"))))
+    (cef:ensure-view view :url (or url "about:blank")
+                         :background-color (canvas-color view))))
 
 (defmethod initialize-instance :around ((buffer cef-buffer) &rest initargs &key &allow-other-keys)
   ;; Every view is Alloy. A Chrome window hosts one Chrome BrowserView and
@@ -440,14 +481,12 @@ A prompt buffer shares the window's prompt view, so it must not build one.")
   ;; and a panel on the shared context renders at that zoom.
   ;; `cef:view' initialization runs before a subclass :after method, so a
   ;; prompt defers that browser and adopts the window's view afterwards.
-  (let ((*defer-native-view-p* (and (prompt-buffer-p buffer)
-                                    (getf initargs :window)
-                                    t)))
+  (let ((*defer-native-view-p* (defer-native-view-p buffer initargs)))
     (prog1 (apply #'call-next-method buffer
                   :alloy-p t
                   :isolated-context-p (panel-buffer-p buffer)
                   initargs)
-      (when *defer-native-view-p*
+      (when (and *defer-native-view-p* (prompt-buffer-p buffer))
         (adopt-prompt-view buffer)))))
 
 (defmethod customize-instance :after ((buffer cef-buffer) &key &allow-other-keys)
@@ -574,7 +613,7 @@ view before those threads run, and a call into the missing view has no method."
                       (not (url-empty-p (url buffer))))
                  (render-url (url buffer))
                  "about:blank")))
-    (cef:ensure-view buffer :url url))
+    (cef:ensure-view buffer :url url :background-color (canvas-color buffer)))
   (unless (listeners-p buffer)
     (initialize-listeners buffer)
     (initialize-window-open-handler buffer)
