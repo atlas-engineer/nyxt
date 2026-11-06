@@ -69,6 +69,15 @@ prompt buffer keymaps."
   (echo-dismiss)
   (run-async function))
 
+(defun consume-unbound-editor-key-p (buffer)
+  "Whether BUFFER should drop a key the editor does not bind.
+VI normal mode treats that key as a no-op. Forwarding it would insert it."
+  (and (input-buffer-p buffer)
+       (eq (keyscheme buffer) keyscheme:vi-normal)
+       (some (lambda (mode)
+               (string= (symbol-name (sera:class-name-of mode)) "EDITOR-MODE"))
+             (enabled-modes buffer))))
+
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer)
   "Dispatch keys in BUFFER `key-stack'.
@@ -128,9 +137,11 @@ Return nil to forward to renderer or non-nil otherwise."
                    (setf key-stack nil))))
              t))
           (t
-           (log:debug "Fallback forward key ~s." (keyspecs key-stack))
-           (setf key-stack nil)
-           nil))))))
+           (let ((consume (consume-unbound-editor-key-p buffer)))
+             (unless consume
+               (log:debug "Fallback forward key ~s." (keyspecs key-stack)))
+             (setf key-stack nil)
+             consume)))))))
 
 (defmethod ffi-focus-buffer :after (buffer)
   (when-let ((window (ignore-errors (window buffer))))

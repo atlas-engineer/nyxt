@@ -14,6 +14,18 @@ C-M-z runs `toggle-editor-keys'."))
 (alex:define-constant +asset-root+ "nyxt-editor://asset/vs" :test #'equal
   :documentation "URL prefix of the vendored Monaco files.")
 
+(defvar *editor-asset-directory*
+  #.(let ((here (or *compile-file-truename* *load-truename*)))
+      (when here
+        (uiop:ensure-directory-pathname
+         (uiop:merge-pathnames*
+          #p"../../assets/editor/"
+          (uiop:pathname-directory-pathname here)))))
+  "Directory of the editor's boot script and Monaco files.
+Recorded from this file's location. The running image's ASDF system can point
+at a different Nyxt tree, such as the ocicl checkout, which does not have these
+files.")
+
 (defun js-string (value)
   "Return VALUE as a JavaScript string literal."
   (with-output-to-string (stream)
@@ -56,8 +68,7 @@ Monaco rejects named colors such as \"black\"."
 (defun editor-script (buffer)
   "Return the script that builds the editor for BUFFER."
   (let* ((theme (theme *browser*))
-         (template (alex:read-file-into-string
-                    (asdf:system-relative-pathname :nyxt "assets/editor/boot.js"))))
+         (template (alex:read-file-into-string (editor-boot-path))))
     (substitute-template
      template
      `(("__BUFFER_ID__" . ,(princ-to-string (id buffer)))
@@ -73,8 +84,11 @@ Monaco rejects named colors such as \"black\"."
 
 (defun install-editor-ui (mode)
   "Load Monaco into MODE's buffer."
-  (let ((buffer (buffer mode)))
-    (ffi-buffer-evaluate-javascript-async buffer (editor-script buffer))))
+  (handler-case
+      (ffi-buffer-evaluate-javascript-async
+       (buffer mode) (editor-script (buffer mode)))
+    (error (condition)
+      (echo-warning "Editor failed to load: ~a" condition))))
 
 (defun base64-pad (text)
   (let ((remainder (mod (length text) 4)))
@@ -118,8 +132,18 @@ Monaco rejects named colors such as \"black\"."
 
 (defun editor-asset-root ()
   "Return the directory of vendored editor files."
-  (uiop:ensure-directory-pathname
-   (asdf:system-relative-pathname :nyxt "assets/editor/")))
+  (or (and *editor-asset-directory*
+           (uiop:directory-exists-p *editor-asset-directory*)
+           *editor-asset-directory*)
+      (uiop:ensure-directory-pathname
+       (asdf:system-relative-pathname :nyxt "assets/editor/"))))
+
+(defun editor-boot-path ()
+  "Return the path of the editor page script."
+  (let ((path (uiop:merge-pathnames* #p"boot.js" (editor-asset-root))))
+    (unless (uiop:file-exists-p path)
+      (error "The editor script ~a does not exist." path))
+    path))
 
 (-> safe-relative-path-p (string) (values boolean &optional))
 (defun safe-relative-path-p (relative)
@@ -275,21 +299,205 @@ Signal an error when the file is too large or contains a null octet."
    :if-does-not-exist :create)
   pathname)
 
+(defun editor-action (action &optional (buffer (current-buffer)))
+  "Run the Monaco ACTION in BUFFER's editor."
+  (let ((mode (find-submode 'editor-mode buffer)))
+    (when mode
+      (ffi-buffer-evaluate-javascript-async
+       buffer
+       (format nil "window.nyxtEditor&&window.nyxtEditor.action(~a);"
+               (js-string action))))))
+
+(defun editor-actions (actions &optional (buffer (current-buffer)))
+  "Run Monaco ACTIONS in order in BUFFER's editor."
+  (let ((mode (find-submode 'editor-mode buffer)))
+    (when mode
+      (ffi-buffer-evaluate-javascript-async
+       buffer
+       (format nil "window.nyxtEditor&&window.nyxtEditor.actions([~{~a~^,~}]);"
+               (mapcar #'js-string actions))))))
+
+(defmacro define-editor-action (name action)
+  "Define a command NAME that runs the Monaco ACTION."
+  `(define-command ,name ()
+     ,(format nil "Run the Monaco action ~a." action)
+     (editor-action ,action)))
+
+(define-editor-action editor-move-left "cursorLeft")
+(define-editor-action editor-move-right "cursorRight")
+(define-editor-action editor-move-up "cursorUp")
+(define-editor-action editor-move-down "cursorDown")
+(define-editor-action editor-move-line-start "cursorLineStart")
+(define-editor-action editor-move-line-end "cursorLineEnd")
+(define-editor-action editor-move-word-left "cursorWordStartLeft")
+(define-editor-action editor-move-word-right "cursorWordStartRight")
+(define-editor-action editor-move-word-end "cursorWordEndRight")
+(define-editor-action editor-move-page-up "cursorPageUp")
+(define-editor-action editor-move-page-down "cursorPageDown")
+(define-editor-action editor-move-top "cursorTop")
+(define-editor-action editor-move-bottom "cursorBottom")
+(define-editor-action editor-select-left "cursorLeftSelect")
+(define-editor-action editor-select-right "cursorRightSelect")
+(define-editor-action editor-select-up "cursorUpSelect")
+(define-editor-action editor-select-down "cursorDownSelect")
+(define-editor-action editor-select-line-start "cursorLineStartSelect")
+(define-editor-action editor-select-line-end "cursorLineEndSelect")
+(define-editor-action editor-delete-left "deleteLeft")
+(define-editor-action editor-delete-right "deleteRight")
+(define-editor-action editor-delete-word-left "deleteWordLeft")
+(define-editor-action editor-delete-word-right "deleteWordRight")
+(define-editor-action editor-delete-to-line-end "deleteAllRight")
+(define-editor-action editor-delete-line "editor.action.deleteLines")
+(define-editor-action editor-select-all "editor.action.selectAll")
+(define-editor-action editor-cut "editor.action.clipboardCutAction")
+(define-editor-action editor-copy "editor.action.clipboardCopyAction")
+(define-editor-action editor-paste "editor.action.clipboardPasteAction")
+(define-editor-action editor-undo "undo")
+(define-editor-action editor-redo "redo")
+(define-editor-action editor-find "actions.find")
+(define-editor-action editor-replace "editor.action.startFindReplaceAction")
+(define-editor-action editor-cancel "cancelSelection")
+
+(define-command editor-yank-line ()
+  "Copy the current line."
+  (editor-actions '("expandLineSelection"
+                    "editor.action.clipboardCopyAction"
+                    "cancelSelection")))
+
+(defun vi-mode-symbol (name)
+  "Return the VI mode symbol NAME once that package is loaded."
+  (let ((package (find-package "NYXT/MODE/VI")))
+    (when package
+      (find-symbol name package))))
+
+(defun enter-vi-insert ()
+  "Switch BUFFER from VI normal mode to insert mode when that mode is active."
+  (let ((buffer (current-buffer))
+        (normal (vi-mode-symbol "VI-NORMAL-MODE"))
+        (insert (vi-mode-symbol "VI-INSERT-MODE")))
+    (when (and normal insert (find-submode normal buffer))
+      (enable-modes* insert buffer))))
+
+(define-command editor-append ()
+  "Move one character forward and enter insert mode."
+  (editor-action "cursorRight")
+  (enter-vi-insert))
+
+(define-command editor-append-line ()
+  "Move to the end of the line and enter insert mode."
+  (editor-action "cursorLineEnd")
+  (enter-vi-insert))
+
+(define-command editor-insert-line-start ()
+  "Move to the start of the line and enter insert mode."
+  (editor-action "cursorLineStart")
+  (enter-vi-insert))
+
+(define-command editor-open-line-below ()
+  "Open a line below the cursor and enter insert mode."
+  (ffi-buffer-evaluate-javascript-async
+   (current-buffer)
+   "window.nyxtEditor&&window.nyxtEditor.openLine(false);")
+  (enter-vi-insert))
+
+(define-command editor-open-line-above ()
+  "Open a line above the cursor and enter insert mode."
+  (ffi-buffer-evaluate-javascript-async
+   (current-buffer)
+   "window.nyxtEditor&&window.nyxtEditor.openLine(true);")
+  (enter-vi-insert))
+
 (define-mode editor-mode ()
   "A text editor in the buffer.
-The text is drawn with Monaco. Keys go to the editor. C-M-z runs
-`toggle-editor-keys', which gives the keys to Nyxt instead. The same binding
-sends them back. C-M-s runs `save-editor'. C-M-o runs `edit-file'."
+The text is drawn with Monaco. Bindings follow the buffer keyscheme.
+CUA uses C-s and C-o. Emacs uses C-x C-s and C-x C-f. VI normal mode uses
+hjkl, and : runs an ex command. C-M-z runs `toggle-editor-keys'."
   ((keyscheme-map
     (define-keyscheme-map "editor-mode" ()
       keyscheme:default
-      (list "C-M-z" 'toggle-editor-keys
-            "C-M-s" 'save-editor
-            "C-M-o" 'edit-file)
+      (list
+       "C-M-z" 'toggle-editor-keys)
+      keyscheme:cua
+      (list
+       "C-M-z" 'toggle-editor-keys
+       "C-s" 'save-editor
+       "C-o" 'edit-file
+       "C-w" 'delete-current-buffer)
+      keyscheme:emacs
+      (list
+       "C-M-z" 'toggle-editor-keys
+       "C-f" 'editor-move-right
+       "C-b" 'editor-move-left
+       "C-n" 'editor-move-down
+       "C-p" 'editor-move-up
+       "C-a" 'editor-move-line-start
+       "C-e" 'editor-move-line-end
+       "C-d" 'editor-delete-right
+       "C-k" 'editor-delete-to-line-end
+       "M-f" 'editor-move-word-right
+       "M-b" 'editor-move-word-left
+       "M-d" 'editor-delete-word-right
+       "M-backspace" 'editor-delete-word-left
+       "C-F" 'editor-select-right
+       "C-B" 'editor-select-left
+       "C-N" 'editor-select-down
+       "C-P" 'editor-select-up
+       "C-A" 'editor-select-line-start
+       "C-E" 'editor-select-line-end
+       "C-v" 'editor-move-page-down
+       "M-v" 'editor-move-page-up
+       "M-<" 'editor-move-top
+       "M->" 'editor-move-bottom
+       "C-w" 'editor-cut
+       "M-w" 'editor-copy
+       "C-y" 'editor-paste
+       "C-/" 'editor-undo
+       "C-?" 'editor-redo
+       "C-s" 'editor-find
+       "M-%" 'editor-replace
+       "C-g" 'editor-cancel
+       "C-x C-s" 'save-editor
+       "C-x C-f" 'edit-file
+       "C-x C-w" 'editor-save-as
+       "C-x h" 'editor-select-all
+       "C-x k" 'delete-current-buffer
+       "C-x C-k" 'delete-current-buffer
+       "C-x C-g" 'editor-cancel)
+      keyscheme:vi-normal
+      (list
+       "C-M-z" 'toggle-editor-keys
+       "h" 'editor-move-left
+       "l" 'editor-move-right
+       "k" 'editor-move-up
+       "j" 'editor-move-down
+       "w" 'editor-move-word-right
+       "b" 'editor-move-word-left
+       "e" 'editor-move-word-end
+       "0" 'editor-move-line-start
+       "$" 'editor-move-line-end
+       "g g" 'editor-move-top
+       "G" 'editor-move-bottom
+       "C-b" 'editor-move-page-up
+       "C-f" 'editor-move-page-down
+       "space" 'editor-move-right
+       "x" 'editor-delete-right
+       "d d" 'editor-delete-line
+       "y y" 'editor-yank-line
+       "p" 'editor-paste
+       "u" 'editor-undo
+       "C-r" 'editor-redo
+       "/" 'editor-find
+       "a" 'editor-append
+       "A" 'editor-append-line
+       "I" 'editor-insert-line-start
+       "o" 'editor-open-line-below
+       "O" 'editor-open-line-above
+       ":" 'editor-ex
+       "C-s" 'save-editor)
       keyscheme:vi-insert
-      (list "C-M-z" 'toggle-editor-keys
-            "C-M-s" 'save-editor
-            "C-M-o" 'edit-file)))
+      (list
+       "C-M-z" 'toggle-editor-keys
+       "C-s" 'save-editor)))
    (path
     nil
     :type (or null pathname)
@@ -307,7 +515,14 @@ sends them back. C-M-s runs `save-editor'. C-M-o runs `edit-file'."
     :type boolean
     :documentation "When non-nil, keys are delivered to the editor.
 When NIL, Nyxt keybindings handle them. `toggle-editor-keys' switches this.
-The bindings on this mode stay available in both states.")
+The bindings on this mode stay available in both states.
+VI normal mode keeps the keys even when this is non-nil, so motions are not
+inserted.")
+   (quit-after-save-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "When non-nil, delete the buffer after the next successful save.")
    (generation
     0
     :type integer
@@ -404,6 +619,7 @@ when the page has not changed since that save started.")
   (handler-case
       (let ((pathname (or (path mode) (prompt-save-path mode))))
         (unless pathname
+          (setf (quit-after-save-p mode) nil)
           (echo "Choose a file.")
           (return-from save-editor-text nil))
         (write-editor-file pathname text)
@@ -413,10 +629,16 @@ when the page has not changed since that save started.")
           (setf (modified-p mode) nil)
           (mark-clean mode generation))
         (update-editor-title mode)
-        (echo "Saved ~a." (uiop:native-namestring pathname)))
+        (echo "Saved ~a." (uiop:native-namestring pathname))
+        (when (quit-after-save-p mode)
+          (setf (quit-after-save-p mode) nil)
+          (let ((saved (buffer mode)))
+            (when (and saved (find saved (buffer-list) :test #'eq))
+              (ffi-buffer-delete saved)))))
     (prompt-buffer-canceled ()
-      nil)
+      (setf (quit-after-save-p mode) nil))
     (error (condition)
+      (setf (quit-after-save-p mode) nil)
       (echo-warning "Could not save: ~a" condition))))
 
 (defun decode-chunks (chunks)
@@ -520,8 +742,26 @@ Return the assembled text when every chunk has arrived, otherwise NIL."
   (lambda (condition)
     (log:debug "Editor scheme failed: ~a" condition)))
 
+(defun editor-forwards-keys-p (mode)
+  "Whether MODE should deliver unbound keys to Monaco.
+VI normal mode does not. Its motions are commands, and an unbound key is a
+no-op."
+  (and (keys-to-editor-p mode)
+       (not (eq (keyscheme (buffer mode)) keyscheme:vi-normal))))
+
+(defun sync-editor-keys (mode)
+  "Apply MODE's key delivery to its buffer."
+  (when (buffer mode)
+    (setf (forward-input-events-p (buffer mode))
+          (editor-forwards-keys-p mode))))
+
+(defmethod (setf keyscheme) :after (value (buffer input-buffer))
+  (declare (ignore value))
+  (when-let ((mode (find-submode 'editor-mode buffer)))
+    (sync-editor-keys mode)))
+
 (defmethod enable ((mode editor-mode) &key)
-  (setf (forward-input-events-p (buffer mode)) (keys-to-editor-p mode)))
+  (sync-editor-keys mode))
 
 (defmethod disable ((mode editor-mode) &key)
   (when (buffer mode)
@@ -582,18 +822,55 @@ Return the assembled text when every chunk has arrived, otherwise NIL."
          "window.nyxtEditor&&window.nyxtEditor.save();")
         (echo "This buffer has no editor."))))
 
+(define-command-global editor-save-as (&optional (buffer (current-buffer)))
+  "Prompt for a path and save the editor buffer there."
+  (let ((mode (find-submode 'editor-mode buffer)))
+    (cond
+      ((not mode)
+       (echo "This buffer has no editor."))
+      (t
+       (let ((pathname (prompt-save-path mode)))
+         (when pathname
+           (setf (path mode) pathname)
+           (save-editor buffer)))))))
+
+(define-command-global editor-ex (&optional (buffer (current-buffer)))
+  "Run an ex command. w writes, e edits, q quits, and wq does both."
+  (let ((mode (find-submode 'editor-mode buffer)))
+    (unless mode
+      (echo "This buffer has no editor.")
+      (return-from editor-ex nil))
+    (let ((command (str:trim (or (prompt1 :prompt ":"
+                                          :sources 'prompter:raw-source)
+                                 ""))))
+      (cond
+        ((member command '("w" "write") :test #'string-equal)
+         (save-editor buffer))
+        ((member command '("e" "edit") :test #'string-equal)
+         (edit-file))
+        ((member command '("q" "quit") :test #'string-equal)
+         (delete-current-buffer))
+        ((member command '("wq" "x") :test #'string-equal)
+         (setf (quit-after-save-p mode) t)
+         (save-editor buffer))
+        ((plusp (length command))
+         (echo "Unknown command ~a." command))))))
+
 (define-command-global toggle-editor-keys (&optional (buffer (current-buffer)))
   "Toggle whether keys go to the editor or to Nyxt."
   (let ((mode (find-submode 'editor-mode buffer)))
     (if mode
         (let ((to-editor (not (keys-to-editor-p mode))))
           (setf (keys-to-editor-p mode) to-editor)
-          (setf (forward-input-events-p buffer) to-editor)
-          (when to-editor
+          (sync-editor-keys mode)
+          (when (editor-forwards-keys-p mode)
             (ffi-buffer-evaluate-javascript-async
              buffer
              "window.nyxtEditor&&window.nyxtEditor.focus();"))
-          (echo (if to-editor
-                    "Keys go to the editor."
-                    "Keys go to Nyxt.")))
+          (echo (cond
+                  ((not (keys-to-editor-p mode))
+                   "Keys go to Nyxt.")
+                  ((eq (keyscheme buffer) keyscheme:vi-normal)
+                   "VI normal mode.")
+                  (t "Keys go to the editor."))))
         (echo "This buffer has no editor."))))

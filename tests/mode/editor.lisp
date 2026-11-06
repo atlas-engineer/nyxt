@@ -25,6 +25,11 @@
   (assert-equal "foo"
                 (pathname-name (nyxt/mode/editor::editor-pathname #p"/tmp/foo.lisp"))))
 
+(define-test editor-boot-script-is-next-to-the-source ()
+  (assert-true (uiop:file-exists-p (nyxt/mode/editor::editor-boot-path)))
+  (assert-true (search "assets/editor/"
+                       (namestring (nyxt/mode/editor::editor-asset-root)))))
+
 (define-test editor-asset-stays-inside-the-tree ()
   (assert-true (nyxt/mode/editor::editor-asset "vs/loader.js"))
   (assert-false (nyxt/mode/editor::editor-asset "../secret"))
@@ -66,6 +71,44 @@
            (nyxt/mode/editor:toggle-editor-keys buffer)
            (assert-true (forward-input-events-p buffer)))
       (disable-modes* 'nyxt/mode/editor:editor-mode buffer))))
+
+(define-test editor-keyscheme-bindings ()
+  (let* ((buffer (make-instance 'input-and-modable-buffer))
+         (editor (make-instance 'nyxt/mode/editor:editor-mode :buffer buffer)))
+    (flet ((binding (scheme keyspec)
+             (setf (keyscheme buffer) scheme)
+             (keymaps:lookup-key keyspec (keymap editor))))
+      (assert-eq 'nyxt/mode/editor:save-editor
+                 (binding keyscheme:cua "C-s"))
+      (assert-eq 'nyxt/mode/editor:edit-file
+                 (binding keyscheme:cua "C-o"))
+      (assert-eq 'nyxt/mode/editor:save-editor
+                 (binding keyscheme:emacs "C-x C-s"))
+      (assert-eq 'nyxt/mode/editor:edit-file
+                 (binding keyscheme:emacs "C-x C-f"))
+      (assert-eq 'nyxt/mode/editor:editor-find
+                 (binding keyscheme:emacs "C-s"))
+      (assert-eq 'nyxt/mode/editor:editor-move-down
+                 (binding keyscheme:vi-normal "j"))
+      (assert-eq 'nyxt/mode/editor:editor-ex
+                 (binding keyscheme:vi-normal ":"))
+      (assert-eq 'nyxt/mode/editor:save-editor
+                 (binding keyscheme:vi-insert "C-s"))
+      (assert-false (binding keyscheme:vi-insert "j"))
+      (assert-eq 'nyxt/mode/editor:toggle-editor-keys
+                 (binding keyscheme:emacs "C-M-z"))
+      (assert-eq 'nyxt/mode/editor:toggle-editor-keys
+                 (binding keyscheme:vi-normal "C-M-z")))))
+
+(define-test editor-vi-normal-consumes-unbound-keys ()
+  (let ((buffer (make-instance 'input-and-modable-buffer)))
+    (enable-modes* 'nyxt/mode/editor:editor-mode buffer)
+    (setf (keyscheme buffer) keyscheme:vi-normal)
+    (assert-false (forward-input-events-p buffer))
+    (assert-true (nyxt::consume-unbound-editor-key-p buffer))
+    (setf (keyscheme buffer) keyscheme:emacs)
+    (assert-true (forward-input-events-p buffer))
+    (assert-false (nyxt::consume-unbound-editor-key-p buffer))))
 
 (define-test editor-open-bindings ()
   (let* ((buffer (make-instance 'input-and-modable-buffer))

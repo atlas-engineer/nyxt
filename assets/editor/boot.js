@@ -68,6 +68,8 @@
       theme: "nyxt",
       fontFamily: __FONT__,
       fontSize: 15,
+      cursorStyle: "block",
+      cursorBlinking: "solid",
       automaticLayout: true,
       scrollBeyondLastLine: false,
       minimap: {enabled: true},
@@ -106,6 +108,36 @@
         editor.updateOptions({readOnly: false});
         editor.focus();
       },
+      action: function (name) {
+        editor.focus();
+        editor.trigger("nyxt", name, null);
+      },
+      actions: function (names) {
+        editor.focus();
+        for (var index = 0; index < names.length; index++)
+          editor.trigger("nyxt", names[index], null);
+      },
+      openLine: function (above) {
+        editor.focus();
+        var pos = editor.getPosition();
+        var model = editor.getModel();
+        if (above) {
+          editor.executeEdits("nyxt", [{
+            range: new monaco.Range(pos.lineNumber, 1, pos.lineNumber, 1),
+            text: "\n",
+            forceMoveMarkers: true
+          }]);
+          editor.setPosition({lineNumber: pos.lineNumber, column: 1});
+        } else {
+          var column = model.getLineMaxColumn(pos.lineNumber);
+          editor.executeEdits("nyxt", [{
+            range: new monaco.Range(pos.lineNumber, column, pos.lineNumber, column),
+            text: "\n",
+            forceMoveMarkers: true
+          }]);
+          editor.setPosition({lineNumber: pos.lineNumber + 1, column: 1});
+        }
+      },
       save: function () {
         var bytes = new TextEncoder().encode(editor.getValue());
         var count = Math.max(1, Math.ceil(bytes.length / step));
@@ -136,12 +168,6 @@
         api.dirty = true;
         send("changed", "buffer=" + id + "&generation=" + api.generation);
       }
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, function () {
-      api.save();
-    });
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyO, function () {
-      send("open", "buffer=" + id);
     });
     if (window.nyxtEditor && window.nyxtEditor.dispose) window.nyxtEditor.dispose();
     window.nyxtEditor = api;
