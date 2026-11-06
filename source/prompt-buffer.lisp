@@ -48,6 +48,26 @@ through every source.
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
+     (input-update-lock
+      (bt:make-lock "prompt-buffer input")
+      :type bt:lock
+      :export nil
+      :initarg nil
+      :documentation "Serializes changes to the prompt input.
+Only one caller waits on `prompter:next-ready-p'.")
+     (input-watcher-p
+      nil
+      :type boolean
+      :export nil
+      :initarg nil
+      :documentation "Whether a thread is waiting on `prompter:next-ready-p'.")
+     (input-finished-p
+      nil
+      :type boolean
+      :export nil
+      :initarg nil
+      :documentation "Whether `prompter:destroy' has run.
+Input updates after this are ignored.")
      (style
       (theme:themed-css (theme *browser*)
         '(:font-face :font-family "public sans" :font-style "normal"
@@ -906,39 +926,83 @@ The caret and the input's fill are the marks."
           (when input
             (ps:chain input (blur)))))))
 
+(-> prompt-input-stop-p (prompt-buffer) boolean)
+(defun prompt-input-stop-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER should no longer follow its sources."
+  (or (input-finished-p prompt-buffer)
+      (prompter:returned-p prompt-buffer)
+      (not (and (window prompt-buffer)
+                (find prompt-buffer
+                      (active-prompt-buffers (window prompt-buffer)))))))
+
+(-> prompt-field-text (prompt-buffer) string)
+(defun prompt-field-text (prompt-buffer)
+  "Return the text currently shown in PROMPT-BUFFER's input field."
+  (let ((text (ps-eval :buffer prompt-buffer
+                (ps:chain (nyxt/ps:qs document "#input") value))))
+    (if (stringp text)
+        text
+        "")))
+
+(-> prompt-text= (t t) boolean)
+(defun prompt-text= (existing updated)
+  "Return non-nil when EXISTING and UPDATED are the same prompt text."
+  (string= (if (stringp existing) existing "")
+           (if (stringp updated) updated "")))
+
+(defmethod prompter:destroy :before ((prompt-buffer prompt-buffer))
+  (setf (input-finished-p prompt-buffer) t))
+
+(-> watch-prompt-input (prompt-buffer) boolean)
+(defun watch-prompt-input (prompt-buffer)
+  "Redraw PROMPT-BUFFER until its sources are ready or the prompt is done.
+A new input restarts the wait. `prompter:destroy' ends it."
+  (loop
+    (when (prompt-input-stop-p prompt-buffer)
+      (return nil))
+    (let ((waiting-on (prompter:input prompt-buffer)))
+      (prompt-render-loading prompt-buffer)
+      (let ((next-source (prompter:next-ready-p prompt-buffer)))
+        (cond
+          ((eq t next-source)
+           (let ((text (prompt-field-text prompt-buffer)))
+             (bt:with-lock-held ((input-update-lock prompt-buffer))
+               (cond
+                 ((prompt-input-stop-p prompt-buffer)
+                  (return nil))
+                 ((not (prompt-text= (prompter:input prompt-buffer) waiting-on))
+                  nil)
+                 ((not (prompt-text= text (prompter:input prompt-buffer)))
+                  (setf (prompter:input prompt-buffer) text))
+                 (t
+                  (return t))))))
+          ((null next-source)
+           (when (or (prompt-input-stop-p prompt-buffer)
+                     (prompt-text= (prompter:input prompt-buffer) waiting-on))
+             (return nil)))
+          (t
+           (unless (prompt-input-stop-p prompt-buffer)
+             (prompt-render-suggestions prompt-buffer))))))))
+
 (defun update-prompt-input (prompt-buffer &optional input)
-  "This blocks and updates the view.
-INPUT is an implementation detail, don't rely on it.
-If you want to set the input, see `set-prompt-buffer-input'."
-  ;; TODO: This function is not thread-safe, add a lock?
-  (let ((input (or input
-                   (ps-eval :buffer prompt-buffer
-                     (ps:chain (nyxt/ps:qs document "#input") value)))))
-    (setf (prompter:input prompt-buffer) input)
-    ;; TODO: Stop loop when prompt-buffer is no longer current.
-    (labels ((maybe-update-view ()
-               (let ((next-source (when (find prompt-buffer
-                                              (active-prompt-buffers
-                                               (window prompt-buffer)))
-                                    (prompt-render-loading prompt-buffer)
-                                    (prompter:next-ready-p prompt-buffer))))
-                 (cond
-                   ;; Nothing to do:
-                   ((eq t next-source)
-                    ;; The renderer might have taken been too long to render the prompt
-                    ;; buffer and its HTML input, causing the latter to not be in sync with
-                    ;; what was send as input to the prompter sources.  Thus when we are done
-                    ;; watching, check if we are in sync; if not, try again.
-                    (let ((input (ps-eval :buffer prompt-buffer
-                                   (ps:chain (nyxt/ps:qs document "#input") value))))
-                      (unless (string= input (prompter:input prompt-buffer))
-                        (update-prompt-input prompt-buffer input)))
-                    t)
-                   ((null next-source) nil)
-                   (t ;; At least one source got updated.
-                    (prompt-render-suggestions prompt-buffer)
-                    (maybe-update-view))))))
-      (maybe-update-view))))
+  "Set PROMPT-BUFFER's input from INPUT and redraw suggestions as sources update.
+INPUT defaults to the text currently in the prompt field.
+One caller waits until the sources are ready or the prompt is done. Another
+caller only changes the input, which restarts that wait, so a key cannot
+leave the prompt blocked on `prompter:next-ready-p'."
+  (let ((input (or input (prompt-field-text prompt-buffer)))
+        (watcher nil))
+    (bt:with-lock-held ((input-update-lock prompt-buffer))
+      (unless (prompt-input-stop-p prompt-buffer)
+        (setf (prompter:input prompt-buffer) input)
+        (unless (input-watcher-p prompt-buffer)
+          (setf (input-watcher-p prompt-buffer) t
+                watcher t))))
+    (when watcher
+      (unwind-protect
+           (watch-prompt-input prompt-buffer)
+        (bt:with-lock-held ((input-update-lock prompt-buffer))
+          (setf (input-watcher-p prompt-buffer) nil))))))
 
 (export-always 'set-prompt-buffer-input)
 (defun set-prompt-buffer-input
