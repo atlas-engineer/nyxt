@@ -506,6 +506,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (prompt-render-focus prompt-buffer)
   (ffi-focus-buffer prompt-buffer)
   (update-prompt-input prompt-buffer)
+  (prompt-render-suggestions prompt-buffer)
   (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))
 
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
@@ -552,19 +553,29 @@ The suggestion total is the loading mark while a source is still computing."
    :loading-p (notevery #'prompter:ready-p
                         (prompter:sources prompt-buffer))))
 
+(-> prompt-current-p (prompt-buffer) boolean)
+(defun prompt-current-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER is the top of its window's prompt stack.
+The window has one prompt view. Only this prompt draws into it."
+  (and (window prompt-buffer)
+       (eq prompt-buffer
+           (first (active-prompt-buffers (window prompt-buffer))))))
+
 (-> prompt-render-loading (prompt-buffer) boolean)
 (defun prompt-render-loading (prompt-buffer)
   "Show the loading mark in the suggestion count while a source is computing."
   (let ((loading-p (notevery #'prompter:ready-p (prompter:sources prompt-buffer))))
-    (ps-eval :async t :buffer prompt-buffer
-      (let ((count (nyxt/ps:qs document "#prompt-count")))
-        (when count
-          (setf (ps:@ count |innerHTML|)
-                (ps:lisp (prompt-count-html prompt-buffer))))))
+    (when (prompt-current-p prompt-buffer)
+      (ps-eval :async t :buffer prompt-buffer
+        (let ((count (nyxt/ps:qs document "#prompt-count")))
+          (when count
+            (setf (ps:@ count |innerHTML|)
+                  (ps:lisp (prompt-count-html prompt-buffer)))))))
     loading-p))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
-  (ps-eval :async t :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :async t :buffer prompt-buffer
     (setf (ps:@ (nyxt/ps:qs document "#prompt-count") |innerHTML|)
           (ps:lisp (prompt-count-html prompt-buffer)))
     (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
@@ -573,7 +584,7 @@ The suggestion total is the loading mark while a source is still computing."
             " "
             (mapcar (curry #'mode-status
                            (status-buffer (current-window)))
-                    (sort-modes-for-status (enabled-modes prompt-buffer))))))))
+                    (sort-modes-for-status (enabled-modes prompt-buffer)))))))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
@@ -775,6 +786,10 @@ so the columns line up. Shorter rows leave the extra cells empty."
                               attribute)))))))))
 
 (export 'prompt-render-suggestions)
+(defmethod prompt-render-suggestions :around ((prompt-buffer prompt-buffer))
+  (when (prompt-current-p prompt-buffer)
+    (call-next-method)))
+
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   "Refresh the rendering of the suggestion list in PROMPT-BUFFER."
   (let* ((sources (prompter:sources prompt-buffer))
@@ -848,7 +863,8 @@ so the columns line up. Shorter rows leave the extra cells empty."
 (defun prompt-render-skeleton (prompt-buffer)
   ;; Synchronous. `html-write' returns before CEF applies the document, and
   ;; `update-prompt-input' then reads `#input' while it is still missing.
-  (ps-eval :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
     (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
           (ps:lisp
            (spinneret:with-html-string
@@ -879,10 +895,11 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"
-                                "visibility:visible;")))))))))
+                                "visibility:visible;"))))))))))
 
 (defun prompt-render-focus (prompt-buffer)
-  (ps-eval :async t :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :async t :buffer prompt-buffer
     (let ((input (ps:chain (nyxt/ps:qs document "#input"))))
       (ps:chain input (focus))
       (ps:chain input (select)))
@@ -899,21 +916,23 @@ so the columns line up. Shorter rows leave the extra cells empty."
                  "focus"
                  (lambda ()
                    (ps:chain document document-element class-list
-                             (remove "prompt-unfocused"))))))))
+                             (remove "prompt-unfocused")))))))))
 
 (-> prompt-buffer-focused-p (prompt-buffer) boolean)
 (defun prompt-buffer-focused-p (prompt-buffer)
   "Return non-nil when PROMPT-BUFFER's document has keyboard focus."
-  (ps-eval :buffer prompt-buffer
-    (ps:chain document (has-focus))))
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
+      (ps:chain document (has-focus)))))
 
 (export-always 'indicate-prompt-buffer-focus)
 (-> indicate-prompt-buffer-focus (prompt-buffer boolean) t)
 (defun indicate-prompt-buffer-focus (prompt-buffer focused-p)
   "Show that PROMPT-BUFFER has keyboard focus when FOCUSED-P is non-nil.
 The caret and the input's fill are the marks."
-  (if focused-p
-      (ps-eval :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (if focused-p
+        (ps-eval :buffer prompt-buffer
         (setf (ps:@ document document-element style opacity) "")
         (ps:chain document document-element class-list (remove "prompt-unfocused"))
         (ps:let ((input (nyxt/ps:qs document "#input")))
@@ -924,7 +943,7 @@ The caret and the input's fill are the marks."
         (ps:chain document document-element class-list (add "prompt-unfocused"))
         (ps:let ((input (nyxt/ps:qs document "#input")))
           (when input
-            (ps:chain input (blur)))))))
+            (ps:chain input (blur))))))))
 
 (-> prompt-input-stop-p (prompt-buffer) boolean)
 (defun prompt-input-stop-p (prompt-buffer)
@@ -937,9 +956,12 @@ The caret and the input's fill are the marks."
 
 (-> prompt-field-text (prompt-buffer) string)
 (defun prompt-field-text (prompt-buffer)
-  "Return the text currently shown in PROMPT-BUFFER's input field."
-  (let ((text (ps-eval :buffer prompt-buffer
-                (ps:chain (nyxt/ps:qs document "#input") value))))
+  "Return the text currently shown in PROMPT-BUFFER's input field.
+A prompt under another one has no field of its own, so this is its stored input."
+  (let ((text (if (prompt-current-p prompt-buffer)
+                  (ps-eval :buffer prompt-buffer
+                    (ps:chain (nyxt/ps:qs document "#input") value))
+                  (prompter:input prompt-buffer))))
     (if (stringp text)
         text
         "")))
@@ -1012,9 +1034,10 @@ See `update-prompt-input' to update the changes visually."
   ;; Synchronous so the following read-back sees this value. An async write
   ;; still queued when `update-prompt-input' compares the DOM restarts the
   ;; source update from the previous text.
-  (ps-eval :buffer prompt-buffer
-    (setf (ps:@ (nyxt/ps:qs document "#input") value)
-          (ps:lisp input)))
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
+      (setf (ps:@ (nyxt/ps:qs document "#input") value)
+            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?

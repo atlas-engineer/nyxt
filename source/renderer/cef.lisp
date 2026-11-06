@@ -423,16 +423,32 @@ the default height.")
       (message-buffer-p buffer)
       (prompt-buffer-p buffer)))
 
+(defvar *defer-native-view-p* nil
+  "When non-nil, initializing a `cef:view' does not create a native browser.
+A prompt buffer shares the window's prompt view, so it must not build one.")
+
+(defmethod initialize-instance :after ((view cef:view) &key (url "about:blank"))
+  "Create VIEW's browser unless one is already attached or creation is deferred."
+  (unless (or *defer-native-view-p* (cef:web-contents view))
+    (cef:ensure-view view :url (or url "about:blank"))))
+
 (defmethod initialize-instance :around ((buffer cef-buffer) &rest initargs &key &allow-other-keys)
   ;; Every view is Alloy. A Chrome window hosts one Chrome BrowserView and
   ;; any number of Alloy ones. A second Chrome page opens as its own
   ;; Chromium window, and that view cannot be moved into this window.
   ;; Panels load about:blank. The shared profile stores a zoom for that URL,
   ;; and a panel on the shared context renders at that zoom.
-  (apply #'call-next-method buffer
-         :alloy-p t
-         :isolated-context-p (panel-buffer-p buffer)
-         initargs))
+  ;; `cef:view' initialization runs before a subclass :after method, so a
+  ;; prompt defers that browser and adopts the window's view afterwards.
+  (let ((*defer-native-view-p* (and (prompt-buffer-p buffer)
+                                    (getf initargs :window)
+                                    t)))
+    (prog1 (apply #'call-next-method buffer
+                  :alloy-p t
+                  :isolated-context-p (panel-buffer-p buffer)
+                  initargs)
+      (when *defer-native-view-p*
+        (adopt-prompt-view buffer)))))
 
 (defmethod customize-instance :after ((buffer cef-buffer) &key &allow-other-keys)
   (ffi-buffer-initialize-foreign-object buffer))
@@ -546,6 +562,11 @@ view before those threads run, and a call into the missing view has no method."
                         (lambda (buffer data)
                           (declare (ignore buffer))
                           (run-context-menu-command data))))))
+
+(defmethod ffi-buffer-initialize-foreign-object ((buffer prompt-buffer))
+  (unless (cef:web-contents buffer)
+    (call-next-method))
+  buffer)
 
 (defmethod ffi-buffer-initialize-foreign-object ((buffer cef-buffer))
   (let ((url (if (and (slot-boundp buffer 'url)
@@ -698,17 +719,48 @@ height of the status/prompt/message buffer."
   (cef:focus buffer)
   buffer)
 
+(defmethod ffi-height ((buffer prompt-buffer))
+  (if-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (assoc-value (cef:get-bounds view) :height)
+    0))
+
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
     (setf (set-height prompt-buffer) height)
-    (cef:set-bar-height prompt-buffer height)
-    ;; Child 0 is the page. Insert the prompt under it once. Attaching can
-    ;; replace the document the skeleton just wrote, so draw it again after
-    ;; the view is actually in the window and before the input is read back.
-    (unless (find prompt-buffer (cef:views window))
-      (cef:add-view-at window prompt-buffer 1)
-      (nyxt::prompt-render-skeleton prompt-buffer)
-      (nyxt::prompt-render-focus prompt-buffer))))
+    (when window
+      (let ((view (if (plusp height)
+                      (ensure-prompt-view-listeners window)
+                      (prompt-buffer-view window))))
+        (when view
+          ;; The view is already in the window, hidden. Draw before raising
+          ;; it so the previous prompt does not flash. Attaching below can
+          ;; replace that document, so draw again once the view is in.
+          (when (and (plusp height)
+                     (find view (cef:views window)))
+            (nyxt::prompt-render-skeleton prompt-buffer))
+          (cef:set-bar-height view height)
+          (when (and (plusp height)
+                     (not (find view (cef:views window))))
+            (cef:add-view-at window view 1)
+            (nyxt::prompt-render-skeleton prompt-buffer)
+            (nyxt::prompt-render-focus prompt-buffer)))))))
+
+(defmethod ffi-focus-buffer ((buffer prompt-buffer))
+  (if-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (cef:focus view)
+    (call-next-method))
+  buffer)
+
+(defmethod ffi-focused-p ((buffer prompt-buffer))
+  (when-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (cef:is-focused view)))
+
+(defmethod ffi-buffer-delete ((buffer prompt-buffer))
+  (when (and (window buffer)
+             (prompt-buffer-view (window buffer))
+             (not (nyxt::active-prompt-buffers (window buffer))))
+    (setf (ffi-height buffer) 0))
+  (setf (listeners-p buffer) nil))
 
 (defmethod ffi-width ((buffer cef-buffer))
   (assoc-value (cef:get-bounds buffer) :width))
@@ -818,25 +870,137 @@ if (exclude.some(match)) return;
   ((current-view)
    (panel-views-p
     nil
-    :documentation "Whether the status and message views have been added.
+    :documentation "Whether the status, message, and prompt views have been added.
 They are added after the page view: the first child of the window has to be
-the Chrome-style page."))
+the Chrome-style page.")
+   (prompt-buffer-view
+    nil
+    :export nil
+    :documentation "Alloy view every prompt buffer of this window draws into.
+Created with the window. Showing a prompt resizes it instead of building a browser.")
+   (prompt-view-listeners-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Whether input listeners are registered on `prompt-buffer-view'.")
+   (prompt-view-warm-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Whether `prompt-buffer-view' has loaded its fonts."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "CEF window class."))
 
+(-> ensure-prompt-buffer-view (cef-window) cef:view)
+(defun ensure-prompt-buffer-view (window)
+  "Return WINDOW's prompt view, creating its browser the first time.
+Creating that browser is the slow part of opening a prompt."
+  (or (prompt-buffer-view window)
+      (let ((view (make-instance 'cef:view
+                                 :alloy-p t
+                                 :isolated-context-p t
+                                 :url "about:blank")))
+        (cef:set-bar-height view 0)
+        (setf (prompt-buffer-view window) view))))
+
+(-> ensure-prompt-view-listeners (cef-window) cef:view)
+(defun ensure-prompt-view-listeners (window)
+  "Return WINDOW's prompt view and route its input to the active prompt."
+  (let ((view (ensure-prompt-buffer-view window)))
+    (unless (prompt-view-listeners-p window)
+      (cef:add-listener
+       view :before-input-event
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-key-press-event prompt event))))
+      (cef:add-listener
+       view :button-press
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-button-press-event prompt event))))
+      (cef:add-listener
+       view :scroll
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-scroll-event prompt event))))
+      (setf (prompt-view-listeners-p window) t))
+    view))
+
+(defun release-private-prompt-browser (buffer)
+  "Destroy a browser BUFFER created despite sharing the window prompt view."
+  (when (and (plusp (cef:id buffer))
+             (prompt-buffer-view (window buffer))
+             (/= (cef:id buffer)
+                 (cef:id (prompt-buffer-view (window buffer)))))
+    (cef:kill buffer)
+    (setf (slot-value buffer 'cef::native-id) 0)))
+
+(-> adopt-prompt-view (prompt-buffer) prompt-buffer)
+(defun adopt-prompt-view (buffer)
+  "Point BUFFER at its window's prompt view.
+BUFFER does not own that browser. Hiding BUFFER leaves the view in the window."
+  (let ((*defer-native-view-p* nil))
+    (ensure-prompt-view-listeners (window buffer)))
+  (release-private-prompt-browser buffer)
+  (setf (cef:web-contents buffer)
+        (cef:web-contents (prompt-buffer-view (window buffer))))
+  buffer)
+
+(defun warm-prompt-view (window)
+  "Load the prompt fonts in WINDOW's prompt view while it is hidden."
+  (unless (or (prompt-view-warm-p window)
+              (nyxt::active-prompt-buffers window))
+    (when-let ((view (prompt-buffer-view window)))
+      (when (and (find view (cef:views window))
+                 (cef:web-contents view))
+        (setf (prompt-view-warm-p window) t)
+        (handler-bind ((error (lambda (condition)
+                                (declare (ignore condition))
+                                (return-from warm-prompt-view nil))))
+          (let* ((contents (cef:web-contents view))
+                 (font-css
+                   (concatenate
+                    'string
+                    "@font-face{font-family:\"Public Sans\";font-style:normal;"
+                    "font-weight:400;src:url(\"nyxt-resource:PublicSans-Regular.woff\")"
+                    " format(\"woff\");}"
+                    "@font-face{font-family:\"DejaVu Sans Mono\";"
+                    "src:url(\"nyxt-resource:DejaVuSansMono.ttf\") format(\"ttf\");}"))
+                 (html
+                   (concatenate
+                    'string
+                    "<head><style>" font-css "</style></head>"
+                    "<body style=\"font-family:'Public Sans',sans-serif\">"
+                    "<span style=\"font-family:'DejaVu Sans Mono'\">0</span></body>")))
+            (cef:insert-css contents font-css)
+            (cef:execute-javascript
+             contents
+             (format nil "document.documentElement.innerHTML = ~a;"
+                     (cl-json:encode-json-to-string html)))))))))
+
 (defun place-panel-views (window)
-  "Stack the status bar under the page and the message bar under that.
+  "Stack the prompt, status bar, and message bar under the page.
+The prompt view stays at height 0 until a prompt is shown.
 Each bar is a fixed height."
   (let ((message-buffer (message-buffer window))
-        (status-buffer (status-buffer window)))
+        (status-buffer (status-buffer window))
+        (prompt-view (ensure-prompt-view-listeners window)))
     (cef:set-bar-height status-buffer
                         (or (set-height status-buffer) (height status-buffer) 0))
     (cef:set-bar-height message-buffer
                         (or (set-height message-buffer) (height message-buffer) 0))
+    (unless (nyxt::active-prompt-buffers window)
+      (cef:set-bar-height prompt-view 0))
+    (unless (find prompt-view (cef:views window))
+      (cef:add-view-at window prompt-view 1))
     (cef:add-view window status-buffer)
-    (cef:add-view window message-buffer)))
+    (cef:add-view window message-buffer)
+    (warm-prompt-view window)))
 
 (-> defer-window-delete (cef-window) *)
 (defun defer-window-delete (window)
@@ -852,6 +1016,7 @@ returns to the message loop."
         (status-buffer (status-buffer window)))
     (setf (set-height message-buffer) (height message-buffer))
     (setf (set-height status-buffer) (height status-buffer))
+    (ensure-prompt-view-listeners window)
     (cef:add-listener
      window :close-request
      (lambda (window data)
@@ -863,9 +1028,11 @@ returns to the message loop."
     (when (panel-buffer-p view)
       (ignore-errors (cef:kill view))))
   (dolist (prompt (nyxt::active-prompt-buffers window))
-    (when (and prompt (cef:web-contents prompt))
-      (ignore-errors (cef:kill prompt))))
+    (when prompt
+      (setf (cef:web-contents prompt) nil)))
   (setf (nyxt::active-prompt-buffers window) '())
+  (when-let ((view (prompt-buffer-view window)))
+    (ignore-errors (cef:kill view)))
   (dolist (view (list (status-buffer window) (message-buffer window)))
     (when (and view (ignore-errors (cef:web-contents view)))
       (ignore-errors (cef:kill view))))
