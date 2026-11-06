@@ -157,6 +157,28 @@
         :color ,theme:on-background-color)
       '("#url > span:empty"
         :display "none")
+      '("#url > .loading"
+        :display "inline-flex"
+        :flex-direction "row"
+        :align-items "center"
+        :justify-content "center"
+        :flex "none"
+        :gap "3px"
+        :line-height "0")
+      '("#url > .loading span"
+        :width "4px"
+        :height "4px"
+        :border-radius "50%"
+        :background-color "currentColor"
+        :opacity "0.2"
+        :animation "status-loading 1.2s ease-in-out infinite")
+      '("#url > .loading span:nth-child(2)"
+        :animation-delay "0.2s")
+      '("#url > .loading span:nth-child(3)"
+        :animation-delay "0.4s")
+      '(:keyframes "status-loading"
+        ("0%, 80%, 100%" :opacity "0.2")
+        ("40%" :opacity "1"))
       '("#url button"
         :flex "auto"
         :min-width "0"
@@ -377,14 +399,13 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
-By default, renders a hourglass when loading a URL."
+By default, renders the loading mark when loading a URL."
   (let ((buffer (active-buffer (window status))))
     (spinneret:with-html
-      (:span
-       (if (and (web-buffer-p buffer)
-                (eq (slot-value buffer 'status) :loading))
-           "⧖ "
-           "")))))
+      (when (and (web-buffer-p buffer)
+                 (eq (slot-value buffer 'status) :loading))
+        (:span :class "loading" :aria-hidden "true"
+               (:span) (:span) (:span))))))
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
@@ -475,7 +496,9 @@ or in the path under `page'."
   (ps-eval :async t :buffer status
     (setf (ps:@ (nyxt/ps:qs document "#url") |innerHTML|)
           (ps:lisp
-           (spinneret:with-html-string (format-status-url status))))))
+           (spinneret:with-html-string
+             (format-status-load-status status)
+             (format-status-url status))))))
 
 (export-always 'format-status-new-buffer)
 (defmethod format-status-new-buffer ((status status-buffer))
