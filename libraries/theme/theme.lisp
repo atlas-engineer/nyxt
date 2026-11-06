@@ -62,6 +62,14 @@
     :documentation "The color for elements/text in front of `warning-color'.")
    (heading-color
     :documentation "Color for headings. Darker than `primary-color'. When omitted, defaults to `primary-color-'.")
+   (logo-color
+    :documentation "The background color of the product mark. When omitted, a light theme uses black and a dark theme uses `action-color'.")
+   (on-logo-color
+    :documentation "The color of the mark drawn on `logo-color'. When omitted, defaults to white.")
+   (button-color
+    :documentation "Fill for a button. Darker than the page in a light theme and lighter than the page in a dark theme.")
+   (button-color-
+    :documentation "Button fill while hovered.")
    (font-family
     "Public Sans"
     :documentation "The font family to use by default.")
@@ -99,7 +107,29 @@
   (unless (slot-value theme 'heading-color)
     (setf (slot-value theme 'heading-color)
           (or (slot-value theme 'primary-color-)
-              (slot-value theme 'on-background-color)))))
+              (slot-value theme 'on-background-color))))
+  (unless (slot-value theme 'logo-color)
+    (setf (slot-value theme 'logo-color)
+          (or (and (slot-value theme 'background-color)
+                   (dark-p theme)
+                   (slot-value theme 'action-color))
+              (slot-value theme 'on-background-color))))
+  (unless (slot-value theme 'on-logo-color)
+    (setf (slot-value theme 'on-logo-color) "#FFFFFF"))
+  (unless (slot-value theme 'button-color)
+    (setf (slot-value theme 'button-color)
+          (if (and (slot-value theme 'background-color)
+                   (dark-p theme))
+              (or (slot-value theme 'background-color+)
+                  (slot-value theme 'background-color))
+              (or (slot-value theme 'background-color-)
+                  (slot-value theme 'background-color)))))
+  (unless (slot-value theme 'button-color-)
+    (setf (slot-value theme 'button-color-)
+          (or (and (slot-value theme 'background-color)
+                   (dark-p theme)
+                   (slot-value theme 'background-color-))
+              (slot-value theme 'button-color)))))
 
 (export-always 'dark-p)
 (defmethod dark-p ((theme theme))
@@ -167,7 +197,11 @@ Example:
                  :success-color-    "#86D58E"
                  :warning-color+    "#88040D"
                  :warning-color     "#AF1923"
-                 :warning-color-    "#D2232E"))
+                 :warning-color-    "#D2232E"
+                 :logo-color        "#000000"
+                 :on-logo-color     "#FFFFFF"
+                 :button-color      "#F1F1F1"
+                 :button-color-     "#E6E6E6"))
 
 (export-always '+dark-theme+)
 (defvar +dark-theme+
@@ -200,4 +234,8 @@ Example:
                  :warning-color- "#EBCB8B"
                  :warning-color "#EBCB8B"
                  :warning-color+ "#D08770"
-                 :on-warning-color "#2E3440"))
+                 :on-warning-color "#2E3440"
+                 :logo-color "#88C0D0"
+                 :on-logo-color "#FFFFFF"
+                 :button-color "#434C5E"
+                 :button-color- "#3B4252"))

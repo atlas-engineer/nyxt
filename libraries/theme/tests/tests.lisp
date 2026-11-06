@@ -59,6 +59,30 @@
                                       (funcall on-color theme)
                                       min-color--contrast)))))
 
+(define-test logo-color ()
+  (assert-string= "#000000" (theme:logo-color theme:+light-theme+))
+  (assert-string= "#FFFFFF" (theme:on-logo-color theme:+light-theme+))
+  (assert-string= "#88C0D0" (theme:logo-color theme:+dark-theme+))
+  (assert-string= "#FFFFFF" (theme:on-logo-color theme:+dark-theme+))
+  (let ((light (make-instance 'theme:theme :background-color "white"))
+        (dark (make-instance 'theme:theme
+                             :background-color "#2E3440"
+                             :action-color "#88C0D0")))
+    (assert-string= "black" (theme:logo-color light))
+    (assert-string= "#FFFFFF" (theme:on-logo-color light))
+    (assert-string= "#88C0D0" (theme:logo-color dark))
+    (assert-string= "#FFFFFF" (theme:on-logo-color dark))))
+
+(define-test button-color ()
+  (assert-string= "#F1F1F1" (theme:button-color theme:+light-theme+))
+  (assert-string= "#E6E6E6" (theme:button-color- theme:+light-theme+))
+  (assert-string= "#434C5E" (theme:button-color theme:+dark-theme+))
+  (assert-string= "#3B4252" (theme:button-color- theme:+dark-theme+))
+  (let ((light (make-instance 'theme:theme :background-color "white"
+                                           :background-color- "#ECECEC")))
+    (assert-string= "#ECECEC" (theme:button-color light))
+    (assert-string= "#ECECEC" (theme:button-color- light))))
+
 (define-test heading-color ()
   (assert-string= "#444444" (theme:heading-color theme:+light-theme+))
   (assert-string= "#5E81AC" (theme:heading-color theme:+dark-theme+))
