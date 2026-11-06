@@ -218,7 +218,7 @@ to the next."
           :padding "0 11px"
           :border "none"
           :border-radius "7px"
-          :background-color ,theme:background-color+
+          :background-color ,theme:button-color
           :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
           :color ,theme:on-background-color
           :font-size "17px"
@@ -233,7 +233,7 @@ to the next."
           :padding "0 28px 0 11px"
           :border "none"
           :border-radius "7px"
-          :background-color ,theme:background-color+
+          :background-color ,theme:button-color
           :background-image ,(concatenate
                               'string
                               "linear-gradient(45deg, transparent 50%, currentColor 50%), "
@@ -250,7 +250,7 @@ to the next."
           :cursor "pointer"
           :vertical-align "middle")
         `("table.settings button.button:hover, table.settings select.button:hover"
-          :background-color ,theme:background-color-)
+          :background-color ,theme:button-color-)
         `("table.settings button.button:focus-visible, table.settings select.button:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
@@ -439,7 +439,7 @@ The value is saved to clipboard."
   "Display a page suitable as `default-new-buffer-url'."
   ;; The logo and the two actions are one group. Each action is a 37px
   ;; control with its shortcut on the right; the two stack 17px apart, and
-  ;; the logo is that same 91px so the black square stays the height of the
+  ;; the logo is that same 91px so the square stays the height of the
   ;; buttons. The page list starts one step (37px) below that group. Content
   ;; and the corner credit share that same 37px inset.
   (labels ((command-row (heading detail description command)
@@ -467,18 +467,19 @@ The value is saved to clipboard."
                      (:span detail))))))
     (spinneret:with-html-string
       (:nstyle
-        '(body
+        `(body
           :min-height "100vh"
           :padding "37px"
-          :padding-bottom "112px")
+          :padding-bottom "112px"
+          :background-color ,(if (theme:dark-p theme:theme)
+                                 theme:background-color
+                                 theme:background-color+))
         `(.start
           :display "flex"
           :align-items "center"
           :margin "0 0 37px")
         `(.logo
-          :color ,(if (theme:dark-p theme:theme)
-                      theme:action-color
-                      theme:on-background-color)
+          :color ,theme:logo-color
           :width "91px"
           :height "91px"
           :flex "none"
@@ -488,6 +489,8 @@ The value is saved to clipboard."
           :width "91px"
           :height "91px"
           :border-radius "7px")
+        `(".logo svg path"
+          :fill ,theme:on-logo-color)
         '(.actions
           :display "flex"
           :flex-direction "column"
@@ -505,7 +508,7 @@ The value is saved to clipboard."
           :padding "0 17px"
           :border "none"
           :border-radius "7px"
-          :background-color "#f1f1f1"
+          :background-color ,theme:button-color
           :color ,theme:on-background-color
           :font-size "17px"
           :font-weight "400"
@@ -519,8 +522,8 @@ The value is saved to clipboard."
           :background-size "calc(100% - 14px) 3px"
           :background-repeat "no-repeat"
           :background-position "center bottom")
-        '("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
-          :background-color "#e6e6e6"
+        `("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
+          :background-color ,theme:button-color-
           :opacity "1")
         `("button.set-url:focus-visible, button.execute-command:focus-visible"
           :outline "2px solid"
