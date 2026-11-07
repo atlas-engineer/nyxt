@@ -163,7 +163,6 @@
                  (:file "cruise-control" :depends-on ("repeat"))
                  (:file "emacs")
                  (:file "expedition")
-                 (:file "history-migration")
                  (:file "no-sound")
                  (:file "password")
                  (:file "migrate" :depends-on ("bookmark"))
