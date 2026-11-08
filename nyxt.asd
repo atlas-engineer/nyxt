@@ -113,7 +113,8 @@
                  (:file "prompt-buffer")
                  (:file "command-commands")
                  (:file "recent-buffers")
-                 (:file "external-editor")))
+                 (:file "external-editor")
+                 (:file "update")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
@@ -198,6 +199,7 @@
                (:file "command")
                (:file "search-engine")
                (:file "utilities")
+               (:file "version")
                (:file "dom")
                (:file "mode")
                (:module "Modes"

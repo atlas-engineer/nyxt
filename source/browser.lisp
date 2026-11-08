@@ -173,6 +173,13 @@ prompt buffer.")
     :type cookie-policy
     :documentation "Cookie policy of new buffers.
 Valid values are `:accept', `:never' and `:no-third-party'.")
+   (check-for-updates-p
+    t
+    :type boolean
+    :documentation "Whether to ask `+latest-version-url+' for a newer release after startup.
+The request runs in the background. When a newer release exists, `echo' reports it.
+A failed request is ignored. Set to NIL to skip the request.
+`check-for-updates' runs the same check on demand.")
    ;; Hooks follow:
    (after-init-hook
     (make-instance 'hook-browser)

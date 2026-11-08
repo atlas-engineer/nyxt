@@ -61,6 +61,13 @@ Example:
   :documentation "Nyxt version.
 Can be overridden via NYXT_VERSION environment variable.")
 
+(export-always '+latest-version-url+)
+(alex:define-constant +latest-version-url+
+    "https://nyxt-browser.com/version"
+  :test #'string=
+  :documentation "URL of the latest stable Nyxt version.
+The body is one line: major, minor, and patch, separated by dots.")
+
 (defun parse-version (version)
   "Helper to parse VERSION as a string.
 
