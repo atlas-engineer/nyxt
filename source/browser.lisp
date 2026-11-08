@@ -271,6 +271,24 @@ When DEDUPLICATE-P is non-nil, remove duplicated entries."
                           recent-entries))
                     'list)))
 
+(export-always 'recent-distinct-history-entries)
+(defmethod recent-distinct-history-entries (n (browser browser))
+  "Return up to N distinct history entries, newest first.
+A URL that was visited more than once contributes its latest visit."
+  (let ((seen (make-hash-table :test 'equal))
+        (result '())
+        (count 0)
+        (vector (history-vector browser)))
+    (loop for index from (1- (length vector)) downto 0
+          while (< count n)
+          for entry = (aref vector index)
+          for key = (render-url (url entry))
+          unless (gethash key seen)
+            do (setf (gethash key seen) t)
+               (incf count)
+               (push entry result))
+    (nreverse result)))
+
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))

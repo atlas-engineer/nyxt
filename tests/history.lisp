@@ -35,6 +35,21 @@
                          (url (first entries)))
         (assert-string= "Example" (title (first entries)))))))
 
+(define-test recent-distinct-history-entries-looks-past-duplicates ()
+  (let* ((browser (make-instance 'browser))
+         (entries (list
+                   (make-instance 'history-entry :url "https://b.example" :title "b")
+                   (make-instance 'history-entry :url "https://a.example" :title "a1")
+                   (make-instance 'history-entry :url "https://a.example" :title "a2")
+                   (make-instance 'history-entry :url "https://a.example" :title "a3"))))
+    (setf (history-vector browser)
+          (make-array 4 :fill-pointer t :adjustable t
+                        :initial-contents entries))
+    (let ((recent (recent-distinct-history-entries 2 browser)))
+      (assert-eq 2 (length recent))
+      (assert-string= "a3" (title (first recent)))
+      (assert-string= "b" (title (second recent))))))
+
 (define-test recent-history-entry-order ()
   (let* ((browser (make-instance 'browser))
          (older (make-instance 'history-entry :url "https://a.example" :title "a"))

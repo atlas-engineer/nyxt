@@ -1140,13 +1140,14 @@ When BUFFER is omitted, it defaults to the current one."
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
-   (prompter:constructor (recent-history-entries 200 *browser* :deduplicate-p t))
+   (prompter:constructor (recent-distinct-history-entries 512 *browser*))
    (prompter:enable-marks-p t)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:documentation "Source listing all the entries in history.
+  (:documentation "Source listing the latest distinct URLs in history.
+Offers at most 512 URLs, newest first.
 Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class url-or-query ()
