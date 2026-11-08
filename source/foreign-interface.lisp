@@ -36,6 +36,7 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
                        nil)
                       ((or *quitting-nyxt-p*
                            (> (hash-table-count windows) 1))
+                       (remove-setf-handlers (status-buffer window))
                        (hooks:run-hook (window-delete-hook window) window)
                        (remhash (id window) windows)
                        (call-next-method)

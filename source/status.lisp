@@ -581,6 +581,13 @@ automatically removed."
                              (gethash ,key *setf-handlers*)))
              (funcall* handler ,class-name)))))))
 
+(defun remove-setf-handlers (object)
+  "Drop the `define-setf-handler' handlers registered for OBJECT."
+  (maphash (lambda (key handlers)
+             (declare (ignore key))
+             (remhash object handlers))
+           *setf-handlers*))
+
 (defmethod print-status ((status-buffer status-buffer))
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
