@@ -128,7 +128,7 @@ The handlers take the window as argument."))
   (prompt :prompt "Delete window(s)" :sources 'window-source))
 
 (define-command delete-current-window (&optional (window (current-window)))
-  "Delete WINDOW, or the current window, when omitted."
+  "Delete WINDOW, or the current window, when omitted. Quit if it is the last one."
   (ffi-window-delete window))
 
 (define-command make-window (&optional buffer)

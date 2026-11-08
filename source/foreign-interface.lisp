@@ -27,26 +27,32 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
 
 (define-ffi-generic ffi-window-delete (window)
   (:method :around ((window window))
-    (bt:with-lock-held (*window-delete-lock*)
-      (with-slots (windows last-active-window) *browser*
-        (cond ((not (gethash (id window) windows))
-               nil)
-              ((or *quitting-nyxt-p*
-                   (> (hash-table-count windows) 1))
-               (hooks:run-hook (window-delete-hook window) window)
-               (remhash (id window) windows)
-               (call-next-method)
-               (when (eq last-active-window window)
-                 (setf last-active-window (first (window-list))))
-               (setf (active-prompt-buffers window) '())
-               t)
-              (t
-               (echo "Can't delete sole window.")
-               nil)))))
+    (let ((sole-p nil))
+      (prog1
+          (bt:with-lock-held (*window-delete-lock*)
+            (when *browser*
+              (with-slots (windows last-active-window) *browser*
+                (cond ((not (gethash (id window) windows))
+                       nil)
+                      ((or *quitting-nyxt-p*
+                           (> (hash-table-count windows) 1))
+                       (hooks:run-hook (window-delete-hook window) window)
+                       (remhash (id window) windows)
+                       (call-next-method)
+                       (when (eq last-active-window window)
+                         (setf last-active-window (first (window-list))))
+                       (setf (active-prompt-buffers window) '())
+                       t)
+                      (t
+                       (setf sole-p t)
+                       nil)))))
+        (when sole-p
+          (quit)))))
   (:documentation "Delete WINDOW.
 Page buffers that WINDOW was showing stay in the browser and can be shown in
 another window. Status, message, and prompt views that belong to WINDOW are
-closed with it."))
+closed with it.
+When WINDOW is the last one, quit Nyxt."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
