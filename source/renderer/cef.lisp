@@ -294,31 +294,44 @@ This is the expanded `download-directory'."
     (when-let ((color (canvas-color browser)))
       (when (plusp color)
         (cef:set-default-background-color color)))
-    (cef:launch interface)
-    (when (adblocking-enabled-p browser)
-      (cef:default-block (make-instance 'cef:adblocker)))
-    (maphash (lambda (scheme-name callbacks)
-               (ffi-register-custom-scheme
-                (make-instance 'scheme
-                               :name scheme-name
-                               :callback (first callbacks)
-                               :error-callback (second callbacks))))
-             nyxt::*schemes*)
-    (let ((session (cef:default-session interface)))
-      (cef:add-listener session :download-item-updated
-                        (lambda (session item)
-                          (declare (ignore session))
-                          (download-item-updated item)))))
-  ;; cl-cef installs its own handler, which only stops CEF. Replace it so a
-  ;; kill runs Nyxt's quit, including the socket and the exit hook.
-  (install-exit-signals)
-  (call-next-method)
-  (unless nyxt::*run-from-repl-p*
-    (cef:join)
-    ;; `finish-output' nil makes SBCL abort instead of waiting for other
-    ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
-    ;; would otherwise keep this process and its helpers alive after shutdown.
-    (uiop:quit (nyxt:exit-code browser) nil)))
+    (if nyxt::*run-from-repl-p*
+        (cef:launch-in-background interface)
+        (cef:launch interface))
+    (flet ((finish-startup ()
+             (when (adblocking-enabled-p browser)
+               (cef:default-block (make-instance 'cef:adblocker)))
+             (maphash (lambda (scheme-name callbacks)
+                        (ffi-register-custom-scheme
+                         (make-instance 'scheme
+                                        :name scheme-name
+                                        :callback (first callbacks)
+                                        :error-callback (second callbacks))))
+                      nyxt::*schemes*)
+             (let ((session (cef:default-session interface)))
+               (cef:add-listener session :download-item-updated
+                                 (lambda (session item)
+                                   (declare (ignore session))
+                                   (download-item-updated item))))
+             (call-next-method)))
+      ;; cl-cef installs its own handler, which only stops CEF. Replace it so a
+      ;; kill runs Nyxt's quit, including the socket and the exit hook.
+      (install-exit-signals)
+      (cond
+        ((not nyxt::*run-from-repl-p*)
+         (bt:make-thread
+          (lambda ()
+            (handler-case (finish-startup)
+              (serious-condition (condition)
+                (log:error "CEF startup failed: ~a" condition)
+                (request-exit))))
+          :name "nyxt cef startup")
+         (cef:join)
+         ;; `finish-output' nil makes SBCL abort instead of waiting for other
+         ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
+         ;; would otherwise keep this process and its helpers alive after shutdown.
+         (uiop:quit (nyxt:exit-code browser) nil))
+        (t
+         (finish-startup))))))
 
 (defmethod ffi-kill-browser ((browser cef-browser))
   (declare (ignore browser))
