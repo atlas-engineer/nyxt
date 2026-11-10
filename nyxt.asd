@@ -50,7 +50,6 @@
                phos
                plump
                prompter
-               py-configparser
                quri
                serapeum
                spinneret
