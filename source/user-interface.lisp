@@ -26,15 +26,47 @@
            (ps:lisp (format nil "~,1f%"
                             (user-interface:percentage progress-bar)))))))
 
-(defmethod user-interface:update ((button user-interface:button))
+(defun replace-ui-element (element)
+  "Replace ELEMENT's DOM node with its current HTML."
   (ffi-buffer-evaluate-javascript-async
-   (user-interface:buffer button)
+   (user-interface:buffer element)
    (ps:ps
-     (setf (ps:chain document
-                     (get-element-by-id (ps:lisp (user-interface:id button)))
-                     text-content)
-           (ps:lisp (user-interface:text button)))
-     (setf (ps:chain document
-                     (get-element-by-id (ps:lisp (user-interface:id button)))
-                     onclick)
-           (ps:lisp (user-interface:action button))))))
+     (let ((node (ps:chain document
+                           (get-element-by-id
+                            (ps:lisp (user-interface:id element))))))
+       (when node
+         (setf (ps:@ node |outerHTML|)
+               (ps:lisp (spinneret:with-html-string
+                          (user-interface:to-html element)))))))))
+
+(defmethod user-interface:update ((button user-interface:button))
+  (replace-ui-element button))
+
+(defmethod user-interface:update ((element user-interface:element))
+  (replace-ui-element element))
+
+(defmethod user-interface:update ((row user-interface:table-row))
+  (ffi-buffer-evaluate-javascript-async
+   (user-interface:buffer row)
+   (ps:ps
+     (let ((row (ps:chain document
+                          (query-selector
+                           (ps:lisp (format nil "[data-id=\"~a\"]"
+                                            (user-interface:id row)))))))
+       (when row
+         (setf (ps:@ row |outerHTML|)
+               (ps:lisp (spinneret:with-html-string
+                          (user-interface:to-html row)))))))))
+
+(defmethod user-interface:update ((table user-interface:table))
+  (ffi-buffer-evaluate-javascript-async
+   (user-interface:buffer table)
+   (ps:ps
+     (let ((element (ps:chain document
+                              (get-element-by-id
+                               (ps:lisp (user-interface:id table))))))
+       (when element
+         (setf (ps:@ element class-name)
+               (ps:lisp (or (user-interface:html-class table) ""))
+               (ps:@ element |innerHTML|)
+               (ps:lisp (user-interface:table-inner-html table))))))))
