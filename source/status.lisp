@@ -215,6 +215,8 @@
         :align-items "center"
         :gap "4px"
         :flex "none"
+        :box-sizing "border-box"
+        :max-width "40ch"
         :height "28px"
         :margin 0
         :padding "0 4px 0 12px"
@@ -226,6 +228,12 @@
         :color ,theme:on-secondary-color
         :background-color "transparent"
         :cursor "pointer")
+      `(".tab-label"
+        :flex "0 1 auto"
+        :min-width "0"
+        :overflow "hidden"
+        :text-overflow "ellipsis"
+        :white-space "nowrap")
       `(".tab-close"
         :display "inline-flex"
         :align-items "center"
@@ -453,20 +461,21 @@ or in the path under `page'."
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          (format-internal-tab-display-text url)
-                                         domain)))
+                                         domain))
+                   (tab-label (if (uiop:emptyp (title buffer))
+                                  tab-display-text
+                                  (title buffer))))
               (:span
                :class (if (eq current-buffer buffer)
                           "selected-tab tab"
                           "tab")
-               :title (if (uiop:emptyp (title buffer))
-                          tab-display-text
-                          (title buffer))
+               :title tab-label
                :onclick (ps:ps
                           (unless (ps:chain event target (closest ".tab-close"))
                             (nyxt/ps:lisp-eval
                              (:title "select-tab" :buffer status)
                              (set-current-buffer buffer))))
-               tab-display-text
+               (:span :class "tab-label" tab-label)
                (:button
                 :class "tab-close"
                 :type "button"
@@ -605,6 +614,9 @@ See `define-setf-handler'."
     (define-setf-handler document-buffer url status-buffer
       (lambda (_) (declare (ignore _))
         (print-status status-buffer)))
+    (define-setf-handler document-buffer title status-buffer
+      (lambda (_) (declare (ignore _))
+        (update-status-tabs status-buffer)))
     (define-setf-handler window active-buffer status-buffer
       (lambda (_) (declare (ignore _))
         (update-status-url status-buffer)
