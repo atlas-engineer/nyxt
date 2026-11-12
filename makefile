@@ -59,6 +59,10 @@ nyxt: $(lisp_files) ocicl-install
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
 
+.PHONY: install
+install: all
+	$(lisp_eval) '(asdf:make :nyxt/install)' $(lisp_quit)
+
 .PHONY: all
 all: nyxt
 
