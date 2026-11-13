@@ -208,6 +208,40 @@ Call this after the application system is loaded and before `asdf:make'."
   (pushnew 'reload-relocatable-libraries sb-ext:*init-hooks*)
   *relocatable-foreign-libraries*)
 
+(-> system-ca-file () (values (or null string) &optional))
+(defun system-ca-file ()
+  "A PEM CA bundle, or NIL.
+An existing SSL_CERT_FILE is used. Otherwise the first file present in the
+usual distribution locations, then the copy shipped in an AppImage."
+  (flet ((existing (path)
+           (when (and (stringp path)
+                      (plusp (length path))
+                      (uiop:file-exists-p path))
+             path)))
+    (or (existing (uiop:getenv "SSL_CERT_FILE"))
+        (some #'existing
+              '("/etc/ssl/certs/ca-certificates.crt"
+                "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+                "/etc/pki/tls/certs/ca-bundle.crt"
+                "/etc/ssl/ca-bundle.pem"
+                "/etc/ssl/cert.pem"))
+        (when-let ((appdir (uiop:getenv "APPDIR")))
+          (existing
+           (uiop:native-namestring
+            (uiop:merge-pathnames*
+             #p"usr/ssl/cert.pem"
+             (uiop:ensure-directory-pathname
+              (uiop:parse-native-namestring appdir)))))))))
+
+(defun ensure-ssl-cert-file ()
+  "Point OpenSSL at `system-ca-file' when SSL_CERT_FILE is unset.
+The library compiled into a foreign binary looks for certificates in its build
+directory. On another distribution that directory is missing and every Lisp
+download fails verification."
+  (unless (uiop:getenv "SSL_CERT_FILE")
+    (when-let ((ca-file (system-ca-file)))
+      (setf (uiop:getenv "SSL_CERT_FILE") ca-file))))
+
 (export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the browser.
@@ -325,6 +359,7 @@ The OPTIONS are the same as the command line options.
 
 ~a" (with-output-to-string (s) (opts:describe :stream s)))
   (declare #.(cons 'ignorable %start-args))
+  (ensure-ssl-cert-file)
   ;; Nyxt extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)

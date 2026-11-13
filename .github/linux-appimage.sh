@@ -120,6 +120,26 @@ install_lib() {
 install_lib libssl.so.3
 install_lib libcrypto.so.3
 install_lib libsqlite3.so.0
+
+ca_bundle=""
+for bundle in \
+    /etc/ssl/certs/ca-certificates.crt \
+    /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+    /etc/pki/tls/certs/ca-bundle.crt \
+    /etc/ssl/ca-bundle.pem \
+    /etc/ssl/cert.pem
+do
+    if [ -f "$bundle" ]; then
+        ca_bundle=$bundle
+        break
+    fi
+done
+if [ -z "$ca_bundle" ]; then
+    printf '%s\n' "Could not find a CA bundle to ship with the AppImage." >&2
+    exit 1
+fi
+mkdir -p "$stage/usr/ssl"
+cp -f "$ca_bundle" "$stage/usr/ssl/cert.pem"
 install_lib libfixposix.so
 install_lib libenchant-2.so
 
@@ -143,6 +163,21 @@ fi
 export LD_LIBRARY_PATH="$APPDIR/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export CL_CEF_LIBRARY="$APPDIR/usr/lib/cef/libcl-cef.so"
 export CL_CLIPBOARD_LIBRARY="$APPDIR/usr/bin/libcl-clipboard.so"
+if [ -z "${SSL_CERT_FILE:-}" ]; then
+    for bundle in \
+        /etc/ssl/certs/ca-certificates.crt \
+        /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem \
+        /etc/pki/tls/certs/ca-bundle.crt \
+        /etc/ssl/ca-bundle.pem \
+        /etc/ssl/cert.pem \
+        "$here/usr/ssl/cert.pem"
+    do
+        if [ -f "$bundle" ]; then
+            export SSL_CERT_FILE="$bundle"
+            break
+        fi
+    done
+fi
 exec "$APPDIR/usr/bin/nyxt" "$@"
 EOF
 chmod 755 "$stage/AppRun"
