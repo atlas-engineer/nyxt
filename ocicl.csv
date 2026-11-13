@@ -113,6 +113,8 @@ iolib.base, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430
 iolib.common-lisp, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.common-lisp.asd
 iolib.conf, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.conf.asd
 iolib.examples, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.examples.asd
+ironclad, ghcr.io/ocicl/ironclad@sha256:3117e5a26a3e94924074c3548c235a2b733609ed61a2731880ac9e31df55428b, ironclad-20240503-6da010f/ironclad.asd
+ironclad-text, ghcr.io/ocicl/ironclad@sha256:3117e5a26a3e94924074c3548c235a2b733609ed61a2731880ac9e31df55428b, ironclad-20240503-6da010f/ironclad-text.asd
 iterate, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iterate/iterate.asd
 jpl-queues, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/jpl-queues/jpl-queues.asd
 jpl-util, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-jpl-util/jpl-util.asd

@@ -36,6 +36,7 @@
                flexi-streams
                iolib
                iolib/os
+               ironclad
                lass
                local-time
                log4cl
@@ -157,6 +158,7 @@
                 :depends-on ("Core modes")
                 :components
                 ((:file "annotate")
+                 (:file "authenticator")
                  (:file "autofill")
                  (:file "bookmark")
                  (:file "bookmarklets")
@@ -206,6 +208,7 @@
                 :components
                 ((:file "autofill")
                  (:file "annotate")
+                 (:file "authenticator")
                  (:file "base")
                  (:file "blocker")
                  (:file "bookmark")
