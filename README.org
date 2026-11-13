@@ -8,7 +8,7 @@ extensible in Lisp.
 *Attention:* Nyxt is under active development.  Please feel free to [[https://github.com/atlas-engineer/nyxt/issues][report]] bugs,
 instabilities or feature wishes.
 
------
+#+html: <br /><br /><br /><br /><br />
 
 * Features
 For an exhaustive description of all of the features, please refer to the
