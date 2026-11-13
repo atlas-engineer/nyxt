@@ -44,14 +44,6 @@ window.  Jump quickly through your open tabs to find what you need.
 
 #+html: <img src="https://nyxt-browser.com/static/image/multi-search.png" align="center"/>
 
-** History as a tree
-
-History is represented as a tree that you can traverse.  Smarter than the
-"forwards-backwards" abstraction found in other browsers, the tree makes sure
-you never lose track of where you've been.
-
-#+html: <img src="https://nyxt-browser.com/static/image/history.png" align="center"/>
-
 * Installation
 
 Supported platforms:
