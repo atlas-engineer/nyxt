@@ -143,10 +143,11 @@
   "Return the service worker script that loads the shim before WORKER."
   (let ((page (string-left-trim "/" worker)))
     (if module-p
-        (ps:ps*
-         `(progn
-            (import-module ,(concatenate 'string "./_nyxt/shim.js"))
-            (import-module ,(concatenate 'string "./" page))))
+        (format nil "console.error(\"NYXT-WORKER-START\");
+import \"./_nyxt/shim.js\";
+import ~a;
+"
+                (js-string (concatenate 'string "./" page)))
         (ps:ps*
          `(progn
             (|importScripts| ,(concatenate 'string "_nyxt/shim.js"))
@@ -690,30 +691,6 @@ A context-menu or toolbar click can be reported twice for one gesture."
       (and previous
            (< (- now previous) internal-time-units-per-second)))))
 
-(-> open-extension-menu-page (string string) (or null hash-table))
-(defun open-extension-menu-page (extension-id menu-id)
-  "Open the extension page for a context-menu item that carries a page address.
-QR Code Generator reads that address from the c query of its page. Its own
-chrome.tabs.create is Chromium's, which does not open a Nyxt buffer."
-  (when (member menu-id '("ctx_page" "ctx_link" "ctx_string") :test #'string=)
-    (let* ((extension (find extension-id (listed-web-extensions)
-                            :key #'extension-id :test #'string=))
-           (page (and extension (page extension)))
-           (target (or (context-menu-text :link-url)
-                       (context-menu-text :selection-text)
-                       (context-menu-text :page-url)
-                       (let ((tab (current-extension-tab)))
-                         (when (hash-table-p tab)
-                           (json-string tab "url"))))))
-      (when (and (stringp page) (plusp (length page))
-                 (stringp target) (plusp (length target)))
-        (extension-create-tab
-         (json-object "url" (uiop:strcat (string-left-trim "/" page)
-                                         "?c="
-                                         (quri:url-encode target))
-                      "active" t)
-         extension-id)))))
-
 (-> wake-extension-worker (t) null)
 (defun wake-extension-worker (buffer)
   "Start extension workers for the page in BUFFER.
@@ -737,7 +714,6 @@ A stopped service worker does not see a queued context-menu click until it runs.
                                  (uiop:strcat extension-id " " menu-id))
                           (enqueue-event extension-id
                                          (menu-click-event extension-id menu-id))
-                          (open-extension-menu-page extension-id menu-id)
                           (wake-extension-worker (current-buffer)))))))
             (reverse *extension-menu-items*))))
 
@@ -1017,9 +993,20 @@ launch still matches."
     (setf *extension-bridge-started* t))
   *extension-bridge-token*)
 
+(-> wpt-javascript () string)
+(defun wpt-javascript ()
+  "Return the script that aligns extension APIs with the Web Platform Tests."
+  (uiop:read-file-string
+   (asdf:system-relative-pathname :nyxt "source/renderer/web-extension-wpt.js")))
+
 (-> shim-text () string)
 (defun shim-text ()
-  (str:replace-all "__NYXT_TOKEN__" *extension-bridge-token* (extension-shim-javascript)))
+  (str:replace-all
+   "__NYXT_WPT_ENABLED__"
+   (if (uiop:getenv "NYXT_WPT") "true" "false")
+   (str:replace-all "__NYXT_TOKEN__"
+                    *extension-bridge-token*
+                    (concatenate 'string (extension-shim-javascript) (wpt-javascript)))))
 
 (-> write-extension-text (pathname string) pathname)
 (defun write-extension-text (path text)
@@ -1096,7 +1083,8 @@ launch still matches."
          (uiop:merge-pathnames* #p"nyxt-background.js"
                                 (uiop:ensure-directory-pathname directory))
          (background-worker-javascript worker module-p))
-        (setf (gethash "service_worker" background) "nyxt-background.js")))
+        (setf (gethash "service_worker" background) "nyxt-background.js")
+        (remhash "scripts" background)))
     (let ((scripts (json-list (gethash "scripts" background))))
       (when scripts
         (setf (gethash "scripts" background)

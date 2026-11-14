@@ -105,6 +105,8 @@ REVISION orders overlapping updates. An older revision is ignored."
         (when (< incoming seen)
           (return-from extension-replace-menus :null))
         (setf (gethash extension-id *extension-menu-revision*) incoming)
+        (log:debug "Extension ~a context menu now has ~a items."
+                   extension-id (length (json-list items)))
         (setf *extension-menu-items*
               (remove-if (lambda (item)
                            (string= (extension-menu-item-extension-id item)
@@ -217,10 +219,10 @@ REVISION orders overlapping updates. An older revision is ignored."
   :null)
 
 (defun extension-bookmark-file ()
+  "Return the bookmark file for the current buffer, or the default file."
   (let ((buffer (or (current-buffer) (first (extension-tabs)))))
-    (unless buffer
-      (error "No buffer is available for bookmarks."))
-    (nyxt/mode/bookmark:bookmarks-file buffer)))
+    (or (and buffer (ignore-errors (nyxt/mode/bookmark:bookmarks-file buffer)))
+        (make-instance 'nyxt/mode/bookmark:bookmarks-file))))
 
 (defun read-bookmarks ()
   (let ((bookmarks (handler-case
@@ -274,12 +276,21 @@ REVISION orders overlapping updates. An older revision is ignored."
                                                        "children" (coerce (bookmark-nodes) 'vector))))))
 
 (defun extension-search-bookmarks (query)
-  (let ((text (or (json-string query "query") "")))
+  (let* ((query (cond
+                  ((stringp query) (json-object "query" query))
+                  ((hash-table-p query) query)
+                  (t (json-object))))
+         (text (or (json-string query "query")
+                   (json-string query "title")
+                   ""))
+         (url (json-string query "url")))
     (coerce (remove-if-not
              (lambda (node)
-               (or (zerop (length text))
-                   (search text (or (json-string node "title") "") :test #'char-equal)
-                   (search text (or (json-string node "url") "") :test #'char-equal)))
+               (and (or (null url)
+                        (string-equal url (or (json-string node "url") "")))
+                    (or (zerop (length text))
+                        (search text (or (json-string node "title") "") :test #'char-equal)
+                        (search text (or (json-string node "url") "") :test #'char-equal))))
              (bookmark-nodes))
             'vector)))
 
@@ -941,13 +952,17 @@ REVISION orders overlapping updates. An older revision is ignored."
               (lambda (request extension-id)
                 (declare (ignore extension-id))
                 (let ((ids (json-list (nth-value 0 (json-field request "ids")))))
-                  (op-result (coerce (if ids
-                                         (remove-if-not (lambda (node)
-                                                          (member (json-string node "id") ids
-                                                                  :test #'string=))
-                                                        (bookmark-nodes))
-                                         (bookmark-nodes))
-                                     'vector)))))
+                  (op-result
+                   (coerce (if ids
+                               (mapcar (lambda (id)
+                                         (or (find id (bookmark-nodes)
+                                                   :key (lambda (node)
+                                                          (json-string node "id"))
+                                                   :test #'string=)
+                                             (error "No bookmark with id ~a." id)))
+                                       ids)
+                               (bookmark-nodes))
+                           'vector)))))
 
 (extension-op "bookmarks.search"
               (lambda (request extension-id)
@@ -1103,3 +1118,16 @@ REVISION orders overlapping updates. An older revision is ignored."
                 (declare (ignore extension-id))
                 (record-decision request)
                 (op-result :null)))
+
+(defvar *wpt-report-lock* (bt:make-lock "nyxt-wpt-report"))
+(defvar *wpt-reports* '())
+
+(extension-op "wpt.report"
+              (lambda (request extension-id)
+                (declare (ignore extension-id))
+                (let ((name (or (json-string request "name") ""))
+                      (summary (or (json-string request "summary") "")))
+                  (bt:with-lock-held (*wpt-report-lock*)
+                    (setf *wpt-reports* (append *wpt-reports* (list (cons name summary)))))
+                  (log:info "WPT ~a~%~a" name summary)
+                  (op-result :null))))

@@ -1695,25 +1695,14 @@
           (defun
             |scheduleMenuFlush|
             ()
-            (if
-              |menuFlushScheduled|
-              (js-return))
-            (setf |menuFlushScheduled| t)
-            (ps:chain
-              (ps:chain |Promise| (|RESOLVE|))
-              (|THEN|
-                (lambda
-                  ()
-                  (setf |menuFlushScheduled| ps:false)
-                  (ps:var |REVISION| (incf |menuRevision|))
-                  (|RPC|
-                    "contextMenus.replace"
-                    (ps:create
-                      |REVISION|
-                      |REVISION|
-                      |ITEMS|
-                      (ps:chain |menuMirror| (|SLICE|))))
-                  (js-return))))
+            (ps:var |REVISION| (incf |menuRevision|))
+            (|RPC|
+              "contextMenus.replace"
+              (ps:create
+                |REVISION|
+                |REVISION|
+                |ITEMS|
+                (ps:chain |menuMirror| (|SLICE|))))
             (js-return))
           (defun
             |menuIdText|
