@@ -157,6 +157,28 @@
         :color ,theme:on-background-color)
       '("#url > span:empty"
         :display "none")
+      '("#url > .loading"
+        :display "inline-flex"
+        :flex-direction "row"
+        :align-items "center"
+        :justify-content "center"
+        :flex "none"
+        :gap "3px"
+        :line-height "0")
+      '("#url > .loading span"
+        :width "4px"
+        :height "4px"
+        :border-radius "50%"
+        :background-color "currentColor"
+        :opacity "0.2"
+        :animation "status-loading 1.2s ease-in-out infinite")
+      '("#url > .loading span:nth-child(2)"
+        :animation-delay "0.2s")
+      '("#url > .loading span:nth-child(3)"
+        :animation-delay "0.4s")
+      '(:keyframes "status-loading"
+        ("0%, 80%, 100%" :opacity "0.2")
+        ("40%" :opacity "1"))
       '("#url button"
         :flex "auto"
         :min-width "0"
@@ -193,6 +215,8 @@
         :align-items "center"
         :gap "4px"
         :flex "none"
+        :box-sizing "border-box"
+        :max-width "40ch"
         :height "28px"
         :margin 0
         :padding "0 4px 0 12px"
@@ -204,6 +228,12 @@
         :color ,theme:on-secondary-color
         :background-color "transparent"
         :cursor "pointer")
+      `(".tab-label"
+        :flex "0 1 auto"
+        :min-width "0"
+        :overflow "hidden"
+        :text-overflow "ellipsis"
+        :white-space "nowrap")
       `(".tab-close"
         :display "inline-flex"
         :align-items "center"
@@ -377,14 +407,13 @@ This leverages `mode-status' which can be specialized for individual modes."
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
-By default, renders a hourglass when loading a URL."
+By default, renders the loading mark when loading a URL."
   (let ((buffer (active-buffer (window status))))
     (spinneret:with-html
-      (:span
-       (if (and (web-buffer-p buffer)
-                (eq (slot-value buffer 'status) :loading))
-           "⧖ "
-           "")))))
+      (when (and (web-buffer-p buffer)
+                 (eq (slot-value buffer 'status) :loading))
+        (:span :class "loading" :aria-hidden "true"
+               (:span) (:span) (:span))))))
 
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
@@ -432,20 +461,21 @@ or in the path under `page'."
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
                                          (format-internal-tab-display-text url)
-                                         domain)))
+                                         domain))
+                   (tab-label (if (uiop:emptyp (title buffer))
+                                  tab-display-text
+                                  (title buffer))))
               (:span
                :class (if (eq current-buffer buffer)
                           "selected-tab tab"
                           "tab")
-               :title (if (uiop:emptyp (title buffer))
-                          tab-display-text
-                          (title buffer))
+               :title tab-label
                :onclick (ps:ps
                           (unless (ps:chain event target (closest ".tab-close"))
                             (nyxt/ps:lisp-eval
                              (:title "select-tab" :buffer status)
                              (set-current-buffer buffer))))
-               tab-display-text
+               (:span :class "tab-label" tab-label)
                (:button
                 :class "tab-close"
                 :type "button"
@@ -475,7 +505,9 @@ or in the path under `page'."
   (ps-eval :async t :buffer status
     (setf (ps:@ (nyxt/ps:qs document "#url") |innerHTML|)
           (ps:lisp
-           (spinneret:with-html-string (format-status-url status))))))
+           (spinneret:with-html-string
+             (format-status-load-status status)
+             (format-status-url status))))))
 
 (export-always 'format-status-new-buffer)
 (defmethod format-status-new-buffer ((status status-buffer))
@@ -558,6 +590,13 @@ automatically removed."
                              (gethash ,key *setf-handlers*)))
              (funcall* handler ,class-name)))))))
 
+(defun remove-setf-handlers (object)
+  "Drop the `define-setf-handler' handlers registered for OBJECT."
+  (maphash (lambda (key handlers)
+             (declare (ignore key))
+             (remhash object handlers))
+           *setf-handlers*))
+
 (defmethod print-status ((status-buffer status-buffer))
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
@@ -575,6 +614,9 @@ See `define-setf-handler'."
     (define-setf-handler document-buffer url status-buffer
       (lambda (_) (declare (ignore _))
         (print-status status-buffer)))
+    (define-setf-handler document-buffer title status-buffer
+      (lambda (_) (declare (ignore _))
+        (update-status-tabs status-buffer)))
     (define-setf-handler window active-buffer status-buffer
       (lambda (_) (declare (ignore _))
         (update-status-url status-buffer)

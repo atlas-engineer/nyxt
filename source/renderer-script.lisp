@@ -345,26 +345,51 @@ ARGS are passed as internal page parameters."
         ;; If &key doesn't exist, add it with the keyword
         (append lambda-list (list '&key keyword)))))
 
+(-> symbol-named (t string) (values (maybe symbol) &optional))
+(defun symbol-named (tree symbol-name)
+  "Return the first symbol in TREE whose name is SYMBOL-NAME."
+  (typecase tree
+    (symbol (and (not (keywordp tree))
+                 (string= tree symbol-name)
+                 tree))
+    (cons (or (symbol-named (car tree) symbol-name)
+              (symbol-named (cdr tree) symbol-name)))))
+
 (export-always 'define-internal-page)
 (defmacro define-internal-page (name (&rest form-args) (&rest initargs) &body body)
   "Define an `internal-page'.
 FORM-ARGS are the `internal-page' `form' keyword arguments.
 INITARGS are passed to the `internal-page' initialization arguments.
+BODY may use `%buffer%' for the buffer that displays the page.
 
 Example:
 
 \(define-internal-page my-page (&key arg1 arg2)
   (:title \"My beautiful page\")
   ...)"
-  (let ((arglist-with-buffer (ensure-keyword-argument form-args '%buffer%)))
-    `(apply #'make-instance 'internal-page
-            :name ',name
-            :visibility :anonymous
-            :lambda-list ',arglist-with-buffer
-            :form (quote (lambda (,@arglist-with-buffer)
-                           (declare (ignorable %buffer%))
-                           ,@body))
-            (list ,@initargs))))
+  (multiple-value-bind (body-forms declarations docstring)
+      (alex:parse-body body :documentation t)
+    (let* ((arglist-with-buffer (ensure-keyword-argument form-args '%buffer%))
+           (body-buffer (symbol-named body-forms "%BUFFER%"))
+           (buffer-binding (and body-buffer
+                                (not (eq body-buffer '%buffer%))
+                                body-buffer))
+           (wrapped-body
+             (if buffer-binding
+                 (append (and docstring (list docstring))
+                         (list (list* 'let
+                                      (list (list buffer-binding '%buffer%))
+                                      `(declare (ignorable ,buffer-binding))
+                                      (append declarations body-forms))))
+                 body)))
+      `(apply #'make-instance 'internal-page
+              :name ',name
+              :visibility :anonymous
+              :lambda-list ',arglist-with-buffer
+              :form (quote (lambda (,@arglist-with-buffer)
+                             (declare (ignorable %buffer%))
+                             ,@wrapped-body))
+              (list ,@initargs)))))
 
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command

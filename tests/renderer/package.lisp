@@ -23,9 +23,8 @@
 
 (defun test-set-url (url)
   (let ((url-channel (nyxt::make-channel 1)))
-    (nyxt:start :no-config t
+    (nyxt:start :no-config t)
                 :no-auto-config t
-                :headless t
                 :socket "/tmp/nyxt-test.socket")
     (hooks:once-on (nyxt:prompt-buffer-ready-hook *browser*) prompt-buffer
       (prompter:all-ready-p prompt-buffer)

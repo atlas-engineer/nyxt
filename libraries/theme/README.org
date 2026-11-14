@@ -30,6 +30,13 @@ Additionally, a foreground color is defined. E.g. ~on-background~.
 ~heading~ is the text color for section titles. It has no plus, minus, or
 on- variation. When omitted, it falls back to ~primary-~.
 
+~logo~ is the product mark. It has no plus or minus variation. When omitted,
+a light theme uses black and a dark theme uses ~action~. ~on-logo~ is the
+mark itself and defaults to white.
+
+~button~ is the fill of a button. ~button-~ is that fill while hovered. When
+omitted, a light theme uses ~background-~ and a dark theme uses ~background+~.
+
 This rationale is loosely based on [[https://m2.material.io/design/material-theming/implementing-your-theme.html][Google Material Design Guidelines]].
 
 ** Example

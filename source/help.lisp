@@ -52,6 +52,33 @@ Prompt for a new value with prompt SOURCES and type-check
          (auto-configure :class-name class :slot slot :slot-value input)
          (echo "Update slot ~s to ~s. You might need to restart to experience the change." slot input))))))
 
+(-> default-new-buffer-url-configuration-form (string) list)
+(defun default-new-buffer-url-configuration-form (url-string)
+  "Return a `define-configuration' form that sets the homepage to URL-STRING.
+The value is a `quri:uri'."
+  `(define-configuration browser
+     ((default-new-buffer-url (quri:uri ,(render-url (url url-string)))))))
+
+(defun configure-default-new-buffer-url ()
+  "Prompt for the homepage and save it in `*auto-config-file*'.
+The saved form sets `default-new-buffer-url' to a `quri:uri'."
+  (let* ((input (prompt
+                 :prompt "Configure slot value default-new-buffer-url"
+                 :input (render-url (default-new-buffer-url *browser*))
+                 :sources (list
+                           (make-instance 'prompter:raw-source
+                                          :name "New URL")
+                           (make-instance 'global-history-source
+                                          :enable-marks-p nil
+                                          :actions-on-return #'identity))))
+         (selection (if (serapeum:single input)
+                        (first input)
+                        input))
+         (url-string (render-url (url selection))))
+    (auto-configure :form (default-new-buffer-url-configuration-form url-string))
+    (echo "Update slot ~s to ~s. You might need to restart to experience the change."
+          'default-new-buffer-url url-string)))
+
 (define-internal-page-command-global common-settings (&key (section 'keybindings))
     (buffer "*Settings*" 'nyxt/mode/help:help-mode)
   "Display an interface to tweak frequently sought-after user options.
@@ -191,7 +218,7 @@ to the next."
           :padding "0 11px"
           :border "none"
           :border-radius "7px"
-          :background-color ,theme:background-color+
+          :background-color ,theme:button-color
           :box-shadow ,(format nil "inset 0 0 0 1px ~a" theme:background-color-)
           :color ,theme:on-background-color
           :font-size "17px"
@@ -206,7 +233,7 @@ to the next."
           :padding "0 28px 0 11px"
           :border "none"
           :border-radius "7px"
-          :background-color ,theme:background-color+
+          :background-color ,theme:button-color
           :background-image ,(concatenate
                               'string
                               "linear-gradient(45deg, transparent 50%, currentColor 50%), "
@@ -223,7 +250,7 @@ to the next."
           :cursor "pointer"
           :vertical-align "middle")
         `("table.settings button.button:hover, table.settings select.button:hover"
-          :background-color ,theme:background-color-)
+          :background-color ,theme:button-color-)
         `("table.settings button.button:focus-visible, table.settings select.button:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
@@ -322,24 +349,6 @@ to the next."
                                :form '(define-configuration (web-buffer)
                                        ((default-modes (pushnew 'nyxt/mode/style:dark-mode
                                                                 %slot-value%)))))))))
-                     (:tr
-                      (:td :class "setting"
-                           (:span :class "name" "Zoom")
-                           (:span :class "detail" "Used when a site has no saved zoom."))
-                      (:td :class "control"
-                           (:nselect
-                            :id "default-zoom-ratio"
-                            :buffer buffer
-                            :default (format nil "~d%"
-                                             (round (* 100 (zoom-ratio-default (current-buffer)))))
-                            (loop for number in '(30 50 67 80 90 100
-                                                  110 120 133 150 170
-                                                  200 240 300 400 500)
-                                  collect `((,number ,(format nil "~a%" number))
-                                            (nyxt::auto-configure
-                                             :class-name 'document-buffer
-                                             :slot 'zoom-ratio-default
-                                             :slot-value ,(/ number 100.0)))))))
                      (:tr :class "group"
                           (:th :colspan 2 :scope "rowgroup" "Buffers"))
                      (:tr
@@ -355,18 +364,7 @@ to the next."
                             :text "Set default URL"
                             :title "Choose the address a new buffer opens."
                             :buffer buffer
-                            '(nyxt::configure-slot 'default-new-buffer-url 'browser
-                              :sources (list
-                                        (make-instance
-                                         'prompter:raw-source
-                                         :name "New URL")
-                                        (make-instance
-                                         'global-history-source
-                                         :enable-marks-p nil
-                                         :actions-on-return #'identity))
-                              :input (render-url (default-new-buffer-url *browser*))
-                              :postprocess (lambda (url-or-history-entry)
-                                             (render-url (url url-or-history-entry)))))))
+                            '(nyxt::configure-default-new-buffer-url))))
                      (:tr
                       (:td :class "setting"
                            (:span :class "name" "Modes")
@@ -398,23 +396,10 @@ to the next."
      (:p :class "detail" (render-url url))
      (:p :class "summary"
          "The address you are trying to visit has an invalid
-certificate. By default Nyxt refuses to establish a secure connection
+certificate. Nyxt refuses to establish a secure connection
 to a host with an erroneous certificate (e.g. self-signed ones). This
 could mean that the address you are attempting the access is
-compromised.")
-     (:p :class "summary"
-         "If you trust the address nonetheless, you can add an exception
-for the current hostname with the "
-         (:code "add-domain-to-certificate-exceptions")
-         " command.  The "
-         (:code "certificate-exception-mode")
-         " must be active for the current buffer (which is the
-default).")
-     (:p :class "summary"
-         "To persist hostname exceptions in your initialization
-file, see the "
-         (:code "add-domain-to-certificate-exceptions")
-         " documentation."))
+compromised."))
    buffer))
 
 (-> network-error-html (buffer string) (values string &optional))
@@ -454,7 +439,7 @@ The value is saved to clipboard."
   "Display a page suitable as `default-new-buffer-url'."
   ;; The logo and the two actions are one group. Each action is a 37px
   ;; control with its shortcut on the right; the two stack 17px apart, and
-  ;; the logo is that same 91px so the black square stays the height of the
+  ;; the logo is that same 91px so the square stays the height of the
   ;; buttons. The page list starts one step (37px) below that group. Content
   ;; and the corner credit share that same 37px inset.
   (labels ((command-row (heading detail description command)
@@ -482,18 +467,19 @@ The value is saved to clipboard."
                      (:span detail))))))
     (spinneret:with-html-string
       (:nstyle
-        '(body
+        `(body
           :min-height "100vh"
           :padding "37px"
-          :padding-bottom "112px")
+          :padding-bottom "112px"
+          :background-color ,(if (theme:dark-p theme:theme)
+                                 theme:background-color
+                                 theme:background-color+))
         `(.start
           :display "flex"
           :align-items "center"
           :margin "0 0 37px")
         `(.logo
-          :color ,(if (theme:dark-p theme:theme)
-                      theme:action-color
-                      theme:on-background-color)
+          :color ,theme:logo-color
           :width "91px"
           :height "91px"
           :flex "none"
@@ -503,6 +489,8 @@ The value is saved to clipboard."
           :width "91px"
           :height "91px"
           :border-radius "7px")
+        `(".logo svg path"
+          :fill ,theme:on-logo-color)
         '(.actions
           :display "flex"
           :flex-direction "column"
@@ -520,7 +508,7 @@ The value is saved to clipboard."
           :padding "0 17px"
           :border "none"
           :border-radius "7px"
-          :background-color "#f1f1f1"
+          :background-color ,theme:button-color
           :color ,theme:on-background-color
           :font-size "17px"
           :font-weight "400"
@@ -534,8 +522,8 @@ The value is saved to clipboard."
           :background-size "calc(100% - 14px) 3px"
           :background-repeat "no-repeat"
           :background-position "center bottom")
-        '("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
-          :background-color "#e6e6e6"
+        `("button.set-url:hover, button.execute-command:hover, button.set-url:active, button.execute-command:active"
+          :background-color ,theme:button-color-
           :opacity "1")
         `("button.set-url:focus-visible, button.execute-command:focus-visible"
           :outline "2px solid"
@@ -618,8 +606,8 @@ The value is saved to clipboard."
                      "Detailed Nyxt documentation, including configuration guides."
                      (nyxt-url 'manual))
            (page-row "Settings"
-                     "Shortcuts, homepage, and zoom"
-                     "Set keyboard shortcuts, the homepage URL, or zoom."
+                     "Shortcuts and homepage"
+                     "Set keyboard shortcuts or the homepage URL."
                      (nyxt-url 'common-settings))
            (page-row "Keyboard shortcuts"
                      "Bindings for this buffer"

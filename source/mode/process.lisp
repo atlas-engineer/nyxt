@@ -26,7 +26,7 @@ and `bt:thread-alive-p'."))
 
 Possible applications:
 - Web server.
-- Refreshing a URL at regular intervals (`nyxt/mode/watch').
+- Repeating an action at regular intervals (`nyxt/mode/repeat').
 - Live tracking of filesystem/data in a file/directory.
 
 The mode itself should not be used directly. Rather, it should be subclassed and

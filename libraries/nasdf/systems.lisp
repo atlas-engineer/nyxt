@@ -131,7 +131,7 @@ The renderer is configured from NYXT_RENDERER or `*nyxt-renderer*'."))
 
 (export '*nyxt-renderer*)
 (defvar *nyxt-renderer* (or (getenv "NYXT_RENDERER")
-                            "gi-gtk"))
+                            "cef"))
 
 (defmethod component-depends-on ((o prepare-op) (c nyxt-renderer-system))
   `((load-op ,(format nil "nyxt/~a-application" *nyxt-renderer*))

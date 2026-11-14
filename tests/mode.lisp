@@ -17,6 +17,7 @@
       (setf (url (current-buffer)) (quri:uri "test"))
       (assert-true arg-value
                    (nyxt/mode/repeat:repeat-interval
-                    (first (modes (first (enable-modes* 'nyxt/mode/watch:watch-mode
+                    (first (modes (first (enable-modes* 'nyxt/mode/repeat:repeat-mode
                                                         buffer
-                                                        :repeat-interval arg-value)))))))))
+                                                        :repeat-interval arg-value
+                                                        :repeat-action (constantly nil))))))))))

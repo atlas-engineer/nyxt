@@ -11,7 +11,7 @@
 (defsystem "nyxt"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
-  :version "4"                          ; 4.0.0-pre-release-3
+  :version "5"                          ; 5.0.0-pre-release-2
   :author "Atlas Engineer LLC"
   :homepage "https://nyxt-browser.com"
   :description "Extensible web browser in Common Lisp"
@@ -36,6 +36,7 @@
                flexi-streams
                iolib
                iolib/os
+               ironclad
                lass
                local-time
                log4cl
@@ -50,7 +51,6 @@
                phos
                plump
                prompter
-               py-configparser
                quri
                serapeum
                spinneret
@@ -66,6 +66,7 @@
                nyxt/download-manager
                nyxt/password-manager
                nyxt/text-buffer
+               nyxt/terminal
                nyxt/theme
                nyxt/user-interface)
   :pathname #p"NYXT:source;"
@@ -112,7 +113,8 @@
                  (:file "prompt-buffer")
                  (:file "command-commands")
                  (:file "recent-buffers")
-                 (:file "external-editor")))
+                 (:file "external-editor")
+                 (:file "update")))
                (:module "Core modes"
                 :pathname "mode"
                 :depends-on ("Core")
@@ -138,7 +140,8 @@
                  (:file "hint-prompt-buffer" :depends-on ("prompt-buffer"))
                  (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "download" :depends-on ("file-manager"))))
-               (:file "mode/base" :depends-on ("Core modes"))
+               (:file "mode/terminal" :depends-on ("Core modes"))
+               (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
                (:file "status" :depends-on ("Core"))
                (:module "Help"
                 :pathname ""
@@ -155,35 +158,31 @@
                 :depends-on ("Core modes")
                 :components
                 ((:file "annotate")
+                 (:file "authenticator")
                  (:file "autofill")
                  (:file "bookmark")
                  (:file "bookmarklets")
                  (:file "cruise-control" :depends-on ("repeat"))
                  (:file "emacs")
                  (:file "expedition")
-                 (:file "history-migration")
                  (:file "no-sound")
                  (:file "password")
+                 (:file "migrate" :depends-on ("bookmark"))
                  (:file "reading-line")
                  (:file "repeat")
                  (:file "small-web")
                  (:file "style" :depends-on ("bookmarklets"))
                  (:file "visual")
                  (:file "vi")
-                 (:file "watch")
                  (:file "blocker")
-                 (:file "certificate-exception")
-                 (:file "force-https")
                  (:file "no-image")
-                 (:file "no-script")
-                 (:file "no-webgl")
-                 (:file "proxy")
                  (:file "user-script"))))
   :in-order-to ((test-op (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
+                         (test-op "nyxt/terminal")
                          (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/tests"
@@ -201,6 +200,7 @@
                (:file "command")
                (:file "search-engine")
                (:file "utilities")
+               (:file "version")
                (:file "dom")
                (:file "mode")
                (:module "Modes"
@@ -208,19 +208,18 @@
                 :components
                 ((:file "autofill")
                  (:file "annotate")
+                 (:file "authenticator")
                  (:file "base")
                  (:file "blocker")
                  (:file "bookmark")
                  (:file "bookmarklets")
                  (:file "buffer-listing")
-                 (:file "certificate-exception")
                  (:file "cruise-control")
                  (:file "document")
                  (:file "download")
                  (:file "emacs")
                  (:file "expedition")
                  (:file "file-manager")
-                 (:file "force-https")
                  (:file "help")
                  (:file "hint-prompt-buffer")
                  (:file "hint")
@@ -228,15 +227,13 @@
                  (:file "input-edit")
                  (:file "keyscheme")
                  (:file "message")
+                 (:file "migrate")
                  (:file "no-image")
-                 (:file "no-script")
                  (:file "no-sound")
-                 (:file "no-webgl")
                  (:file "passthrough")
                  (:file "password")
                  (:file "process")
                  (:file "prompt-buffer")
-                 (:file "proxy")
                  (:file "reading-line")
                  ;; TODO Fix repeat-mode architecture.  Visit the file below for
                  ;; more information.
@@ -245,6 +242,7 @@
                  (:file "small-web")
                  (:file "spell-check")
                  (:file "style")
+                 (:file "terminal")
                  (:file "vi")
                  ;; TODO Fix visual-mode architecture.  Visit the file below for
                  ;; more information.
@@ -292,6 +290,7 @@
                          (compile-op "nyxt/documentation")
                          ;; Subsystems:
                          (test-op "nyxt/analysis")
+                         (test-op "nyxt/terminal")
                          (test-op "nyxt/theme"))))
 
 (defsystem "nyxt/gi-gtk/tests"
@@ -306,11 +305,6 @@
                (:file "search-buffer")
                (:file "buffer"))
   :test-suite-args (:package :nyxt/tests/renderer))
-
-(defsystem "nyxt/electron"
-  :depends-on (nyxt cl-electron)
-  :pathname #p"NYXT:source;renderer;"
-  :components ((:file "electron")))
 
 ;; We should not set the build-pathname in systems that have a component.
 ;; Indeed, when an external program (like Guix) builds components, it needs to
@@ -337,19 +331,11 @@
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")
 
-(defsystem "nyxt/electron-application"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (nyxt/electron)
-  :build-operation "program-op"
-  :build-pathname "nyxt"
-  :entry-point "nyxt:entry-point")
-
 (defsystem "nyxt/integration"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/electron lisp-unit2)
-  :description "Browse through the Electron UI: prompts, pages, and status."
+  :depends-on (nyxt/cef lisp-unit2)
+  :description "Browse through the UI: prompts, pages, and status."
   :pathname #p"NYXT:tests;integration;"
   :serial t
   :components ((:file "package")
@@ -449,6 +435,28 @@
   :pathname #p"NYXT:libraries;text-buffer;"
   :components ((:file "package")
                (:file "text-buffer")))
+
+(defsystem "nyxt/terminal"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-system
+  :depends-on (babel
+               bordeaux-threads
+               cffi
+               nclasses
+               serapeum
+               uiop)
+  :pathname #p"NYXT:libraries;terminal;"
+  :components ((:file "package")
+               (:file "terminal" :depends-on ("package")))
+  :in-order-to ((test-op (test-op "nyxt/terminal/tests"))))
+
+(defsystem "nyxt/terminal/tests"
+  :defsystem-depends-on ("nasdf")
+  :class :nasdf-test-system
+  :depends-on (nyxt/terminal lisp-unit2)
+  :pathname #p"NYXT:libraries;terminal;tests;"
+  :components ((:file "tests"))
+  :test-suite-args (:package :terminal/tests))
 
 (defsystem "nyxt/password-manager"
   :defsystem-depends-on ("nasdf")

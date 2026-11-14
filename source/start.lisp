@@ -100,15 +100,7 @@ Without --quit or --remote, the loading is done after parsing the config file
        "Send the --eval and --load arguments to the running instance of Nyxt.
 Unless --quit is specified, also send s-expressions from the standard input.
 The remote instance must be listening on a socket which you can specify with
---socket and have the `remote-execution-p' browser slot to non-nil.")
-      (:name :headless
-       :long "headless"
-       :description "Start Nyxt without showing any graphical element.
-This is useful to run scripts for instance.")
-      (:name :electron-opts
-       :long "electron-opts"
-       :arg-parser #'identity
-       :description "Command-line options to pass to Electron"))))
+--socket and have the `remote-execution-p' browser slot to non-nil."))))
 ;; Also define command line options at read-time because we parse
 ;; `opts::*options*' in `start'.
 (eval-always (define-opts))
@@ -149,7 +141,7 @@ This is useful to run scripts for instance.")
   "Shared libraries opened while the image was built.
 SBCL reopens saved libraries before `sb-ext:*init-hooks*' run, using the
 path from the build machine. These are left out of the image and loaded
-again from that path when it still exists, or from the AppImage.")
+again from that path when it still exists, or from the AppImage or Flatpak.")
 
 (defun relocatable-library-p (namestring)
   "Whether NAMESTRING is a library this image opened, rather than the loader."
@@ -165,6 +157,15 @@ again from that path when it still exists, or from the AppImage.")
     (when (search "libcl-clipboard" base)
       (when-let ((override (uiop:getenv "CL_CLIPBOARD_LIBRARY")))
         (push override candidates)))
+    (when-let ((flatpak-id (uiop:getenv "FLATPAK_ID")))
+      (when (plusp (length flatpak-id))
+        (dolist (directory '("/app/lib/" "/app/lib/cef/" "/app/bin/"))
+          (push (uiop:native-namestring
+                 (uiop:merge-pathnames*
+                  base
+                  (uiop:ensure-directory-pathname
+                   (uiop:parse-native-namestring directory))))
+                candidates))))
     (when-let ((appdir (uiop:getenv "APPDIR")))
       (let ((root (uiop:ensure-directory-pathname
                    (uiop:parse-native-namestring appdir))))
@@ -206,6 +207,40 @@ Call this after the application system is loaded and before `asdf:make'."
         (setf (sb-alien::shared-object-dont-save object) t))))
   (pushnew 'reload-relocatable-libraries sb-ext:*init-hooks*)
   *relocatable-foreign-libraries*)
+
+(-> system-ca-file () (values (or null string) &optional))
+(defun system-ca-file ()
+  "A PEM CA bundle, or NIL.
+An existing SSL_CERT_FILE is used. Otherwise the first file present in the
+usual distribution locations, then the copy shipped in an AppImage."
+  (flet ((existing (path)
+           (when (and (stringp path)
+                      (plusp (length path))
+                      (uiop:file-exists-p path))
+             path)))
+    (or (existing (uiop:getenv "SSL_CERT_FILE"))
+        (some #'existing
+              '("/etc/ssl/certs/ca-certificates.crt"
+                "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
+                "/etc/pki/tls/certs/ca-bundle.crt"
+                "/etc/ssl/ca-bundle.pem"
+                "/etc/ssl/cert.pem"))
+        (when-let ((appdir (uiop:getenv "APPDIR")))
+          (existing
+           (uiop:native-namestring
+            (uiop:merge-pathnames*
+             #p"usr/ssl/cert.pem"
+             (uiop:ensure-directory-pathname
+              (uiop:parse-native-namestring appdir)))))))))
+
+(defun ensure-ssl-cert-file ()
+  "Point OpenSSL at `system-ca-file' when SSL_CERT_FILE is unset.
+The library compiled into a foreign binary looks for certificates in its build
+directory. On another distribution that directory is missing and every Lisp
+download fails verification."
+  (unless (uiop:getenv "SSL_CERT_FILE")
+    (when-let ((ca-file (system-ca-file)))
+      (setf (uiop:getenv "SSL_CERT_FILE") ca-file))))
 
 (export-always 'entry-point)
 (defun entry-point ()
@@ -324,6 +359,7 @@ The OPTIONS are the same as the command line options.
 
 ~a" (with-output-to-string (s) (opts:describe :stream s)))
   (declare #.(cons 'ignorable %start-args))
+  (ensure-ssl-cert-file)
   ;; Nyxt extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
   (pushnew 'nyxt-source-registry asdf:*default-source-registries*)
@@ -336,11 +372,10 @@ The OPTIONS are the same as the command line options.
   (initialize-lparallel-kernel)
   ;; Options should be accessible anytime, even when run from the REPL.
   (setf *options* options)
-  (destructuring-bind (&key (headless *headless-p*) verbose help version
+  (destructuring-bind (&key verbose help version
                          system-information load eval quit remote
                        &allow-other-keys)
       options
-    (setf *headless-p* headless)
     (if verbose
         (progn
           (log:config :debug)

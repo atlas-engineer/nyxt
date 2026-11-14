@@ -1,0 +1,74 @@
+name: Linux Flatpak
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  flatpak:
+    name: Build CEF Flatpak
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    # The apt repo still ships ocicl 2.20.0. That release retries a reset
+    # connection three times, and every worker waits the same interval, so a
+    # GitHub runner opening eight downloads at once gets reset again together.
+    # Six retries is the budget 2.21.0 takes when CI is set. Two workers keeps
+    # the registry from resetting the whole batch.
+    env:
+      OCICL_HTTP_RETRIES: "6"
+      OCICL_DOWNLOAD_CONCURRENCY: "2"
+    steps:
+      - name: Check out Nyxt
+        uses: actions/checkout@v7
+
+      - name: Install build packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            bzip2 \
+            ca-certificates \
+            cmake \
+            curl \
+            flatpak \
+            flatpak-builder \
+            git \
+            libenchant-2-dev \
+            libfixposix-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            libwayland-dev \
+            libx11-dev \
+            pkg-config
+
+      - name: Install SBCL
+        run: |
+          version=2.6.10
+          curl -fsSL -o /tmp/sbcl.tar.bz2 \
+            "https://downloads.sourceforge.net/project/sbcl/sbcl/${version}/sbcl-${version}-x86-64-linux-binary.tar.bz2"
+          tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
+          cd "/tmp/sbcl-${version}-x86-64-linux"
+          sudo sh install.sh
+          sbcl --version
+
+      - name: Install Ocicl
+        run: |
+          curl -fsSL https://ocicl.github.io/ocicl/deb-repo/ocicl-archive-keyring.gpg \
+            | sudo tee /usr/share/keyrings/ocicl-archive-keyring.asc >/dev/null
+          echo "deb [signed-by=/usr/share/keyrings/ocicl-archive-keyring.asc] https://ocicl.github.io/ocicl/deb-repo stable main" \
+            | sudo tee /etc/apt/sources.list.d/ocicl.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y ocicl
+          ocicl setup
+
+      - name: Build the Flatpak
+        run: sh .github/linux-flatpak.sh
+
+      - name: Upload Flatpak
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nyxt-x86_64.flatpak
+          path: build/flatpak/Nyxt-x86_64.flatpak
+          if-no-files-found: error

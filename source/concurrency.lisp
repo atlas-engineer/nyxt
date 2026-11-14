@@ -81,8 +81,7 @@ This is a blocking operation."
 This supersedes `bt:make-thread' in Nyxt.  Don't use the latter unless you know
 what you are doing!"
   `(lparallel.thread-util:with-thread (:name ,(str:concat "Nyxt " name)
-                                       :bindings (append '((*run-from-repl-p* . *run-from-repl-p*)
-                                                           (*headless-p* . *headless-p*))
+                                       :bindings (append '((*run-from-repl-p* . *run-from-repl-p*))
                                                          bt:*default-special-bindings*))
      (with-protect ("Error on separate thread: ~a" :condition)
        ,@body)))

@@ -73,7 +73,14 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+      '(html
+        :height "100%"
+        :overflow "hidden")
       `(body
+        :height "100%"
+        :overflow "hidden"
+        :white-space "nowrap"
+        :text-overflow "ellipsis"
         :background-color ,theme:background-color-
         :color ,theme:on-background-color
         :font-family ,theme:font-family

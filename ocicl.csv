@@ -25,7 +25,7 @@ chipz, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c
 chunga, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/chunga/chunga.asd
 cl-base64, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-base64/cl-base64.asd
 cl-base64-tests, ghcr.io/ocicl/cl-base64@sha256:702412dbc1ed825e275fb23e22c29527eb786bf644e47c7621bf0dbb34e17c7e, cl-base64-20240503-80496b7/cl-base64-tests.asd
-cl-cef, git+https://github.com/atlas-engineer/cl-cef@eb38ee82b7997aa1fe3bef225cfc2fadbe5bf19b#ref=eb38ee82b7997aa1fe3bef225cfc2fadbe5bf19b, cl-cef-eb38ee8/cl-cef.asd
+cl-cef, git+https://github.com/atlas-engineer/cl-cef@39671481cb71af67110e8ff7c5337b50450710b9#ref=39671481cb71af67110e8ff7c5337b50450710b9, cl-cef-3967148/cl-cef.asd
 cl-cffi-gtk, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/gtk/cl-cffi-gtk.asd
 cl-cffi-gtk-cairo, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/cairo/cl-cffi-gtk-cairo.asd
 cl-cffi-gtk-demo-cairo, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cffi-gtk/demo/cairo-demo/cl-cffi-gtk-demo-cairo.asd
@@ -52,7 +52,6 @@ cl-cookie, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f
 cl-cookie-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-cookie/cl-cookie-test.asd
 cl-custom-hash-table, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-custom-hash-table/cl-custom-hash-table.asd
 cl-custom-hash-table-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-custom-hash-table/cl-custom-hash-table-test.asd
-cl-electron, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-electron/cl-electron.asd
 cl-gobject-introspection, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gobject-introspection/cl-gobject-introspection.asd
 cl-gobject-introspection-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gobject-introspection/cl-gobject-introspection-test.asd
 cl-gopher, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gopher/cl-gopher.asd
@@ -69,7 +68,7 @@ cl-qrencode-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a2
 cl-tld, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-tld/cl-tld.asd
 cl-unicode, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-unicode/cl-unicode.asd
 cl-utilities, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-utilities/cl-utilities.asd
-cl-webkit2, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-webkit/webkit2/cl-webkit2.asd
+cl-webkit2, git+https://github.com/atlas-engineer/cl-webkit@a3ff0e2505dc3a2eeec39625129afb6c15f5c033#ref=a3ff0e2505dc3a2eeec39625129afb6c15f5c033, cl-webkit-a3ff0e2/webkit2/cl-webkit2.asd
 cl_plus_ssl, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.asd
 cl_plus_ssl.test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.test.asd
 closer-mop, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/closer-mop/closer-mop.asd
@@ -114,6 +113,8 @@ iolib.base, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430
 iolib.common-lisp, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.common-lisp.asd
 iolib.conf, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.conf.asd
 iolib.examples, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iolib/iolib.examples.asd
+ironclad, ghcr.io/ocicl/ironclad@sha256:3117e5a26a3e94924074c3548c235a2b733609ed61a2731880ac9e31df55428b, ironclad-20240503-6da010f/ironclad.asd
+ironclad-text, ghcr.io/ocicl/ironclad@sha256:3117e5a26a3e94924074c3548c235a2b733609ed61a2731880ac9e31df55428b, ironclad-20240503-6da010f/ironclad-text.asd
 iterate, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iterate/iterate.asd
 jpl-queues, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/jpl-queues/jpl-queues.asd
 jpl-util, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-jpl-util/jpl-util.asd
@@ -167,8 +168,6 @@ proc-parse, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430
 proc-parse-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/proc-parse/proc-parse-test.asd
 prompter, git+https://github.com/atlas-engineer/prompter@2fcdf1561f13db98b0b3f63e605c4ef394ee4e64#ref=2fcdf1561f13db98b0b3f63e605c4ef394ee4e64, prompter-2fcdf15/prompter.asd
 puri, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/puri/puri.asd
-py-configparser, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/py-configparser/py-configparser.asd
-py-configparser-tests, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/py-configparser/tests/py-configparser-tests.asd
 quri, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/quri/quri.asd
 quri-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/quri/quri-test.asd
 rt, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/iterate/ext/rt/rt.asd

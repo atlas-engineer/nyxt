@@ -2,7 +2,6 @@
 ;;;; SPDX-License-Identifier: BSD-3-Clause
 
 (nyxt:define-package :nyxt/mode/document
-  (:shadow #:focus-first-input-field)
   (:documentation "Package for `document-mode', mode to interact with structured documents."))
 (in-package :nyxt/mode/document)
 
@@ -12,10 +11,9 @@ This is typically for HTML pages, but other formats could be supported too.
 It does not assume being online.
 
 Important pieces of functionality are:
-- Page scrolling and zooming. A zoom level is remembered for each host, as in
-Firefox, and reused for every page on that host.
+- Page scrolling and zooming.
 - QR code generation.
-- view-source: for URLs.
+- Page source.
 - Buffer content summarization.
 - Heading navigation.
 - Frame selection."
@@ -25,7 +23,6 @@ Firefox, and reused for every page on that host.
       keyscheme:default
       (list
        "C-M-Z" 'nyxt/mode/passthrough:passthrough-mode
-       "M-i" 'focus-first-input-field
        "C-M-c" 'open-inspector
        "C-C" 'open-inspector
        "C-p" 'print-buffer
@@ -175,30 +172,6 @@ Only includes the strings that were pasted/copied inside Nyxt."))
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
 
-(define-command focus-first-input-field (&key (buffer (current-buffer)))
-  "Move the focus to the first inputtable element of BUFFER."
-  ;; There are two basic ways to have an editable widget on a webpage:
-  ;; - Using <input>/<textarea>,
-  ;; - or marking any other element as contenteditable:
-  ;;   https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/contenteditable
-  (loop with inputs = (clss:ordered-select "input, textarea, [contenteditable]" (document-model buffer))
-        for input across inputs
-        when (ps-eval :buffer buffer
-               (nyxt/ps:element-editable-p
-                (nyxt/ps:qs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id input)))))
-          do (nyxt/dom:focus-select-element input)
-          and do (return input)))
-
-(defmethod nyxt:on-signal-load-finished ((mode document-mode) url title)
-  (declare (ignore title))
-  (with-slots (buffer) mode
-    ;; The renderer resets zoom when a page loads. A host gets the ratio
-    ;; remembered for it, or the buffer default. Other URLs keep the zoom
-    ;; already set on this buffer.
-    (setf (ffi-buffer-zoom-ratio buffer)
-          (zoom-ratio-for-url url buffer)))
-  url)
-
 (define-internal-page show-url-qrcode (&key url)
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
@@ -235,28 +208,45 @@ Warning: URL is a string."
   (buffer-load-internal-page-focus 'show-url-qrcode :url (quri:render-uri (url buffer))))
 
 (export-always 'get-url-source)
+(-> get-url-source (t) (values string &optional))
 (defun get-url-source (url)
-  "Get HTML source for URL page, as a string."
-  (let ((buffer (find url (buffer-list) :test #'quri:uri= :key #'url)))
+  "Return the HTML source of the buffer open at URL."
+  (let* ((url (url url))
+         (buffer (find url (buffer-list) :test #'quri:uri= :key #'url)))
     (unless buffer
-      (return-from get-url-source (echo-warning "No buffer loaded URL: ~a" url)))
+      (echo-warning "No buffer loaded URL: ~a" url)
+      (return-from get-url-source (format nil "No buffer loaded URL: ~a" url)))
     (let ((dom (if (web-buffer-p buffer)
-                   (nyxt/dom:copy (document-model buffer))
-                   (plump:parse (ffi-buffer-get-document buffer)))))
+                   (when-let ((model (document-model buffer)))
+                     (nyxt/dom:copy model))
+                   (handler-case (plump:parse (ffi-buffer-get-document buffer))
+                     (error () nil)))))
+      (unless dom
+        (return-from get-url-source
+          (handler-case (or (ffi-buffer-get-document buffer) "")
+            (error () ""))))
       (loop for e across (clss:select "[nyxt-identifier]" dom)
             do (plump:remove-attribute e "nyxt-identifier"))
       (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
       (plump:serialize dom nil))))
 
-(define-internal-scheme "view-source"
+(-> source-url (t) (values string &optional))
+(defun source-url (url)
+  "Return the page URL embedded in a `nyxt-source' URL.
+The page URL is the text after the scheme colon, so its query is preserved."
+  (let ((spec (if (stringp url) url (render-url url))))
+    (if-let ((colon (position #\: spec)))
+      (subseq spec (1+ colon))
+      spec)))
+
+(define-internal-scheme "nyxt-source"
     (lambda (url)
-      (values (get-url-source (quri:uri-path (quri:uri url)))
-              "text/plain")))
+      (values (get-url-source (source-url url)) "text/plain")))
 
 (define-command-global view-source (&key (url (url (current-buffer))))
   "View source of the URL (by default current page) in a separate buffer."
-  (make-buffer-focus :url (quri:make-uri :scheme "view-source"
-                                         :path (quri:render-uri url))))
+  (make-buffer-focus :url (quri:make-uri :scheme "nyxt-source"
+                                         :path (render-url (url url)))))
 
 (define-command scroll-to-top (&key (smooth-p (smooth-scrolling (current-buffer))))
   "Scroll to the top of the current page."
@@ -318,49 +308,21 @@ The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
   (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
                                              (ps:@ window inner-height)))))))
 
-(defun apply-host-zoom (buffer zoom)
-  "Set ZOOM on BUFFER and on every other page open on the same host.
-When the page has a host, remember ZOOM for later pages on that host."
-  (if (and (realp zoom) (plusp zoom))
-      (let* ((zoom (float zoom 1.0))
-             (host (zoom-host (url buffer))))
-        (when host
-          (remember-zoom (url buffer) zoom))
-        (dolist (other (if host
-                           (adjoin buffer (buffers-on-host host))
-                           (list buffer)))
-          (setf (ffi-buffer-zoom-ratio other) zoom)))
-      (setf (ffi-buffer-zoom-ratio buffer) zoom)))
-
 (define-command zoom-page (&key (buffer (current-buffer)))
-  "Zoom in the current page.
-The new ratio is remembered for this host and applied to every open page on
-it. Later pages on the host use the same ratio."
-  (apply-host-zoom buffer
-                   (+ (ffi-buffer-zoom-ratio buffer)
-                      (zoom-ratio-step buffer))))
+  "Zoom in the current page."
+  (setf (ffi-buffer-zoom-ratio buffer)
+        (+ (ffi-buffer-zoom-ratio buffer)
+           (zoom-ratio-step buffer))))
 
 (define-command unzoom-page (&key (buffer (current-buffer)))
-  "Zoom out the current page.
-The new ratio is remembered for this host and applied to every open page on
-it. Later pages on the host use the same ratio."
-  (apply-host-zoom buffer
-                   (- (ffi-buffer-zoom-ratio buffer)
-                      (zoom-ratio-step buffer))))
+  "Zoom out the current page."
+  (setf (ffi-buffer-zoom-ratio buffer)
+        (- (ffi-buffer-zoom-ratio buffer)
+           (zoom-ratio-step buffer))))
 
 (define-command reset-page-zoom (&key (buffer (current-buffer)))
-  "Reset this host to the default zoom.
-The remembered ratio is forgotten, so later pages use `zoom-ratio-default'.
-Other hosts are left unchanged."
-  ;; Delete `zoom-ratio-default' slot when we are able to get the initform of a
-  ;; slot set by `define-configuration'.
-  (let ((host (zoom-host (url buffer))))
-    (when host
-      (remember-zoom (url buffer) nil))
-    (dolist (other (if host
-                       (adjoin buffer (buffers-on-host host))
-                       (list buffer)))
-      (setf (ffi-buffer-zoom-ratio other) (zoom-ratio-default other)))))
+  "Reset the current page zoom to 0."
+  (setf (ffi-buffer-zoom-ratio buffer) 0.0))
 
 (define-class heading ()
   ((inner-text "" :documentation "The inner text of the heading within the document.")
@@ -374,22 +336,78 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 (defmethod title ((heading heading))
   (subseq (inner-text heading) 0 (position #\[ (inner-text heading))))
 
+(-> parent-node (plump:node) (or null plump:node))
+(defun parent-node (node)
+  (when (plump:child-node-p node)
+    (plump:parent node)))
+
+(-> node-after (plump:node) (or null plump:node))
+(defun node-after (node)
+  "Return the next sibling of NODE, or of the nearest ancestor that has one."
+  (loop for current = node then (parent-node current)
+        while (parent-node current)
+        for sibling = (plump:next-sibling current)
+        when sibling
+          return sibling))
+
+(-> skipped-element-p (plump:node) boolean)
+(defun skipped-element-p (node)
+  (and (plump:element-p node)
+       (not (null (member (plump:tag-name node)
+                          '("script" "style" "noscript" "template" "svg")
+                          :test #'string-equal)))))
+
+(-> next-document-node (plump:node) (or null plump:node))
+(defun next-document-node (node)
+  "Return the next node in document order after NODE.
+Children of script, style, and similar elements are not visited."
+  (or (and (plump:nesting-node-p node)
+           (not (skipped-element-p node))
+           (plump:first-child node))
+      (node-after node)))
+
+(-> heading-section-text (plump:element (or null plump:element)) string)
+(defun heading-section-text (heading next-heading)
+  "Return the text between HEADING and NEXT-HEADING.
+The walk stops at NEXT-HEADING and skips script, style, and similar elements.
+NEXT-HEADING may be NIL, in which case the text runs to the end of the document."
+  (str:collapse-whitespaces
+   (str:trim
+    (with-output-to-string (stream)
+      (loop for node = (node-after heading) then (next-document-node node)
+            while (and node (not (eq node next-heading)))
+            when (plump:text-node-p node)
+              do (write-string (plump:text node) stream)
+                 (write-char #\Space stream))))))
+
+(-> heading-keyword-lists (list) list)
+(defun heading-keyword-lists (elements)
+  "Return a keyword alist for each heading in ELEMENTS.
+Keywords come from the text that follows that heading and stop at the next
+heading. They are scored across ELEMENTS, so a term that appears under every
+heading sinks."
+  (analysis:extract-keywords
+   (loop for (heading . rest) on elements
+         collect (heading-section-text heading (first rest)))
+   :limit 5))
+
 (defun get-headings (&key (buffer (current-buffer)))
-  (ps-labels :buffer buffer
-    ((heading-scroll-position
-      :buffer buffer (element)
-      (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
-                (get-bounding-client-rect) y)))
-    (map 'list
-         (lambda (e)
-           (make-instance 'heading :inner-text (plump:text e)
-                                   :element e
+  (let ((elements (coerce (clss:ordered-select "h1, h2, h3, h4, h5, h6"
+                                               (document-model buffer))
+                          'list)))
+    (ps-labels :buffer buffer
+      ((heading-scroll-position
+        :buffer buffer (element)
+        (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
+                  (get-bounding-client-rect) y)))
+      (loop for element in elements
+            for keywords in (heading-keyword-lists elements)
+            collect (make-instance 'heading
+                                   :inner-text (plump:text element)
+                                   :element element
                                    :buffer buffer
-                                   :keywords (ignore-errors
-                                              (analysis:extract-keywords
-                                               (plump:text (plump:next-element e))))
-                                   :scroll-position (heading-scroll-position e)))
-         (clss:ordered-select "h1, h2, h3, h4, h5, h6" (document-model buffer)))))
+                                   :keywords keywords
+                                   :scroll-position (heading-scroll-position element))))))
 
 (defun current-heading (&optional (buffer (current-buffer)))
   (when-let* ((scroll-position (document-scroll-position buffer))
@@ -832,13 +850,9 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
 
 (-> activate-frame-prompt (prompt-buffer) t)
 (defun activate-frame-prompt (prompt)
-  "Focus PROMPT and keep it fully opaque."
+  "Focus PROMPT and mark it as the buffer with the keyboard."
   (ffi-within-renderer-thread (lambda () (ffi-focus-buffer prompt)))
-  (ps-eval :buffer prompt
-    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")
-    (ps:let ((input (nyxt/ps:qs document "#input")))
-      (when input
-        (ps:chain input (focus))))))
+  (indicate-prompt-buffer-focus prompt t))
 
 (-> replace-frame-suggestions (prompter:source list) t)
 (defun replace-frame-suggestions (source urls)
@@ -850,11 +864,6 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                          (prompter:marks source)))
     (bt:with-lock-held ((slot-value source 'prompter::initial-suggestions-lock))
       (setf (slot-value source 'prompter::initial-suggestions) wrapped))))
-
-(defun keep-frame-prompt-opaque (prompt)
-  "Leave PROMPT undimmed while the pointer is on the page."
-  (ps-eval :async t :buffer prompt
-    (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1")))
 
 (-> watch-frame-selection (prompter:source buffer window) t)
 (defun watch-frame-selection (source buffer window)
@@ -882,13 +891,10 @@ The inner-text must not be modified, so that we can jump to the anchor of the sa
                (handler-case
                    (with-current-buffer buffer
                      (let* ((state (frame-element-state))
-                            (dragging (and state (cdr (assoc :dragging state))))
                             (ready (and state (cdr (assoc :ready state))))
                             (ended (or (and state (cdr (assoc :ended state))) 0))
                             (urls (when ready
                                     (frame-source-selection))))
-                       (when dragging
-                         (keep-frame-prompt-opaque prompt))
                        (when (and ready (not (equal urls last-urls)))
                          (setf last-urls urls)
                          (replace-frame-suggestions source (or urls '()))

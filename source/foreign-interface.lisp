@@ -23,17 +23,37 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
             `(defmethod (setf ,name) (value ,@arguments)
                (declare (ignore value ,@arguments))))))))
 
+(defvar *window-delete-lock* (bt:make-lock "nyxt-window-delete"))
+
 (define-ffi-generic ffi-window-delete (window)
   (:method :around ((window window))
-    (with-slots (windows) *browser*
-      (cond ((or *quitting-nyxt-p*
-                 (> (hash-table-count windows) 1))
-             (hooks:run-hook (window-delete-hook window) window)
-             (remhash (id window) windows)
-             (call-next-method))
-            (t
-             (echo "Can't delete sole window.")))))
-  (:documentation "Delete WINDOW."))
+    (let ((sole-p nil))
+      (prog1
+          (bt:with-lock-held (*window-delete-lock*)
+            (when *browser*
+              (with-slots (windows last-active-window) *browser*
+                (cond ((not (gethash (id window) windows))
+                       nil)
+                      ((or *quitting-nyxt-p*
+                           (> (hash-table-count windows) 1))
+                       (remove-setf-handlers (status-buffer window))
+                       (hooks:run-hook (window-delete-hook window) window)
+                       (remhash (id window) windows)
+                       (call-next-method)
+                       (when (eq last-active-window window)
+                         (setf last-active-window (first (window-list))))
+                       (setf (active-prompt-buffers window) '())
+                       t)
+                      (t
+                       (setf sole-p t)
+                       nil)))))
+        (when sole-p
+          (quit)))))
+  (:documentation "Delete WINDOW.
+Page buffers that WINDOW was showing stay in the browser and can be shown in
+another window. Status, message, and prompt views that belong to WINDOW are
+closed with it.
+When WINDOW is the last one, quit Nyxt."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
@@ -84,7 +104,7 @@ Setf-able."))
     (setf (slot-value browser 'last-active-window)
           (call-next-method)))
   (:method ((browser t))
-    (or (slot-value browser 'last-active-window)
+    (or (find (slot-value browser 'last-active-window) (window-list))
         (first (window-list))))
   (:documentation "Return the focused window.
 
@@ -100,10 +120,12 @@ The `:around' method ensures that `last-active-window' is set."))
       (setf (last-access buffer) (time:now)))
     (call-next-method)
     buffer)
-  (:method :after ((window window) (buffer buffer) &key focus &allow-other-keys)
-    (declare (ignore focus))
-    (setf (active-buffer window) buffer))
+  (:method :after ((window window) (buffer buffer) &key (focus t) &allow-other-keys)
+    (setf (active-buffer window) buffer)
+    (when focus
+      (setf (keyboard-buffer window) buffer)))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
+When FOCUS is non-nil, the default, BUFFER receives keyboard focus.
 Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
 
 (define-ffi-generic ffi-focus-buffer (buffer)
@@ -183,14 +205,6 @@ See `scheme'."))
 (define-ffi-generic ffi-buffer-remove-user-script (buffer script)
   (:documentation "Remove the SCRIPT installed with `ffi-buffer-add-user-script'."))
 
-(define-ffi-generic ffi-buffer-javascript-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when JavaScript is enabled in BUFFER.
-Setf-able."))
-(define-ffi-generic ffi-buffer-javascript-markup-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when JavaScript can mutate the BUFFER' contents.
-Setf-able."))
 (define-ffi-generic ffi-buffer-smooth-scrolling-enabled-p (buffer)
   (:setter-p t)
   (:documentation "Return non-nil when smooth scrolling is enabled in BUFFER.
@@ -199,26 +213,22 @@ Setf-able."))
   (:setter-p t)
   (:documentation "Return non-nil when video and audio playback are enabled in BUFFER.
 Setf-able."))
-(define-ffi-generic ffi-buffer-webgl-enabled-p (buffer)
-  (:setter-p t)
-  (:documentation "Return non-nil when WebGL is enabled in BUFFER.
-Setf-able."))
 (define-ffi-generic ffi-buffer-auto-load-image-enabled-p (buffer)
   (:setter-p t)
   (:documentation "Return non-nil when images are displayed in BUFFER.
 Setf-able."))
+(define-ffi-generic ffi-buffer-blocked-hosts (buffer)
+  (:setter-p t)
+  (:documentation "Host names BUFFER refuses to load.
+The value is a list of host names. Setf replaces the whole list. NIL loads
+every host. The request host is matched exactly, ignoring case, so
+\"example.com\" does not block \"ads.example.com\". A port, a trailing dot,
+and surrounding brackets are ignored. Both renderers enforce this list before
+the request is used."))
 (define-ffi-generic ffi-buffer-sound-enabled-p (buffer)
   (:setter-p t)
   (:documentation "Return non-nil when the sound is enabled in BUFFER.
 Setf-able."))
-
-(define-ffi-generic ffi-buffer-proxy (buffer)
-  (:setter-p t)
-  (:documentation "Return the proxy URL as a `quri:uri'.
-Return the list of ignored hosts (list of strings) as a second value.
-
-Setf-able.  The value is either a PROXY-URL or a pair of (PROXY-URL IGNORE-HOSTS).
-PROXY-URL is a `quri:uri' and IGNORE-HOSTS a list of strings."))
 
 (define-ffi-generic ffi-buffer-download (buffer url)
   (:documentation "Download URL using the BUFFER web view."))
@@ -263,6 +273,14 @@ specific threads."))
 
 (define-ffi-generic ffi-kill-browser (browser)
   (:documentation "Terminate the renderer process."))
+
+(define-ffi-generic ffi-clear-cache (browser)
+  (:documentation "Clear the HTTP cache held by BROWSER's renderer."))
+
+(define-command-global clear-renderer-cache ()
+  "Clear the renderer's HTTP cache."
+  (ffi-clear-cache *browser*)
+  (echo "Renderer cache cleared."))
 
 (define-ffi-generic ffi-initialize (browser urls startup-timestamp)
   (:method ((browser t) urls startup-timestamp)

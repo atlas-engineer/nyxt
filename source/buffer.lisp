@@ -604,17 +604,11 @@ buffer.")
     :reader t
     :export t
     :documentation "The current zoom ratio as per `ffi-buffer-zoom-ratio'.
-It is an implementation detail and must not be set by the user. For the
-user-facing default, see `zoom-ratio-default'. The ratio remembered for a
-host lives in the browser's `zoom-ratios'.")
+It is an implementation detail and must not be set by the user.")
    (zoom-ratio-step
     0.1
     :type float
     :documentation "The step size for zooming in and out.")
-   (zoom-ratio-default
-    1.0
-    :type float
-    :documentation "The default zoom ratio.")
    (page-scroll-ratio
     0.90
     :type float
@@ -739,16 +733,7 @@ Example:
 \(defmethod configure-instance ((buffer buffer))
   (reduce #'hooks:add-hook
           '(old-reddit-handler auto-proxy-handler)
-          :initial-value (request-resource-hook buffer)))")
-   (proxy
-    nil
-    :accessor nil
-    :type (or proxy null)
-    :documentation "Proxy for buffer.")
-   (certificate-exceptions
-    '()
-    :type (list-of string)
-    :documentation "A list of hostnames for ignoring certificate errors."))
+          :initial-value (request-resource-hook buffer)))"))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -870,18 +855,6 @@ In case the page changed more than `document-model-delta-threshold', runs
                     (update-document-model :buffer buffer)
                     (slot-value buffer 'document-model))))))))
 
-(defmethod proxy ((buffer buffer))
-  (slot-value buffer 'proxy))
-
-(defmethod (setf proxy) (proxy (buffer buffer))
-  (setf (slot-value buffer 'proxy) proxy)
-  (if proxy
-      (setf (ffi-buffer-proxy buffer)
-            (list (url proxy)
-                  (allowlist proxy)))
-      (setf (ffi-buffer-proxy buffer)
-            (quri:uri ""))))
-
 (defmethod keywords ((buffer web-buffer))
   "Return the terms that best describe the contents of BUFFER."
   (or (slot-value buffer 'keywords)
@@ -902,17 +875,6 @@ In case the page changed more than `document-model-delta-threshold', runs
                            (mapcar #'first (nyxt::keywords (buffer source))))))
   (:export-class-name-p t)
   (:documentation "Source listing the keywords for source `buffer'."))
-
-(-> proxy-url (buffer &key (:downloads-only boolean)) *)
-(defun proxy-url (buffer &key (downloads-only nil))
-  "Return the proxy address, nil if not set.
-If DOWNLOADS-ONLY is non-nil, then it only returns the proxy address (if any)
-when `proxied-downloads-p' is true."
-  (let* ((proxy (and buffer (proxy buffer)))
-         (proxied-downloads (and proxy (proxied-downloads-p proxy))))
-    (when (or (and (not downloads-only) proxy)
-              proxied-downloads)
-      (url proxy))))
 
 (defun load-failed-p (buffer)
   "Only `network-buffer' loads can fail."
@@ -1099,14 +1061,12 @@ buffer currently chosen as suggestion."))
 
 (define-command toggle-prompt-buffer-focus ()
   "Toggle the focus between the current buffer and the current prompt buffer."
-  (let ((prompt-buffer (current-prompt-buffer)))
-    (if (ffi-focused-p prompt-buffer)
+  (when-let ((prompt-buffer (current-prompt-buffer)))
+    (if (prompt-buffer-focused-p prompt-buffer)
         (prog1 (ffi-focus-buffer (current-buffer))
-          (ps-eval :buffer prompt-buffer
-            (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "0.5")))
+          (indicate-prompt-buffer-focus prompt-buffer nil))
         (prog1 (ffi-focus-buffer prompt-buffer)
-          (ps-eval :buffer prompt-buffer
-            (setf (ps:@ (nyxt/ps:qs document "*") style opacity) "1"))))))
+          (indicate-prompt-buffer-focus prompt-buffer t)))))
 
 
 (flet ((delete-all (buffers &optional predicate)
@@ -1180,13 +1140,14 @@ When BUFFER is omitted, it defaults to the current one."
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
-   (prompter:constructor (recent-history-entries 200 *browser* :deduplicate-p t))
+   (prompter:constructor (recent-distinct-history-entries 512 *browser*))
    (prompter:enable-marks-p t)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:documentation "Source listing all the entries in history.
+  (:documentation "Source listing the latest distinct URLs in history.
+Offers at most 512 URLs, newest first.
 Loads the entry with default `prompter:actions-on-return'."))
 
 (define-class url-or-query ()

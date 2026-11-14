@@ -48,6 +48,26 @@ through every source.
       :export nil
       :documentation "Maximum number of total suggestions that were listed at
 some point.")
+     (input-update-lock
+      (bt:make-lock "prompt-buffer input")
+      :type bt:lock
+      :export nil
+      :initarg nil
+      :documentation "Serializes changes to the prompt input.
+Only one caller waits on `prompter:next-ready-p'.")
+     (input-watcher-p
+      nil
+      :type boolean
+      :export nil
+      :initarg nil
+      :documentation "Whether a thread is waiting on `prompter:next-ready-p'.")
+     (input-finished-p
+      nil
+      :type boolean
+      :export nil
+      :initarg nil
+      :documentation "Whether `prompter:destroy' has run.
+Input updates after this are ignored.")
      (style
       (theme:themed-css (theme *browser*)
         '(:font-face :font-family "public sans" :font-style "normal"
@@ -152,6 +172,38 @@ some point.")
           :font-weight "400"
           :line-height "28px"
           :white-space "nowrap")
+        '(".count-total"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "3ch"
+          :min-width "3ch"
+          :max-width "3ch"
+          :vertical-align "middle")
+        '(".loading"
+          :display "inline-flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "100%"
+          :min-width "0"
+          :max-width "100%"
+          :gap "3px")
+        '(".loading span"
+          :width "4px"
+          :height "4px"
+          :border-radius "50%"
+          :background-color "currentColor"
+          :opacity "0.2"
+          :animation "prompt-loading 1.2s ease-in-out infinite")
+        '(".loading span:nth-child(2)"
+          :animation-delay "0.2s")
+        '(".loading span:nth-child(3)"
+          :animation-delay "0.4s")
+        '(:keyframes "prompt-loading"
+          ("0%, 80%, 100%" :opacity "0.2")
+          ("40%" :opacity "1"))
         '("#prompt-modes"
           :max-width "24ch"
           :overflow "hidden"
@@ -209,6 +261,10 @@ some point.")
                                        (- 1 (cl-colors-ng:rgb-green rgb))
                                        (- 1 (cl-colors-ng:rgb-blue rgb)))
                      :print-alpha nil)))
+        `("html.prompt-unfocused #input"
+          :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
+                                     theme:secondary-color+
+                                     theme:background-color))
         `("button:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
@@ -440,7 +496,8 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
-    (push prompt-buffer (active-prompt-buffers window))
+    (unless (find prompt-buffer (active-prompt-buffers window))
+      (push prompt-buffer (active-prompt-buffers window)))
     (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window)))
   ;; Height attachment can replace the document, so draw the skeleton after
   ;; the view is in the window. On CEF a write before that has no HTML element.
@@ -449,6 +506,7 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
   (prompt-render-focus prompt-buffer)
   (ffi-focus-buffer prompt-buffer)
   (update-prompt-input prompt-buffer)
+  (prompt-render-suggestions prompt-buffer)
   (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))
 
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
@@ -462,32 +520,71 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
         (show-prompt-buffer (first (active-prompt-buffers window)))
         (ffi-window-set-buffer window (active-buffer window) :focus t))))
 
-(defun suggestion-and-mark-count (prompt-buffer suggestions marks &key enable-marks-p)
-  "Return a formatted string with counts of marks (if any) and suggestions."
+(-> suggestion-and-mark-count
+    (prompt-buffer list list &key (:enable-marks-p boolean) (:loading-p boolean))
+    string)
+(defun suggestion-and-mark-count
+    (prompt-buffer suggestions marks &key enable-marks-p loading-p)
+  "Return the bracketed mark and suggestion count.
+When LOADING-P is non-nil, the suggestion total is the loading mark."
   (alex:maxf (max-suggestions prompt-buffer)
              (length suggestions))
-  (unless (hide-suggestion-count-p prompt-buffer)
-    (let ((marks-str (when (or marks enable-marks-p)
-                       (format nil "~2,' d/" (length marks)))))
-      (format nil "[~a~3,' d]" (or marks-str "") (length suggestions)))))
+  (if (hide-suggestion-count-p prompt-buffer)
+      ""
+      (format nil "[~a<span class=\"count-total\">~a</span>]"
+              (if (or marks enable-marks-p)
+                  (format nil "<span class=\"count-marks\">~2,' d/</span>"
+                          (length marks))
+                  "")
+              (if loading-p
+                  "<span class=\"loading\" aria-hidden=\"true\"><span></span><span></span><span></span></span>"
+                  (format nil "~3,' d" (length suggestions))))))
+
+(-> prompt-count-html (prompt-buffer) string)
+(defun prompt-count-html (prompt-buffer)
+  "Return PROMPT-BUFFER's bracketed count.
+The suggestion total is the loading mark while a source is still computing."
+  (suggestion-and-mark-count
+   prompt-buffer
+   (prompter:all-suggestions prompt-buffer)
+   (prompter:all-marks prompt-buffer)
+   :enable-marks-p (some #'prompter:enable-marks-p
+                         (prompter:sources prompt-buffer))
+   :loading-p (notevery #'prompter:ready-p
+                        (prompter:sources prompt-buffer))))
+
+(-> prompt-current-p (prompt-buffer) boolean)
+(defun prompt-current-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER is the top of its window's prompt stack.
+The window has one prompt view. Only this prompt draws into it."
+  (and (window prompt-buffer)
+       (eq prompt-buffer
+           (first (active-prompt-buffers (window prompt-buffer))))))
+
+(-> prompt-render-loading (prompt-buffer) boolean)
+(defun prompt-render-loading (prompt-buffer)
+  "Show the loading mark in the suggestion count while a source is computing."
+  (let ((loading-p (notevery #'prompter:ready-p (prompter:sources prompt-buffer))))
+    (when (prompt-current-p prompt-buffer)
+      (ps-eval :async t :buffer prompt-buffer
+        (let ((count (nyxt/ps:qs document "#prompt-count")))
+          (when count
+            (setf (ps:@ count |innerHTML|)
+                  (ps:lisp (prompt-count-html prompt-buffer)))))))
+    loading-p))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
-  (ps-eval :async t :buffer prompt-buffer
-    (setf (ps:@ (nyxt/ps:qs document "#prompt-extra") |innerHTML|)
-          (ps:lisp
-           (suggestion-and-mark-count
-            prompt-buffer
-            (prompter:all-suggestions prompt-buffer)
-            (prompter:all-marks prompt-buffer)
-            :enable-marks-p (some #'prompter:enable-marks-p
-                                  (prompter:sources prompt-buffer)))))
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :async t :buffer prompt-buffer
+    (setf (ps:@ (nyxt/ps:qs document "#prompt-count") |innerHTML|)
+          (ps:lisp (prompt-count-html prompt-buffer)))
     (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
           (ps:lisp
            (str:join
             " "
             (mapcar (curry #'mode-status
                            (status-buffer (current-window)))
-                    (sort-modes-for-status (enabled-modes prompt-buffer))))))))
+                    (sort-modes-for-status (enabled-modes prompt-buffer)))))))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
@@ -603,7 +700,7 @@ so the columns line up. Shorter rows leave the extra cells empty."
                                            (class-name (class-of source))
                                            suggestion-index)
                                           (prompter:run-action-on-return
-                                           (nyxt::current-prompt-buffer))))))
+                                           prompt-buffer)))))
                                     text))))))))))
 
 (defun render-attributes (source prompt-buffer)
@@ -685,10 +782,14 @@ so the columns line up. Shorter rows leave the extra cells empty."
                                      (class-name (class-of source))
                                      suggestion-index)
                                     (prompter:run-action-on-return
-                                     (nyxt::current-prompt-buffer))))))
+                                     prompt-buffer)))))
                               attribute)))))))))
 
 (export 'prompt-render-suggestions)
+(defmethod prompt-render-suggestions :around ((prompt-buffer prompt-buffer))
+  (when (prompt-current-p prompt-buffer)
+    (call-next-method)))
+
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
   "Refresh the rendering of the suggestion list in PROMPT-BUFFER."
   (let* ((sources (prompter:sources prompt-buffer))
@@ -726,12 +827,12 @@ so the columns line up. Shorter rows leave the extra cells empty."
                    ;; `prompter:source' and handle the condition.  Note that
                    ;; `suggestion-and-mark-count' relies on the global prompt
                    ;; value `hide-suggestion-count-p'.
-                   (suggestion-and-mark-count
-                    prompt-buffer
-                    (prompter:suggestions source)
-                    (prompter:marks source)
-                    :enable-marks-p (prompter:enable-marks-p source)))
-                  (when (not (prompter:ready-p source)) "(In progress...)"))
+                   (:raw (suggestion-and-mark-count
+                          prompt-buffer
+                          (prompter:suggestions source)
+                          (prompter:marks source)
+                          :enable-marks-p (prompter:enable-marks-p source)
+                          :loading-p (not (prompter:ready-p source))))))
                  (unless (typep source 'prompter:composite-source)
                    (:div
                     (:nbutton
@@ -753,7 +854,8 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (sera:string-join
                 (loop for i from current-source-index to last-source-index
                       for source = (nth i sources)
-                      unless (null (prompter:suggestions source))
+                      when (or (prompter:suggestions source)
+                               (not (prompter:ready-p source)))
                         collect (source->html source))
                 +newline+)))))
     (render-prompt prompt-buffer)))
@@ -761,7 +863,8 @@ so the columns line up. Shorter rows leave the extra cells empty."
 (defun prompt-render-skeleton (prompt-buffer)
   ;; Synchronous. `html-write' returns before CEF applies the document, and
   ;; `update-prompt-input' then reads `#input' while it is still missing.
-  (ps-eval :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
     (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
           (ps:lisp
            (spinneret:with-html-string
@@ -772,7 +875,9 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (:div
                 :id "prompt-area"
                 (:div :id "prompt" (prompter:prompt prompt-buffer))
-                (:div :id "prompt-extra" :class "arrow-right" "[?/?]")
+                (:div :id "prompt-extra" :class "arrow-right"
+                      (:span :id "prompt-count"
+                             (:raw (prompt-count-html prompt-buffer))))
                 (:div :id "prompt-input"
                       (:input :type (if (invisible-input-p prompt-buffer)
                                         "password"
@@ -790,46 +895,136 @@ so the columns line up. Shorter rows leave the extra cells empty."
                (:div :id "suggestions"
                      :style (if (invisible-input-p prompt-buffer)
                                 "visibility:hidden;"
-                                "visibility:visible;")))))))))
+                                "visibility:visible;"))))))))))
 
 (defun prompt-render-focus (prompt-buffer)
-  (ps-eval :async t :buffer prompt-buffer
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :async t :buffer prompt-buffer
     (let ((input (ps:chain (nyxt/ps:qs document "#input"))))
       (ps:chain input (focus))
-      (ps:chain input (select)))))
+      (ps:chain input (select)))
+    (unless (ps:@ window nyxt-prompt-focus-watch)
+      (setf (ps:@ window nyxt-prompt-focus-watch) t)
+      (ps:chain window
+                (add-event-listener
+                 "blur"
+                 (lambda ()
+                   (ps:chain document document-element class-list
+                             (add "prompt-unfocused")))))
+      (ps:chain window
+                (add-event-listener
+                 "focus"
+                 (lambda ()
+                   (ps:chain document document-element class-list
+                             (remove "prompt-unfocused")))))))))
+
+(-> prompt-buffer-focused-p (prompt-buffer) boolean)
+(defun prompt-buffer-focused-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER's document has keyboard focus."
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
+      (ps:chain document (has-focus)))))
+
+(export-always 'indicate-prompt-buffer-focus)
+(-> indicate-prompt-buffer-focus (prompt-buffer boolean) t)
+(defun indicate-prompt-buffer-focus (prompt-buffer focused-p)
+  "Show that PROMPT-BUFFER has keyboard focus when FOCUSED-P is non-nil.
+The caret and the input's fill are the marks."
+  (when (prompt-current-p prompt-buffer)
+    (if focused-p
+        (ps-eval :buffer prompt-buffer
+        (setf (ps:@ document document-element style opacity) "")
+        (ps:chain document document-element class-list (remove "prompt-unfocused"))
+        (ps:let ((input (nyxt/ps:qs document "#input")))
+          (when input
+            (ps:chain input (focus)))))
+      (ps-eval :buffer prompt-buffer
+        (setf (ps:@ document document-element style opacity) "")
+        (ps:chain document document-element class-list (add "prompt-unfocused"))
+        (ps:let ((input (nyxt/ps:qs document "#input")))
+          (when input
+            (ps:chain input (blur))))))))
+
+(-> prompt-input-stop-p (prompt-buffer) boolean)
+(defun prompt-input-stop-p (prompt-buffer)
+  "Return non-nil when PROMPT-BUFFER should no longer follow its sources."
+  (or (input-finished-p prompt-buffer)
+      (prompter:returned-p prompt-buffer)
+      (not (and (window prompt-buffer)
+                (find prompt-buffer
+                      (active-prompt-buffers (window prompt-buffer)))))))
+
+(-> prompt-field-text (prompt-buffer) string)
+(defun prompt-field-text (prompt-buffer)
+  "Return the text currently shown in PROMPT-BUFFER's input field.
+A prompt under another one has no field of its own, so this is its stored input."
+  (let ((text (if (prompt-current-p prompt-buffer)
+                  (ps-eval :buffer prompt-buffer
+                    (ps:chain (nyxt/ps:qs document "#input") value))
+                  (prompter:input prompt-buffer))))
+    (if (stringp text)
+        text
+        "")))
+
+(-> prompt-text= (t t) boolean)
+(defun prompt-text= (existing updated)
+  "Return non-nil when EXISTING and UPDATED are the same prompt text."
+  (string= (if (stringp existing) existing "")
+           (if (stringp updated) updated "")))
+
+(defmethod prompter:destroy :before ((prompt-buffer prompt-buffer))
+  (setf (input-finished-p prompt-buffer) t))
+
+(-> watch-prompt-input (prompt-buffer) boolean)
+(defun watch-prompt-input (prompt-buffer)
+  "Redraw PROMPT-BUFFER until its sources are ready or the prompt is done.
+A new input restarts the wait. `prompter:destroy' ends it."
+  (loop
+    (when (prompt-input-stop-p prompt-buffer)
+      (return nil))
+    (let ((waiting-on (prompter:input prompt-buffer)))
+      (prompt-render-loading prompt-buffer)
+      (let ((next-source (prompter:next-ready-p prompt-buffer)))
+        (cond
+          ((eq t next-source)
+           (let ((text (prompt-field-text prompt-buffer)))
+             (bt:with-lock-held ((input-update-lock prompt-buffer))
+               (cond
+                 ((prompt-input-stop-p prompt-buffer)
+                  (return nil))
+                 ((not (prompt-text= (prompter:input prompt-buffer) waiting-on))
+                  nil)
+                 ((not (prompt-text= text (prompter:input prompt-buffer)))
+                  (setf (prompter:input prompt-buffer) text))
+                 (t
+                  (return t))))))
+          ((null next-source)
+           (when (or (prompt-input-stop-p prompt-buffer)
+                     (prompt-text= (prompter:input prompt-buffer) waiting-on))
+             (return nil)))
+          (t
+           (unless (prompt-input-stop-p prompt-buffer)
+             (prompt-render-suggestions prompt-buffer))))))))
 
 (defun update-prompt-input (prompt-buffer &optional input)
-  "This blocks and updates the view.
-INPUT is an implementation detail, don't rely on it.
-If you want to set the input, see `set-prompt-buffer-input'."
-  ;; TODO: This function is not thread-safe, add a lock?
-  (let ((input (or input
-                   (ps-eval :buffer prompt-buffer
-                     (ps:chain (nyxt/ps:qs document "#input") value)))))
-    (setf (prompter:input prompt-buffer) input)
-    ;; TODO: Stop loop when prompt-buffer is no longer current.
-    (labels ((maybe-update-view ()
-               (let ((next-source (when (find prompt-buffer
-                                              (active-prompt-buffers
-                                               (window prompt-buffer)))
-                                    (prompter:next-ready-p prompt-buffer))))
-                 (cond
-                   ;; Nothing to do:
-                   ((eq t next-source)
-                    ;; The renderer might have taken been too long to render the prompt
-                    ;; buffer and its HTML input, causing the latter to not be in sync with
-                    ;; what was send as input to the prompter sources.  Thus when we are done
-                    ;; watching, check if we are in sync; if not, try again.
-                    (let ((input (ps-eval :buffer prompt-buffer
-                                   (ps:chain (nyxt/ps:qs document "#input") value))))
-                      (unless (string= input (prompter:input prompt-buffer))
-                        (update-prompt-input prompt-buffer input)))
-                    t)
-                   ((null next-source) nil)
-                   (t ;; At least one source got updated.
-                    (prompt-render-suggestions prompt-buffer)
-                    (maybe-update-view))))))
-      (maybe-update-view))))
+  "Set PROMPT-BUFFER's input from INPUT and redraw suggestions as sources update.
+INPUT defaults to the text currently in the prompt field.
+One caller waits until the sources are ready or the prompt is done. Another
+caller only changes the input, which restarts that wait, so a key cannot
+leave the prompt blocked on `prompter:next-ready-p'."
+  (let ((input (or input (prompt-field-text prompt-buffer)))
+        (watcher nil))
+    (bt:with-lock-held ((input-update-lock prompt-buffer))
+      (unless (prompt-input-stop-p prompt-buffer)
+        (setf (prompter:input prompt-buffer) input)
+        (unless (input-watcher-p prompt-buffer)
+          (setf (input-watcher-p prompt-buffer) t
+                watcher t))))
+    (when watcher
+      (unwind-protect
+           (watch-prompt-input prompt-buffer)
+        (bt:with-lock-held ((input-update-lock prompt-buffer))
+          (setf (input-watcher-p prompt-buffer) nil))))))
 
 (export-always 'set-prompt-buffer-input)
 (defun set-prompt-buffer-input
@@ -839,36 +1034,43 @@ See `update-prompt-input' to update the changes visually."
   ;; Synchronous so the following read-back sees this value. An async write
   ;; still queued when `update-prompt-input' compares the DOM restarts the
   ;; source update from the previous text.
-  (ps-eval :buffer prompt-buffer
-    (setf (ps:@ (nyxt/ps:qs document "#input") value)
-          (ps:lisp input)))
+  (when (prompt-current-p prompt-buffer)
+    (ps-eval :buffer prompt-buffer
+      (setf (ps:@ (nyxt/ps:qs document "#input") value)
+            (ps:lisp input))))
   (update-prompt-input prompt-buffer input))
 
 (defun wait-on-prompt-buffer (prompt-buffer) ; TODO: Export?  Better name?
-  "Block and return PROMPT-BUFFER results."
+  "Block and return PROMPT-BUFFER results.
+Leave the prompt stack when waiting ends, including when the prompt fails."
   (when (prompt-buffer-p prompt-buffer)
-    (show-prompt-buffer prompt-buffer)
-    ;; A return writes the result before the interrupt. Take the result when
-    ;; both are waiting so a completed prompt is not reported as a cancel.
-    (loop
-      (multiple-value-bind (results received-p)
-          (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                         :timeout 0)
-        (when received-p
-          (hide-prompt-buffer prompt-buffer)
-          (return results)))
-      (multiple-value-bind (interrupted received-p)
-          (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
-                                         :timeout 0.05)
-        (declare (ignore interrupted))
-        (when received-p
-          (multiple-value-bind (results result-received-p)
-              (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
-                                             :timeout 0)
-            (hide-prompt-buffer prompt-buffer)
-            (if result-received-p
-                (return results)
-                (error 'prompt-buffer-canceled))))))))
+    (unwind-protect
+         (progn
+           (show-prompt-buffer prompt-buffer)
+           ;; A return writes the result before the interrupt. Take the result
+           ;; when both are waiting so a completed prompt is not reported as a
+           ;; cancel.
+           (loop
+             (multiple-value-bind (results received-p)
+                 (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                                :timeout 0)
+               (when received-p
+                 (return results)))
+             (multiple-value-bind (interrupted received-p)
+                 (lparallel.queue:try-pop-queue (prompter:interrupt-channel prompt-buffer)
+                                                :timeout 0.05)
+               (declare (ignore interrupted))
+               (when received-p
+                 (multiple-value-bind (results result-received-p)
+                     (lparallel.queue:try-pop-queue (prompter:result-channel prompt-buffer)
+                                                    :timeout 0)
+                   (if result-received-p
+                       (return results)
+                       (error 'prompt-buffer-canceled)))))))
+      (when (and (window prompt-buffer)
+                 (find prompt-buffer
+                       (active-prompt-buffers (window prompt-buffer))))
+        (hide-prompt-buffer prompt-buffer)))))
 
 (eval-always
   (defvar %prompt-args

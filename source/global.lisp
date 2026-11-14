@@ -26,11 +26,6 @@ For user-facing controls, see `*run-from-repl-p*'.")
   #-(or linux bsd darwin) nil
   "The program to open unsupported files with.")
 
-(export-always '*headless-p*)
-(defvar *headless-p* nil
-  "If non-nil, don't display anything.
-This is convenient for testing purposes or to drive Nyxt programmatically.")
-
 (export-always '*quitting-nyxt-p*)
 (defvar *quitting-nyxt-p* nil
   "When non-nil, Nyxt is quitting.")
@@ -65,6 +60,13 @@ Example:
   :test #'equal
   :documentation "Nyxt version.
 Can be overridden via NYXT_VERSION environment variable.")
+
+(export-always '+latest-version-url+)
+(alex:define-constant +latest-version-url+
+    "https://nyxt-browser.com/version"
+  :test #'string=
+  :documentation "URL of the latest stable Nyxt version.
+The body is one line: major, minor, and patch, separated by dots.")
 
 (defun parse-version (version)
   "Helper to parse VERSION as a string.
@@ -101,7 +103,12 @@ See `parse-version' for details on the returned values."
 (defvar *static-data* (make-hash-table :test 'equal)
   "Static data for usage in Nyxt.")
 
+(export-always 'load-assets)
+(-> load-assets (string function) (values list &optional))
 (defun load-assets (subdirectory read-function)
+  "Read every file in `assets/SUBDIRECTORY/' into `*static-data*'.
+READ-FUNCTION reads one pathname. Each file is stored under its filename and a
+lowercased alias."
   (mapcar (lambda (i)
             (let* ((name (file-namestring i))
                    (content (funcall read-function i)))

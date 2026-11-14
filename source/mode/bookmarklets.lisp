@@ -60,25 +60,13 @@ See `define-bookmarklet-command'."
   "Changes the text of links to match their absolute URLs."
   "(function(){var i,c,x,h; for(i=0;x=document.links[i];++i) { h=x.href; x.title+=\" \" + x.innerHTML; while(c=x.firstChild)x.removeChild(c); x.appendChild(document.createTextNode(h)); } })()")
 
-(define-bookmarklet-command hide-visited-urls
-  "Hide visited URLs."
-  "(function(){var newSS, styles=':visited {display: none}'; if(document.createStyleSheet) { document.createStyleSheet(\"javascript:'\"+styles+\"'\"); } else { newSS=document.createElement('link'); newSS.rel='stylesheet'; newSS.href='data:text/css,'+escape(styles); document.getElementsByTagName(\"head\")[0].appendChild(newSS); } })();")
-
 (define-bookmarklet-command toggle-checkboxes
   "Toggle all checkboxes."
   "(function(){ function toggle(box){ temp=box.onchange; box.onchange=null; box.checked=!box.checked; box.onchange=temp; } var x,k,f,j; x=document.forms; for (k=0; k<x.length; ++k) { f=x[k]; for (j=0;j<f.length;++j) if (f[j].type.toLowerCase() == \"checkbox\") toggle(f[j]); } })();")
 
-(define-bookmarklet-command view-password-field-contents
-  "View passwords on page."
-  "(function(){var s,F,j,f,i; s = \"\"; F = document.forms; for(j=0; j<F.length; ++j) { f = F[j]; for (i=0; i<f.length; ++i) { if (f[i].type.toLowerCase() == \"password\") s += f[i].value + \"\n\"; } } if (s) alert(\"Passwords in forms on this page:\n\n\" + s); else alert(\"There are no passwords in forms on this page.\");})();")
-
 (define-bookmarklet-command show-hidden-form-elements
   "Show hidden form elements."
   "(function(){var i,f,j,e,div,label,ne; for(i=0;f=document.forms[i];++i)for(j=0;e=f[j];++j)if(e.type==\"hidden\"){ D=document; function C(t){return D.createElement(t);} function A(a,b){a.appendChild(b);} div=C(\"div\"); label=C(\"label\"); A(div, label); A(label, D.createTextNode(e.name + \": \")); e.parentNode.insertBefore(div, e); e.parentNode.removeChild(e); ne=C(\"input\");/*for ie*/ ne.type=\"text\"; ne.value=e.value; A(label, ne); label.style.MozOpacity=\".6\"; --j;/*for moz*/}})()")
-
-(define-bookmarklet-command enlarge-textareas
-  "Increase height of all text areas by 5 vertical lines."
-  "(function(){var i,x; for(i=0;x=document.getElementsByTagName(\"textarea\")[i];++i) x.rows += 5; })()")
 
 (define-bookmarklet-command show-textbox-character-count
   "Displays a running count of the characters in each textbox."
@@ -103,14 +91,6 @@ See `define-bookmarklet-command'."
 (define-bookmarklet-command number-table-rows
   "Add numbers to table rows."
   "(function(){function has(par,ctag){for(var k=0;k<par.childNodes.length;++k)if(par.childNodes[k].tagName==ctag)return true;} function add(par,ctag,text){var c=document.createElement(ctag); c.appendChild(document.createTextNode(text)); par.insertBefore(c,par.childNodes[0]);} var i,ts=document.getElementsByTagName(\"TABLE\"); for(i=0;i<ts.length;++i) { var n=0,trs=ts[i].rows,j,tr; for(j=0;j<trs.length;++j) {tr=trs[j]; if(has(tr,\"TD\"))add(tr,\"TD\",++n); else if(has(tr,\"TH\"))add(tr,\"TH\",\"Row\");}}})()")
-
-(define-bookmarklet-command number-lines
-  "Numberlines in plaintext documents and PRE tags."
-  "(function(){var i,p,L,d,j,n; for(i=0; p=document.getElementsByTagName(\"pre\")[i]; ++i) { L=p.innerHTML.split(\"\r\n\"); d=\"\"+L.length; for(j=0;j<L.length;++j) { n = \"\"+(j+1)+\". \"; while(n.length<d.length+2) n=\"0\"+n; L[j] = n + L[j]; } p.innerHTML=L.join(\"<br>\");/*join with br for ie*/ } })()")
-
-(define-bookmarklet-command transpose-tables
-  "Transpose all table row and columns."
-  "(function(){var d=document,q=\"table\",i,j,k,y,r,c,t;for(i=0;t=d.getElementsByTagName(q)[i];++i){var w=0,N=t.cloneNode(0);N.width=\"\";N.height=\"\";N.border=1;for(j=0;r=t.rows[j];++j)for(y=k=0;c=r.cells[k];++k){var z,a=c.rowSpan,b=c.colSpan,v=c.cloneNode(1);v.rowSpan=b;v.colSpan=a;v.width=\"\";v.height=\"\";if(!v.bgColor)v.bgColor=r.bgColor;while(w<y+b)N.insertRow(w++).p=0;while(N.rows[y].p>j)++y;N.rows[y].appendChild(v);for(z=0;z<b;++z)N.rows[y+z].p+=a;y+=b;}t.parentNode.replaceChild(N,t);}})()")
 
 (define-bookmarklet-command remove-color
   "Remove color from web pages."

@@ -14,24 +14,6 @@ Returns:
   "Hook acting on `browser' (likely `*browser*').")
 (export-always '(hook-resource))
 
-(define-class proxy ()
-  ((url
-    (quri:uri "socks5://127.0.0.1:9050")
-    :documentation "The address of the proxy server.
-It's made of three components: protocol, host and port.
-Example: \"http://192.168.1.254:8080\".")
-   (allowlist
-    '("localhost" "localhost:8080")
-    :type (list-of string)
-    :documentation "A list of URIs not to forward to the proxy.")
-   (proxied-downloads-p
-    t
-    :documentation "Non-nil if downloads should also use the proxy."))
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:documentation "Enable forwarding of all network requests to a specific host.
-This can apply to specific buffer."))
-
 (export-always 'combine-composed-hook-until-nil)
 (defmethod combine-composed-hook-until-nil ((hook hooks:hook) &optional arg)
   "Return the composition of the HOOK handlers on ARG, from oldest to youngest.
@@ -54,12 +36,6 @@ This is an acceptable `hooks:combination' for `hooks:hook'."
   (:metaclass interface-class)
   (:documentation "Renderer-specific representation for the global browser.
 Should be redefined by the renderer."))
-
-(define-class zoom-ratios-file (files:data-file nyxt-lisp-file)
-  ((files:base-path #p"zoom-ratios")
-   (files:name "zoom-ratios"))
-  (:export-class-name-p t)
-  (:documentation "Persisted mapping of hostnames to zoom ratios."))
 
 (define-class browser (renderer-browser)
   ((search-engines
@@ -192,23 +168,18 @@ prompt buffer.")
     (make-array 0 :fill-pointer t :adjustable t)
     :type vector
     :documentation "A vector holding `history-entry' objects.")
-   (zoom-ratios-file
-    (make-instance 'zoom-ratios-file)
-    :type zoom-ratios-file
-    :documentation "File where per-host zoom ratios are persisted.")
-   (zoom-ratios
-    (make-hash-table :test 'equal)
-    :type hash-table
-    :documentation "Zoom ratios remembered for each host.
-Keys are hostnames such as \"www.example.com\", as returned by `zoom-host'.
-Values are zoom ratios. This mirrors Firefox site-specific zoom: every page on
-a host shares one ratio, and other hosts keep their own.
-`remember-zoom' updates the table and `zoom-ratios-file'.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
     :documentation "Cookie policy of new buffers.
 Valid values are `:accept', `:never' and `:no-third-party'.")
+   (check-for-updates-p
+    t
+    :type boolean
+    :documentation "Whether to ask `+latest-version-url+' for a newer release after startup.
+The request runs in the background. When a newer release exists, `echo' reports it.
+A failed request is ignored. Set to NIL to skip the request.
+`check-for-updates' runs the same check on demand.")
    ;; Hooks follow:
    (after-init-hook
     (make-instance 'hook-browser)
@@ -307,6 +278,24 @@ When DEDUPLICATE-P is non-nil, remove duplicated entries."
                           recent-entries))
                     'list)))
 
+(export-always 'recent-distinct-history-entries)
+(defmethod recent-distinct-history-entries (n (browser browser))
+  "Return up to N distinct history entries, newest first.
+A URL that was visited more than once contributes its latest visit."
+  (let ((seen (make-hash-table :test 'equal))
+        (result '())
+        (count 0)
+        (vector (history-vector browser)))
+    (loop for index from (1- (length vector)) downto 0
+          while (< count n)
+          for entry = (aref vector index)
+          for key = (render-url (url entry))
+          unless (gethash key seen)
+            do (setf (gethash key seen) t)
+               (incf count)
+               (push entry result))
+    (nreverse result)))
+
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
   (declare (ignore ignored))
@@ -323,100 +312,6 @@ A list of strings is returned, as to comply with `uiop:launch-program' or
 
 (defmethod default-search-engine ((browser browser))
   (first (search-engines browser)))
-
-(export-always 'zoom-host)
-(defun zoom-host (url)
-  "Return the host that shares URL's zoom, or NIL.
-The host is the full hostname, without a port. Firefox stores site zoom the
-same way: every page on \"www.example.com\" shares a ratio, across HTTP and
-HTTPS, and \"docs.example.com\" does not. Internal pages and URLs with no host
-are not site-specific."
-  (let ((url (ignore-errors (url url))))
-    (when (and url (not (internal-url-p url)))
-      (let ((host (quri:uri-host url)))
-        (when (and (stringp host) (plusp (length host)))
-          (string-downcase host))))))
-
-(defun replace-zoom-ratios (table entries)
-  "Reset TABLE from ENTRIES, a list of (host . zoom) conses.
-Hostnames are stored lower-case. Missing or non-positive ratios are ignored."
-  (clrhash table)
-  (when (listp entries)
-    (dolist (entry entries)
-      (when (consp entry)
-        (let ((host (car entry))
-              (zoom (cdr entry)))
-          (when (and (stringp host)
-                     (plusp (length host))
-                     (realp zoom)
-                     (plusp zoom))
-            (setf (gethash (string-downcase host) table)
-                  (float zoom 1.0)))))))
-  table)
-
-(export-always 'load-zoom-ratios)
-(defun load-zoom-ratios (&optional (browser *browser*))
-  "Replace BROWSER's `zoom-ratios' with the contents of `zoom-ratios-file'."
-  (sera:synchronized ((zoom-ratios browser))
-    (replace-zoom-ratios (zoom-ratios browser)
-                         (files:content (zoom-ratios-file browser))))
-  browser)
-
-(defun persist-zoom-ratios (&optional (browser *browser*))
-  "Write BROWSER's `zoom-ratios' to `zoom-ratios-file'."
-  (setf (files:content (zoom-ratios-file browser))
-        (sera:synchronized ((zoom-ratios browser))
-          (loop for host being the hash-key of (zoom-ratios browser)
-                  using (hash-value zoom)
-                collect (cons host zoom)))))
-
-(export-always 'remembered-zoom)
-(defun remembered-zoom (url &optional (browser *browser*))
-  "Return the zoom ratio remembered for URL's host, or NIL."
-  (when browser
-    (when-let ((host (zoom-host url)))
-      (sera:synchronized ((zoom-ratios browser))
-        (gethash host (zoom-ratios browser))))))
-
-(export-always 'remember-zoom)
-(defun remember-zoom (url zoom &key (browser *browser*) (persist-p t))
-  "Remember ZOOM for URL's host in BROWSER.
-A null or non-positive ZOOM forgets the host. URLs without a host are ignored.
-The table is written to `zoom-ratios-file' when PERSIST-P is non-nil.
-Return the host, or NIL when URL is not site-specific."
-  (when-let ((host (and browser (zoom-host url))))
-    (sera:synchronized ((zoom-ratios browser))
-      (if (and zoom (realp zoom) (plusp zoom))
-          (setf (gethash host (zoom-ratios browser)) (float zoom 1.0))
-          (remhash host (zoom-ratios browser))))
-    (when persist-p
-      (persist-zoom-ratios browser))
-    host))
-
-(export-always 'zoom-ratio-for-url)
-(defun zoom-ratio-for-url (url &optional (buffer (current-buffer)))
-  "Return the zoom ratio to display for URL.
-A host uses its remembered ratio, or BUFFER's `zoom-ratio-default' when none
-is remembered. The previous page's zoom is not carried onto a different host.
-URLs without a host keep BUFFER's current zoom, or the default when it has
-none. Return 1.0 when BUFFER is NIL and no ratio applies."
-  (let ((default (if buffer
-                     (zoom-ratio-default buffer)
-                     1.0)))
-    (if (zoom-host url)
-        (or (remembered-zoom url) default)
-        (if buffer
-            (or (zoom-ratio buffer) default)
-            1.0))))
-
-(export-always 'buffers-on-host)
-(defun buffers-on-host (host)
-  "Return web buffers open on HOST."
-  (when host
-    (sera:filter (lambda (buffer)
-                   (and (web-buffer-p buffer)
-                        (equal host (zoom-host (url buffer)))))
-                 (buffer-list))))
 
 (defmacro on-renderer-ready (thread-name &body body)
   "Run BODY from a new thread when renderer is ready.
@@ -445,7 +340,6 @@ idle, so it should do the job."
                         :fill-pointer t
                         :adjustable t
                         :initial-contents history-file-contents)))
-    (load-zoom-ratios browser)
     (open-urls (or urls (list (default-new-buffer-url browser))))
     (lpara:fulfill (slot-value browser 'startup-promise))
     (hooks:run-hook (after-startup-hook browser) browser)
@@ -694,19 +588,41 @@ Return BUFFER."
         (t nil))
   buffer)
 
+(-> window-shows-buffer-p (window buffer) boolean)
+(defun window-shows-buffer-p (window buffer)
+  "Return non-nil when BUFFER is a view WINDOW is showing."
+  (not (null
+        (and buffer
+             (or (find buffer (active-prompt-buffers window))
+                 (eq buffer (active-buffer window))
+                 (eq buffer (status-buffer window))
+                 (eq buffer (message-buffer window)))))))
+
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
-  "Return the current prompt-buffer."
-  (first (active-prompt-buffers (current-window))))
+  "Return the prompt buffer that keyboard input acts on.
+Inside `with-current-buffer' on a prompt, that prompt. Otherwise the prompt
+that has keyboard focus, or the most recently opened prompt when focus is on
+another view."
+  (let ((buffer %buffer))
+    (if (prompt-buffer-p buffer)
+        buffer
+        (let ((window (current-window)))
+          (when window
+            (let ((keyboard (keyboard-buffer window)))
+              (if (and (prompt-buffer-p keyboard)
+                       (find keyboard (active-prompt-buffers window)))
+                  keyboard
+                  (first (active-prompt-buffers window)))))))))
 
 (export-always 'focused-buffer)
-(defun focused-buffer (&optional (window (current-window)) )
-  "Return the currently focused buffer."
-  (find-if #'ffi-focused-p
-           (list (first (active-prompt-buffers window))
-                 (active-buffer window)
-                 (status-buffer window)
-                 (message-buffer window))))
+(defun focused-buffer (&optional (window (current-window)))
+  "Return the buffer in WINDOW that has keyboard focus."
+  (when window
+    (let ((keyboard (keyboard-buffer window)))
+      (if (window-shows-buffer-p window keyboard)
+          keyboard
+          (active-buffer window)))))
 
 (export-always 'render-menu)
 (defun render-menu (mode-symbol &optional (buffer (current-buffer)))

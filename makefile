@@ -11,15 +11,13 @@ endif
 
 LISP_FLAGS ?= $(SBCL_FLAGS) --no-userinit --non-interactive
 
-NYXT_RENDERER ?= electron
+NYXT_RENDERER ?= cef
 NASDF_USE_LOGICAL_PATHS ?= true
-NODE_SETUP ?= true
 OCICL ?= ocicl
 OCICL_RUNTIME ?= $(HOME)/.local/share/ocicl/ocicl-runtime.lisp
 
 export NYXT_RENDERER
 export NASDF_USE_LOGICAL_PATHS
-export NODE_SETUP
 
 .PHONY: help
 help:
@@ -49,9 +47,6 @@ ocicl-install:
 ## keep a Make dependency on the Lisp files.
 lisp_files := nyxt.asd $(shell find source libraries tests -type f -name '*.lisp')
 nyxt: $(lisp_files) ocicl-install
-	if [ "$(NYXT_RENDERER)" = "electron" ] && [ "$(NODE_SETUP)" = "true" ]; then \
-		$(MAKE) -C $(call ocicl_system_dir,cl-electron) install; \
-	fi
 	if [ "$(NYXT_RENDERER)" = "cef" ] && [ -n "$(CEF_ROOT)" ]; then \
 		cef_dir="$(call ocicl_system_dir,cl-cef)"; \
 		cmake -S "$$cef_dir" \
@@ -63,6 +58,10 @@ nyxt: $(lisp_files) ocicl-install
 		--eval '(nyxt:prepare-relocatable-libraries)' \
 		--eval '(asdf:make :nyxt/$(NYXT_RENDERER)-application)' \
 		$(lisp_quit) || (printf "\n%s\n%s\n" "Compilation failed, see the above stacktrace." && exit 1)
+
+.PHONY: install
+install: all
+	$(lisp_eval) '(asdf:make :nyxt/install)' $(lisp_quit)
 
 .PHONY: all
 all: nyxt

@@ -498,7 +498,10 @@ IPv4 rewrite of a numeric host."
 (ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title)
                                    &body body)
   "Request a URL that evaluates BODY in BUFFER.
-TITLE is purely informative."
+TITLE is purely informative.
+The request returns immediately. BODY runs on its own thread, so a command
+that waits, such as `prompt', does not block `nyxt-resource' or other `lisp'
+requests."
   `(fetch
     (ps:lisp (quri:render-uri
               (lisp-url :buffer ,buffer
@@ -533,23 +536,17 @@ page. They read `current-buffer', which would otherwise be the panel."
                                 :key 'id)))
         (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a"
                    request-id buffer title)
-        (values
-         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
+        (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                               (gethash request-id (lisp-url-callbacks buffer)))))
-           (let ((callback-output
-                   (with-current-buffer (lisp-callback-buffer buffer)
-                     (run callback))))
-             ;; Objects and other complex structures make cl-json choke.
-             ;; TODO: Maybe encode it to the format that `cl-json' supports,
-             ;; then we can override the encoding and decoding methods and allow
-             ;; arbitrary objects (like buffers) in the nyxt:// URL arguments..
-             (when (or (scalar-p callback-output)
-                       (and (sequence-p callback-output)
-                            (every #'scalar-p callback-output)))
-               (j:encode callback-output)))
-           (log:warn "Request ~a isn't bound to a callback in buffer ~a"
-                     %url buffer))
-         "application/json")))
+          (let ((target (lisp-callback-buffer buffer)))
+            (run-thread "lisp-url"
+              (with-current-buffer target
+                (handler-case (run callback)
+                  (prompt-buffer-canceled ()
+                    (log:debug "Prompt buffer interrupted"))))))
+          (log:warn "Request ~a isn't bound to a callback in buffer ~a"
+                    %url buffer))
+        (values "{}" "application/json")))
   (lambda (c) (log:debug "Error when evaluating lisp URL: ~a" c)))
 
 (-> path= (quri:uri quri:uri) boolean)

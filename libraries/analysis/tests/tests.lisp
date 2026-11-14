@@ -69,6 +69,47 @@
     (analysis::add-record model '(1 2 3))
     (assert-equal (analysis::element (analysis::predict model '(1 2))) 3)))
 
+(define-test tokenize-keeps-words-around-punctuation ()
+  (assert-equal '("jumps" "quickly")
+                (analysis::word-tokenize "The jumps, quickly."))
+  (assert-equal '("well-known" "café")
+                (analysis::word-tokenize "A well-known café."))
+  (assert-equal '("browser" "features")
+                (mapcar #'car (analysis:extract-keywords "the browser's, features.")))
+  (assert-equal "alpha beta"
+                (string-trim " "
+                             (format nil "~:{~a~^ ~}"
+                                     (analysis:extract-keywords "alpha alpha beta" :limit 2)))))
+
+(define-test extract-keywords-ranks-repeated-and-earlier-terms ()
+  (assert-equal "alpha"
+                (car (first (analysis:extract-keywords "beta alpha alpha"))))
+  (assert-equal '("beta" "alpha")
+                (mapcar #'car (analysis:extract-keywords "beta alpha")))
+  (assert-false (analysis:extract-keywords ""))
+  (assert-false (analysis:extract-keywords "the, a, of."))
+  (assert-false (analysis:extract-keywords '()))
+  (assert-equal '(nil nil) (analysis:extract-keywords '("" "the a"))))
+
+(define-test extract-keywords-is-stable-and-distinctive ()
+  (let ((text "beta alpha alpha gamma")
+        (texts '("beta alpha" "beta gamma")))
+    (assert-equal (analysis:extract-keywords text)
+                  (analysis:extract-keywords text))
+    (assert-equal (analysis:extract-keywords texts)
+                  (analysis:extract-keywords texts)))
+  (let ((keywords (analysis:extract-keywords '("beta alpha" "beta gamma"))))
+    (assert-equal "alpha" (car (first (first keywords))))
+    (assert-equal "gamma" (car (first (second keywords))))))
+
+(define-test extract-keywords-groups-word-forms ()
+  (let ((words (mapcar #'car
+                       (analysis:extract-keywords
+                        "Runs keep the service running. Running checks run nightly."))))
+    (assert-equal "running" (first words))
+    (assert-false (member "runs" words :test #'string=))
+    (assert-false (member "run" words :test #'string=))))
+
 (define-test test-variable-length ()
   (let ((model (make-instance 'analysis::sequence-model)))
     (analysis::add-record model '(1 2 3))

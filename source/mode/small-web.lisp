@@ -42,20 +42,58 @@ Gemini support is a bit more brittle, but you can override `line->html' for
             `(body
               :background-color ,theme:background-color)
             `(pre
-              :background-color ,theme:secondary-color
-              :padding "2px"
+              :display "block"
+              :width "fit-content"
+              :max-width "100%"
+              :box-sizing "border-box"
+              :overflow "visible"
+              :background-color "transparent"
+              :color ,theme:on-background-color
+              :padding "0"
               :margin "0"
-              :border-radius 0)
-            '(.button
-              :margin "0 3px 3px 0"
-              :font-size "15px")
+              :border-radius "0"
+              :line-height "1")
+            `(.button
+              :appearance "none"
+              :display "block"
+              :width "fit-content"
+              :max-width "100%"
+              :box-sizing "border-box"
+              :margin "1px 0"
+              :padding "0 7px"
+              :border "none"
+              :border-radius "7px"
+              :background-color ,theme:background-color-
+              :color ,theme:on-background-color
+              :font-size "17px"
+              :font-weight "400"
+              :line-height "24px"
+              :text-decoration "none")
+            `("a.button + br"
+              :display "none")
+            `((:and .button :hover)
+              :background-color ,theme:background-color+
+              :color ,theme:on-background-color
+              :opacity "1"
+              :cursor "pointer")
+            `((:and .button (:or :visited :active))
+              :color ,theme:on-background-color
+              :opacity "1")
+            `((:and .button :focus-visible)
+              :outline "2px solid"
+              :outline-color ,theme:action-color
+              :outline-offset "2px"
+              :opacity "1")
             `(.search
-              :background-color ,theme:action-color
-              :color ,theme:on-action-color)
+              :color ,theme:action-color)
+            `((:and .search (:or :hover :visited :active))
+              :color ,theme:action-color
+              :opacity "1")
             `(.error
-              :background-color ,theme:warning-color
-              :color ,theme:on-warning-color
-              :padding "1em 0"))))
+              :background-color ,theme:background-color-
+              :color ,theme:warning-color
+              :border-radius "7px"
+              :padding "7px 17px"))))
   (:toggler-command-p nil))
 
 ;;; Gopher rendering.
@@ -142,7 +180,6 @@ Implies that `small-web-mode' is enabled."))
 (defun file-link->html (line)
   (spinneret:with-html-string
     (:a :class "button"
-        :style (format nil "background-color: ~a" (theme:primary-color (theme *browser*)))
         :href (cl-gopher:uri-for-gopher-line line)
         (:b "[FILE] ") (cl-gopher:display-string line))
     (:br)))

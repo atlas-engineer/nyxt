@@ -48,10 +48,18 @@
                                   nyxt/mode/user-script:renderer-user-style
                                   nyxt/mode/user-script:renderer-user-script))))
 
-(defvar +scheme-privileges+
+(defvar *default-scheme-privileges*
   "{standard:true,secure:true,corsEnabled:true,supportFetchAPI:true}"
-  "Privilege string for Nyxt's internal schemes.
-`standard' lets CEF parse the URLs. `lisp' pages also need CORS and fetch.")
+  "Privilege string for a custom scheme with no `*scheme-privileges*' entry.
+The scheme is standard, so CEF parses its URLs. It is also secure, CORS-enabled,
+and fetch-enabled. `lisp' pages need CORS and fetch.")
+
+(defvar *scheme-privileges*
+  (sera:dict "nyxt-source" "{}")
+  "CEF privilege string for a custom scheme name.
+A name that is absent uses `*default-scheme-privileges*'.
+`nyxt-source' has no privileges. A standard parser rewrites
+`nyxt-source:https://example.com/' and the page URL is lost.")
 
 (define-class cef-scheme (cef:protocol)
   ()
@@ -156,6 +164,25 @@ defaults, which resolve next to the cl-cef system."
                 (cef:locales-dir-path interface)
                 (uiop:merge-pathnames* #p"locales/" root)))))))
 
+(-> configure-flatpak-cef (cef:interface) null)
+(defun configure-flatpak-cef (interface)
+  "Point INTERFACE at the CEF runtime inside a Flatpak.
+FLATPAK_ID is set by the Flatpak runtime. Development builds leave the
+defaults, which resolve next to the cl-cef system."
+  (let ((flatpak-id (uiop:getenv "FLATPAK_ID")))
+    (when (and flatpak-id (plusp (length flatpak-id)))
+      (let* ((root (uiop:ensure-directory-pathname #p"/app/lib/cef/"))
+             (helper (uiop:merge-pathnames* #p"cl-cef-helper" root))
+             (library (uiop:merge-pathnames* #p"libcl-cef.so" root)))
+        (when (and (uiop:file-exists-p helper)
+                   (uiop:file-exists-p library))
+          (setf (uiop:getenv "CL_CEF_LIBRARY") (uiop:native-namestring library))
+          (setf (cef:subprocess-path interface) helper
+                (cef:resources-dir-path interface) root
+                (cef:locales-dir-path interface)
+                (uiop:merge-pathnames* #p"locales/" root))))))
+  nil)
+
 (-> macos-bundle-contents () (or null pathname))
 (defun macos-bundle-contents ()
   "Contents directory when this executable is inside a macOS app bundle."
@@ -198,6 +225,31 @@ Helper bundles are named after the nyxt executable."
           (setf (cef:locales-dir-path interface) locales)))))
   nil)
 
+(-> css-color-argb (string) (unsigned-byte 32))
+(defun css-color-argb (color)
+  "Return COLOR as an opaque ARGB integer, or 0 when COLOR cannot be read."
+  (let ((rgb (ignore-errors (cl-colors-ng:as-rgb color))))
+    (if rgb
+        (logior #xff000000
+                (ash (round (* 255 (cl-colors-ng:rgb-red rgb))) 16)
+                (ash (round (* 255 (cl-colors-ng:rgb-green rgb))) 8)
+                (round (* 255 (cl-colors-ng:rgb-blue rgb))))
+        0)))
+
+(-> canvas-color (t) (unsigned-byte 32))
+(defun canvas-color (buffer)
+  "Return the color shown before BUFFER's document paints.
+A web buffer with `nyxt/mode/style:dark-mode' uses #222222, which is the color
+that mode paints. Every other buffer uses the theme background."
+  (if (and *browser* (theme *browser*))
+      (css-color-argb
+       (if (and (web-buffer-p buffer)
+                (find "DARK-MODE" (default-modes buffer)
+                      :key #'symbol-name :test #'string=))
+           "#222222"
+           (theme:background-color (theme *browser*))))
+      0))
+
 (-> cef-download-directory () (values pathname &optional))
 (defun cef-download-directory ()
   "Return the directory downloaded files are written to.
@@ -218,6 +270,7 @@ This is the expanded `download-directory'."
   (let ((interface (make-instance 'cef:interface)))
     (setf cef:*interface* interface)
     (configure-appimage-cef interface)
+    (configure-flatpak-cef interface)
     (configure-macos-cef interface)
     (let ((directory (cef-download-directory)))
       (log:debug "Saving downloads to ~s." directory)
@@ -228,7 +281,9 @@ This is the expanded `download-directory'."
           (loop for name being the hash-key of nyxt::*schemes*
                 collect (make-instance 'cef:protocol
                                        :scheme-name name
-                                       :privileges +scheme-privileges+)))
+                                       :privileges (gethash name
+                                                            *scheme-privileges*
+                                                            *default-scheme-privileges*))))
     ;; CEF 150's Wayland backend crashes when Vulkan is the GL implementation.
     (when (and (uiop:getenv "WAYLAND_DISPLAY")
                (not (some (lambda (option)
@@ -247,37 +302,56 @@ This is the expanded `download-directory'."
     (cef:set-window-class "nyxt")
     (install-window-icon)
     (configure-web-extensions browser interface)
-    (cef:launch interface)
-    (when (adblocking-enabled-p browser)
-      (cef:default-block (make-instance 'cef:adblocker)))
-    (install-extension-request-decider)
-    (maphash (lambda (scheme-name callbacks)
-               (ffi-register-custom-scheme
-                (make-instance 'scheme
-                               :name scheme-name
-                               :callback (first callbacks)
-                               :error-callback (second callbacks))))
-             nyxt::*schemes*)
-    (cef:ensure-scheme-threads)
-    (let ((session (cef:default-session interface)))
-      (cef:add-listener session :download-item-updated
-                        (lambda (session item)
-                          (declare (ignore session))
-                          (download-item-updated item)))))
-  ;; cl-cef installs its own handler, which only stops CEF. Replace it so a
-  ;; kill runs Nyxt's quit, including the socket and the exit hook.
-  (install-exit-signals)
-  (call-next-method)
-  (unless nyxt::*run-from-repl-p*
-    (cef:join)
-    ;; `finish-output' nil makes SBCL abort instead of waiting for other
-    ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
-    ;; would otherwise keep this process and its helpers alive after shutdown.
-    (uiop:quit (nyxt:exit-code browser) nil)))
+    (when-let ((color (canvas-color browser)))
+      (when (plusp color)
+        (cef:set-default-background-color color)))
+    (if nyxt::*run-from-repl-p*
+        (cef:launch-in-background interface)
+        (cef:launch interface))
+    (flet ((finish-startup ()
+             (when (adblocking-enabled-p browser)
+               (cef:default-block (make-instance 'cef:adblocker)))
+             (install-extension-request-decider)
+             (maphash (lambda (scheme-name callbacks)
+                        (ffi-register-custom-scheme
+                         (make-instance 'scheme
+                                        :name scheme-name
+                                        :callback (first callbacks)
+                                        :error-callback (second callbacks))))
+                      nyxt::*schemes*)
+             (let ((session (cef:default-session interface)))
+               (cef:add-listener session :download-item-updated
+                                 (lambda (session item)
+                                   (declare (ignore session))
+                                   (download-item-updated item))))
+             (call-next-method)))
+      ;; cl-cef installs its own handler, which only stops CEF. Replace it so a
+      ;; kill runs Nyxt's quit, including the socket and the exit hook.
+      (install-exit-signals)
+      (cond
+        ((not nyxt::*run-from-repl-p*)
+         (bt:make-thread
+          (lambda ()
+            (handler-case (finish-startup)
+              (serious-condition (condition)
+                (log:error "CEF startup failed: ~a" condition)
+                (request-exit))))
+          :name "nyxt cef startup")
+         (cef:join)
+         ;; `finish-output' nil makes SBCL abort instead of waiting for other
+         ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
+         ;; would otherwise keep this process and its helpers alive after shutdown.
+         (uiop:quit (nyxt:exit-code browser) nil))
+        (t
+         (finish-startup))))))
 
 (defmethod ffi-kill-browser ((browser cef-browser))
   (declare (ignore browser))
   (cef:terminate))
+
+(defmethod ffi-clear-cache ((browser cef-browser))
+  (declare (ignore browser))
+  (cef:clear-cache))
 
 (defvar *exit-lock* (bt:make-lock "nyxt-cef-exit"))
 (defvar *exit-requested* nil)
@@ -381,18 +455,16 @@ the default height.")
    (listeners-p
     nil
     :documentation "Whether input and load listeners have been registered.")
-   (cef-proxy-url
-    (quri:uri "")
-    :documentation "Proxy URL last applied to this buffer.")
-   (cef-proxy-ignored-hosts
-    '()
-    :documentation "Hosts that bypass the proxy.")
    (smooth-scrolling-p
     t
     :documentation "Remembered smooth-scrolling setting. CEF has no matching preference.")
    (media-enabled-p
     t
-    :documentation "Remembered media setting. CEF has no matching preference."))
+    :documentation "Remembered media setting. CEF has no matching preference.")
+   (blocked-hosts
+    nil
+    :export nil
+    :documentation "Normalized host names this buffer refuses to load."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
@@ -404,16 +476,43 @@ the default height.")
       (message-buffer-p buffer)
       (prompt-buffer-p buffer)))
 
+(defvar *defer-native-view-p* nil
+  "When non-nil, initializing a `cef:view' does not create a native browser.
+A prompt buffer shares the window's prompt view, so it must not build one.
+A web buffer waits until `default-modes' is configured, so its canvas color
+can follow a dark theme or `nyxt/mode/style:dark-mode'.")
+
+(-> defer-native-view-p (cef-buffer list) boolean)
+(defun defer-native-view-p (buffer initargs)
+  "Whether BUFFER's browser is created after its modes are configured.
+A prompt adopts the window's view. A web buffer's canvas color depends on
+`default-modes', which configuration sets after initialization."
+  (or (web-buffer-p buffer)
+      (and (prompt-buffer-p buffer)
+           (getf initargs :window)
+           t)))
+
+(defmethod initialize-instance :after ((view cef:view) &key (url "about:blank"))
+  "Create VIEW's browser unless one is already attached or creation is deferred."
+  (unless (or *defer-native-view-p* (cef:web-contents view))
+    (cef:ensure-view view :url (or url "about:blank")
+                         :background-color (canvas-color view))))
+
 (defmethod initialize-instance :around ((buffer cef-buffer) &rest initargs &key &allow-other-keys)
   ;; Every view is Alloy. A Chrome window hosts one Chrome BrowserView and
   ;; any number of Alloy ones. A second Chrome page opens as its own
   ;; Chromium window, and that view cannot be moved into this window.
   ;; Panels load about:blank. The shared profile stores a zoom for that URL,
   ;; and a panel on the shared context renders at that zoom.
-  (apply #'call-next-method buffer
-         :alloy-p t
-         :isolated-context-p (panel-buffer-p buffer)
-         initargs))
+  ;; `cef:view' initialization runs before a subclass :after method, so a
+  ;; prompt defers that browser and adopts the window's view afterwards.
+  (let ((*defer-native-view-p* (defer-native-view-p buffer initargs)))
+    (prog1 (apply #'call-next-method buffer
+                  :alloy-p t
+                  :isolated-context-p (panel-buffer-p buffer)
+                  initargs)
+      (when (and *defer-native-view-p* (prompt-buffer-p buffer))
+        (adopt-prompt-view buffer)))))
 
 (defmethod customize-instance :after ((buffer cef-buffer) &key &allow-other-keys)
   (ffi-buffer-initialize-foreign-object buffer))
@@ -532,13 +631,18 @@ view before those threads run, and a call into the missing view has no method."
                           (declare (ignore buffer))
                           (run-context-menu-command data))))))
 
+(defmethod ffi-buffer-initialize-foreign-object ((buffer prompt-buffer))
+  (unless (cef:web-contents buffer)
+    (call-next-method))
+  buffer)
+
 (defmethod ffi-buffer-initialize-foreign-object ((buffer cef-buffer))
   (let ((url (if (and (slot-boundp buffer 'url)
                       (url buffer)
                       (not (url-empty-p (url buffer))))
                  (render-url (url buffer))
                  "about:blank")))
-    (cef:ensure-view buffer :url url))
+    (cef:ensure-view buffer :url url :background-color (canvas-color buffer)))
   (unless (listeners-p buffer)
     (initialize-listeners buffer)
     (initialize-window-open-handler buffer)
@@ -581,10 +685,8 @@ view before those threads run, and a call into the missing view has no method."
 
 (defmethod (setf ffi-buffer-zoom-ratio) (value (buffer cef-buffer))
   (cond
-    ((not (and (floatp value) (plusp value)))
-     (echo-warning "Zoom ratio must be a positive floating point number."))
-    ;; `document-mode' applies the zoom from `on-signal-load-finished'. That
-    ;; thread can still be running after delete has cleared the view.
+    ((not (and (floatp value) (or (zerop value) (plusp value))))
+     (echo-warning "Zoom ratio must be a non-negative floating point number."))
     (t
      (when-let ((contents (cef:web-contents buffer)))
        (cef:set-zoom-factor contents value)))))
@@ -685,17 +787,48 @@ height of the status/prompt/message buffer."
   (cef:focus buffer)
   buffer)
 
+(defmethod ffi-height ((buffer prompt-buffer))
+  (if-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (assoc-value (cef:get-bounds view) :height)
+    0))
+
 (defmethod (setf ffi-height) ((height integer) (prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
     (setf (set-height prompt-buffer) height)
-    (cef:set-bar-height prompt-buffer height)
-    ;; Child 0 is the page. Insert the prompt under it once. Attaching can
-    ;; replace the document the skeleton just wrote, so draw it again after
-    ;; the view is actually in the window and before the input is read back.
-    (unless (find prompt-buffer (cef:views window))
-      (cef:add-view-at window prompt-buffer 1)
-      (nyxt::prompt-render-skeleton prompt-buffer)
-      (nyxt::prompt-render-focus prompt-buffer))))
+    (when window
+      (let ((view (if (plusp height)
+                      (ensure-prompt-view-listeners window)
+                      (prompt-buffer-view window))))
+        (when view
+          ;; The view is already in the window, hidden. Draw before raising
+          ;; it so the previous prompt does not flash. Attaching below can
+          ;; replace that document, so draw again once the view is in.
+          (when (and (plusp height)
+                     (find view (cef:views window)))
+            (nyxt::prompt-render-skeleton prompt-buffer))
+          (cef:set-bar-height view height)
+          (when (and (plusp height)
+                     (not (find view (cef:views window))))
+            (cef:add-view-at window view 1)
+            (nyxt::prompt-render-skeleton prompt-buffer)
+            (nyxt::prompt-render-focus prompt-buffer)))))))
+
+(defmethod ffi-focus-buffer ((buffer prompt-buffer))
+  (if-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (cef:focus view)
+    (call-next-method))
+  buffer)
+
+(defmethod ffi-focused-p ((buffer prompt-buffer))
+  (when-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (cef:is-focused view)))
+
+(defmethod ffi-buffer-delete ((buffer prompt-buffer))
+  (when (and (window buffer)
+             (prompt-buffer-view (window buffer))
+             (not (nyxt::active-prompt-buffers (window buffer))))
+    (setf (ffi-height buffer) 0))
+  (setf (listeners-p buffer) nil))
 
 (defmethod ffi-width ((buffer cef-buffer))
   (assoc-value (cef:get-bounds buffer) :width))
@@ -751,16 +884,6 @@ CEF's isolated worlds are not available through this bridge."
     (cef:remove-user-script (cef:web-contents buffer) (script-id script))
     (setf (script-id script) nil)))
 
-(defmethod ffi-buffer-javascript-enabled-p ((buffer cef-buffer))
-  (cef:javascript-enabled-p (cef:web-contents buffer)))
-(defmethod (setf ffi-buffer-javascript-enabled-p) (value (buffer cef-buffer))
-  (cef:set-javascript-enabled (cef:web-contents buffer) value))
-
-(defmethod ffi-buffer-javascript-markup-enabled-p ((buffer cef-buffer))
-  (ffi-buffer-javascript-enabled-p buffer))
-(defmethod (setf ffi-buffer-javascript-markup-enabled-p) (value (buffer cef-buffer))
-  (setf (ffi-buffer-javascript-enabled-p buffer) value))
-
 (defmethod ffi-buffer-smooth-scrolling-enabled-p ((buffer cef-buffer))
   (smooth-scrolling-p buffer))
 (defmethod (setf ffi-buffer-smooth-scrolling-enabled-p) (value (buffer cef-buffer))
@@ -771,30 +894,18 @@ CEF's isolated worlds are not available through this bridge."
 (defmethod (setf ffi-buffer-media-enabled-p) (value (buffer cef-buffer))
   (setf (media-enabled-p buffer) value))
 
-(defmethod ffi-buffer-webgl-enabled-p ((buffer cef-buffer))
-  (cef:webgl-enabled-p (cef:web-contents buffer)))
-(defmethod (setf ffi-buffer-webgl-enabled-p) (value (buffer cef-buffer))
-  (cef:set-webgl-enabled (cef:web-contents buffer) value))
-
 (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer cef-buffer))
   (cef:images-enabled-p (cef:web-contents buffer)))
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer cef-buffer))
   (cef:set-images-enabled (cef:web-contents buffer) value))
 
-(defmethod ffi-buffer-proxy ((buffer cef-buffer))
-  (values (cef-proxy-url buffer)
-          (cef-proxy-ignored-hosts buffer)))
-
-(defmethod (setf ffi-buffer-proxy) (proxy-specifier (buffer cef-buffer))
-  (let* ((spec (alex:ensure-list proxy-specifier))
-         (proxy-url (or (first spec) (quri:uri "")))
-         (ignore-hosts (second spec)))
-    (setf (cef-proxy-url buffer) proxy-url
-          (cef-proxy-ignored-hosts buffer) ignore-hosts)
-    (cef:set-proxy (cef:web-contents buffer)
-                   (if (url-empty-p proxy-url) "" (render-url proxy-url))
-                   (format nil "~{~a~^,~}" ignore-hosts))
-    proxy-specifier))
+(defmethod ffi-buffer-blocked-hosts ((buffer cef-buffer))
+  (blocked-hosts buffer))
+(defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer cef-buffer))
+  (setf (blocked-hosts buffer) hosts)
+  (when-let ((contents (cef:web-contents buffer)))
+    (cef:set-blocked-hosts contents (format nil "~{~a~^~%~}" hosts)))
+  hosts)
 
 (defmethod ffi-buffer-cookie-policy ((buffer cef-buffer))
   (cef:cookie-policy (cef:web-contents buffer)))
@@ -805,51 +916,178 @@ CEF's isolated worlds are not available through this bridge."
   ((current-view)
    (panel-views-p
     nil
-    :documentation "Whether the status and message views have been added.
+    :documentation "Whether the status, message, and prompt views have been added.
 They are added after the page view: the first child of the window has to be
-the Chrome-style page."))
+the Chrome-style page.")
+   (prompt-buffer-view
+    nil
+    :export nil
+    :documentation "Alloy view every prompt buffer of this window draws into.
+Created with the window. Showing a prompt resizes it instead of building a browser.")
+   (prompt-view-listeners-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Whether input listeners are registered on `prompt-buffer-view'.")
+   (prompt-view-warm-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Whether `prompt-buffer-view' has loaded its fonts."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:metaclass user-class)
   (:documentation "CEF window class."))
 
+(-> ensure-prompt-buffer-view (cef-window) cef:view)
+(defun ensure-prompt-buffer-view (window)
+  "Return WINDOW's prompt view, creating its browser the first time.
+Creating that browser is the slow part of opening a prompt."
+  (or (prompt-buffer-view window)
+      (let ((view (make-instance 'cef:view
+                                 :alloy-p t
+                                 :isolated-context-p t
+                                 :url "about:blank")))
+        (cef:set-bar-height view 0)
+        (setf (prompt-buffer-view window) view))))
+
+(-> ensure-prompt-view-listeners (cef-window) cef:view)
+(defun ensure-prompt-view-listeners (window)
+  "Return WINDOW's prompt view and route its input to the active prompt."
+  (let ((view (ensure-prompt-buffer-view window)))
+    (unless (prompt-view-listeners-p window)
+      (cef:add-listener
+       view :before-input-event
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-key-press-event prompt event))))
+      (cef:add-listener
+       view :button-press
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-button-press-event prompt event))))
+      (cef:add-listener
+       view :scroll
+       (lambda (view event)
+         (declare (ignore view))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-scroll-event prompt event))))
+      (setf (prompt-view-listeners-p window) t))
+    view))
+
+(defun release-private-prompt-browser (buffer)
+  "Destroy a browser BUFFER created despite sharing the window prompt view."
+  (when (and (plusp (cef:id buffer))
+             (prompt-buffer-view (window buffer))
+             (/= (cef:id buffer)
+                 (cef:id (prompt-buffer-view (window buffer)))))
+    (cef:kill buffer)
+    (setf (slot-value buffer 'cef::native-id) 0)))
+
+(-> adopt-prompt-view (prompt-buffer) prompt-buffer)
+(defun adopt-prompt-view (buffer)
+  "Point BUFFER at its window's prompt view.
+BUFFER does not own that browser. Hiding BUFFER leaves the view in the window."
+  (let ((*defer-native-view-p* nil))
+    (ensure-prompt-view-listeners (window buffer)))
+  (release-private-prompt-browser buffer)
+  (setf (cef:web-contents buffer)
+        (cef:web-contents (prompt-buffer-view (window buffer))))
+  buffer)
+
+(defun warm-prompt-view (window)
+  "Load the prompt fonts in WINDOW's prompt view while it is hidden."
+  (unless (or (prompt-view-warm-p window)
+              (nyxt::active-prompt-buffers window))
+    (when-let ((view (prompt-buffer-view window)))
+      (when (and (find view (cef:views window))
+                 (cef:web-contents view))
+        (setf (prompt-view-warm-p window) t)
+        (handler-bind ((error (lambda (condition)
+                                (declare (ignore condition))
+                                (return-from warm-prompt-view nil))))
+          (let* ((contents (cef:web-contents view))
+                 (font-css
+                   (concatenate
+                    'string
+                    "@font-face{font-family:\"Public Sans\";font-style:normal;"
+                    "font-weight:400;src:url(\"nyxt-resource:PublicSans-Regular.woff\")"
+                    " format(\"woff\");}"
+                    "@font-face{font-family:\"DejaVu Sans Mono\";"
+                    "src:url(\"nyxt-resource:DejaVuSansMono.ttf\") format(\"ttf\");}"))
+                 (html
+                   (concatenate
+                    'string
+                    "<head><style>" font-css "</style></head>"
+                    "<body style=\"font-family:'Public Sans',sans-serif\">"
+                    "<span style=\"font-family:'DejaVu Sans Mono'\">0</span></body>")))
+            (cef:insert-css contents font-css)
+            (cef:execute-javascript
+             contents
+             (format nil "document.documentElement.innerHTML = ~a;"
+                     (cl-json:encode-json-to-string html)))))))))
+
 (defun place-panel-views (window)
-  "Stack the status bar under the page and the message bar under that.
+  "Stack the prompt, status bar, and message bar under the page.
+The prompt view stays at height 0 until a prompt is shown.
 Each bar is a fixed height."
   (let ((message-buffer (message-buffer window))
-        (status-buffer (status-buffer window)))
+        (status-buffer (status-buffer window))
+        (prompt-view (ensure-prompt-view-listeners window)))
     (cef:set-bar-height status-buffer
                         (or (set-height status-buffer) (height status-buffer) 0))
     (cef:set-bar-height message-buffer
                         (or (set-height message-buffer) (height message-buffer) 0))
+    (unless (nyxt::active-prompt-buffers window)
+      (cef:set-bar-height prompt-view 0))
+    (unless (find prompt-view (cef:views window))
+      (cef:add-view-at window prompt-view 1))
     (cef:add-view window status-buffer)
-    (cef:add-view window message-buffer)))
+    (cef:add-view window message-buffer)
+    (warm-prompt-view window)))
+
+(-> defer-window-delete (cef-window) *)
+(defun defer-window-delete (window)
+  "Delete WINDOW once the CEF UI thread has left its close callback.
+`ffi-window-delete' calls back into CEF. Running it on that callback never
+returns to the message loop."
+  (run-thread "window-close"
+    (sleep 0.05)
+    (ffi-window-delete window)))
 
 (defmethod initialize-instance :after ((window cef-window) &key)
   (let ((message-buffer (message-buffer window))
         (status-buffer (status-buffer window)))
     (setf (set-height message-buffer) (height message-buffer))
     (setf (set-height status-buffer) (height status-buffer))
+    (ensure-prompt-view-listeners window)
     (cef:add-listener
-     window :close
+     window :close-request
      (lambda (window data)
        (declare (ignore data))
-       (when (current-view window)
-         (let ((id (id (current-view window))))
-           (run-thread "window-close"
-             (nyxt::buffer-delete id))))))))
+       (defer-window-delete window)))))
 
 (defmethod ffi-window-delete ((window cef-window))
-  ;; Close the browsers before the window. Closing the window first detaches
-  ;; the views and leaves the Chromium processes running.
-  (let ((views (list (message-buffer window)
-                     (status-buffer window)
-                     (current-view window))))
-    (when-let ((prompt (current-prompt-buffer)))
-      (push prompt views))
-    (dolist (view views)
-      (when view
-        (ignore-errors (cef:kill view)))))
+  (dolist (view (cef:views window))
+    (when (panel-buffer-p view)
+      (ignore-errors (cef:kill view))))
+  (dolist (prompt (nyxt::active-prompt-buffers window))
+    (when prompt
+      (setf (cef:web-contents prompt) nil)))
+  (setf (nyxt::active-prompt-buffers window) '())
+  (when-let ((view (prompt-buffer-view window)))
+    (ignore-errors (cef:kill view)))
+  (dolist (view (list (status-buffer window) (message-buffer window)))
+    (when (and view (ignore-errors (cef:web-contents view)))
+      (ignore-errors (cef:kill view))))
+  (when-let ((page (or (current-view window) (active-buffer window))))
+    (when (and (not (panel-buffer-p page))
+               (ignore-errors (cef:web-contents page))
+               (find page (cef:views window)))
+      (ignore-errors (cef:remove-view window page :kill-view-p nil))))
+  (setf (current-view window) nil)
   (cef:kill window))
 
 (defmethod ffi-window-to-foreground ((window cef-window))
@@ -873,7 +1111,7 @@ Each bar is a fixed height."
     (setf (panel-views-p window) t)
     (nyxt::print-status (status-buffer window))
     (ffi-print-message (message-buffer window) "Ready."))
-  (when focus (cef:focus buffer))
+  (when focus (ffi-focus-buffer buffer))
   (setf (current-view window) buffer)
   buffer)
 
@@ -964,23 +1202,17 @@ Return nil when key must be discarded, e.g. for modifiers."
                                  :modifiers (input-modifier-translator sender modifiers)
                                  :status :pressed)))
         (when key-string
-          (alex:appendf (key-stack sender) (list (key)))
-          (run-thread "on-signal-key-press" (on-signal-key-press sender (key)))
-          (dispatch-input-event event sender))))))
+          (dispatch-key-press sender event (key)))))))
 
 (defmethod on-signal-button-press-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))
-        (modifiers (input-modifier-translator sender (event-modifiers event)))
-        (buffer (or (current-prompt-buffer) sender)))
+        (modifiers (input-modifier-translator sender (event-modifiers event))))
     (flet ((key ()
              (keymaps:make-key :value key-string
                                :modifiers modifiers
                                :status :pressed)))
-      (run-thread "on-signal-button-press"
-        (on-signal-button-press buffer (key)))
       (when key-string
-        (alex:appendf (key-stack buffer) (list (key)))
-        (dispatch-input-event event sender)))))
+        (dispatch-pointer-press sender event (key))))))
 
 (defmethod on-signal-scroll-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))

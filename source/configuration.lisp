@@ -300,13 +300,12 @@ while `%slot-value%' is replaced by the slot's current value .
 Example:
 
 \(define-configuration web-buffer
-  ((default-modes (pushnew 'nyxt/mode/force-https:force-https-mode %slot-value%))))
+  ((default-modes (pushnew 'nyxt/mode/no-sound:no-sound-mode %slot-value%))))
 
-Example to get the `blocker-mode' command to use a new default hostlists:
+Example to block one more host:
 
 \(define-configuration nyxt/mode/blocker:blocker-mode
-  ((nyxt/mode/blocker:hostlists (append (list *my-blocked-hosts*) %slot-default%)
-                                :doc \"You have to define *my-blocked-hosts* first.\")))
+  ((nyxt/mode/blocker:hosts (append '(\"ads.example\") %slot-default%))))
 
 To discover the default value of a slot or all slots of a class, use the
 `describe-slot' or `describe-class' commands, respectively."
@@ -433,43 +432,6 @@ Examples:
      (if answer
          ,yes-form
          ,no-form)))
-
-(defun set-as-default-browser (&key (name "nyxt")
-                                 (targets
-                                  (list (uiop:xdg-config-home "mimeapps.list")
-                                        (uiop:xdg-data-home "applications/mimeapps.list"))))
-  "Return the modified MIME apps list.
-Return the persisted file as second value."
-  (declare (ignorable name targets))
-  #+(and unix (not darwin))
-  (let* ((target (or (first (sera:filter #'uiop:file-exists-p targets))
-                     (first targets)))
-         (config (py-configparser:read-files (py-configparser:make-config)
-                                             (list target)))
-         (desktop-file (uiop:strcat name ".desktop")))
-    (dolist (section '("Added Associations" "Default Applications"))
-      (dolist (key '("text/html"
-                     "text/gemini"
-                     "x-scheme-handler/http"
-                     "x-scheme-handler/https"
-                     "x-scheme-handler/chrome"
-                     "application/x-extension-htm"
-                     "application/x-extension-html"
-                     "application/x-extension-shtml"
-                     "application/xhtml+xml"
-                     "application/x-extension-xhtml"
-                     "application/x-extension-xht"))
-        (py-configparser:set-option config section key desktop-file)))
-    (with-open-file (s target
-                       :direction :output
-                       :if-does-not-exist :create
-                       :if-exists :supersede)
-      (py-configparser:write-stream config s))
-
-    (values config target))
-  #-(and unix (not darwin))
-  (log:warn "Only supported on GNU / BSD systems running XDG-compatible desktop environments."))
-
 
 ;; TODO: Report compilation errors.
 

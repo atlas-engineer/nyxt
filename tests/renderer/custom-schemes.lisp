@@ -12,7 +12,6 @@
   (let ((ready-channel (nyxt::make-channel 1)))
     (nyxt:start :no-config t
                 :no-auto-config t
-                :headless t
                 :socket "/tmp/nyxt-test.socket")
     (with-current-buffer (nyxt:make-buffer-focus :url "test:test")
       (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
@@ -51,7 +50,6 @@
   (let ((ready-channel (nyxt::make-channel 1)))
     (nyxt:start :no-config t
                 :no-auto-config t
-                :headless t
                 :socket "/tmp/nyxt-test.socket")
     (with-current-buffer (nyxt:make-buffer-focus :url "test-other:page")
       (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
@@ -66,7 +64,6 @@
   (let ((ready-channel (nyxt::make-channel 1)))
     (nyxt:start :no-config t
                 :no-auto-config t
-                :headless t
                 :socket "/tmp/nyxt-test.socket")
     (with-current-buffer (nyxt:make-buffer-focus :url "iframe-embed:test")
       (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)

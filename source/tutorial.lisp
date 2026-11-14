@@ -42,8 +42,8 @@ are fully separated, each buffer having its own behavior and settings."))
       (:nsection :title "Modes"
         (:p "Each buffer has its own list of modes, ordered by priority.  A mode is a
 set of functions, hooks, keybindings and other facilities that may modify the
-behavior of a buffer.  For example, 'blocker-mode' can be used for domain-based
-ad-blocking while 'no-script-mode' disables JavaScript.")
+behavior of a buffer.  For example, 'blocker-mode' drops requests to the hosts
+it lists, while 'no-image-mode' disables images.")
         (:p "Each buffer has separate instances of modes, which means that altering
 the settings of a mode in a buffer does not impact other buffers.  Mode specific
 functions/commands are only available when a mode is enabled for the current
@@ -200,6 +200,7 @@ the URL.")
         (:p "Annotate-related commands")
         (:ul
          (list-command-information '(nyxt/mode/annotate:annotate-current-url nyxt/mode/annotate:annotate-highlighted-text
+                                     nyxt/mode/annotate:edit-annotation nyxt/mode/annotate:delete-annotation
                                      nyxt/mode/annotate:show-annotation nyxt/mode/annotate:show-annotations nyxt/mode/annotate:show-annotations-for-current-url))))
 
       (:nsection :title "Passthrough mode"
@@ -314,7 +315,6 @@ automate the reading experience:")
                                      nyxt/mode/bookmarklets::toggle-checkboxes)))
         (:p "In addition, it is possible to automate actions over time: "
             (:ul
-             (list-command-information '(nyxt/mode/watch:watch-mode))
              (:li (:nxref :command 'nyxt/mode/repeat:repeat-every) ": "
                   (command-docstring-first-sentence 'nyxt/mode/repeat:repeat-every
                                                     :sentence-case-p t))))

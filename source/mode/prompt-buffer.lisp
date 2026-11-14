@@ -61,8 +61,6 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-keypadenter" 'toggle-mark-forwards
        "shift-return" 'toggle-mark-forwards
        "shift-keypadenter" 'toggle-mark-forwards
-       "C-j" 'run-action-on-current-suggestion
-       "C-c C-j" 'set-action-on-current-suggestion
        "tab" 'insert-current-suggestion
        "C-c C-f" 'toggle-actions-on-current-suggestion
        "C-]" 'toggle-attributes-display)
@@ -110,8 +108,7 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-y" 'paste
        "C-w" 'cut
        "C-h m" 'describe-prompt-buffer
-       "C-h b" 'run-prompt-buffer-command
-       "C-j" 'run-action-on-current-suggestion)
+       "C-h b" 'run-prompt-buffer-command)
       keyscheme:vi-normal
       (list
        "k" 'previous-suggestion
@@ -355,12 +352,6 @@ command does nothing there."
         (echo-warning "No actions to choose from.")
         (error 'prompt-buffer-canceled))))
 
-(defun prompt-buffer-actions-on-current-suggestion
-    (&optional (window (current-window)))
-  (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (prompter:actions-on-current-suggestion
-     (prompter:current-source first-prompt-buffer))))
-
 (defun make-action-suggestion (action &optional source input)
   "Return a `suggestion' wrapped around ACTION."
   (declare (ignore source input))
@@ -379,11 +370,6 @@ command does nothing there."
    (prompter:constructor (prompt-buffer-actions-on-return))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
-(define-class action-on-current-suggestion-source (prompter:source)
-  ((prompter:name "List of actions-on-current-suggestion")
-   (prompter:constructor (prompt-buffer-actions-on-current-suggestion))
-   (prompter:suggestion-maker 'make-action-suggestion)))
-
 (define-command-prompt set-action-on-return (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER `prompter:marks'."
   (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
@@ -392,17 +378,6 @@ command does nothing there."
       (when-let ((action (prompt1 :prompt "Set return action to run over marks"
                                   :sources 'action-on-return-source)))
         (prompter:run-action-on-return prompt-buffer action))))
-
-(define-command-prompt run-action-on-current-suggestion (prompt-buffer)
-  "Run `prompter::default-action-on-current-suggestion' without closing
-PROMPT-BUFFER."
-  (prompter:run-action-on-current-suggestion prompt-buffer))
-
-(define-command-prompt set-action-on-current-suggestion (prompt-buffer)
-  "Set `prompter:actions-on-current-suggestion' without closing PROMPT-BUFFER."
-  (when-let ((action (prompt1 :prompt "Set current suggestion action"
-                              :sources 'action-on-current-suggestion-source)))
-    (prompter:set-action-on-current-suggestion action prompt-buffer)))
 
 (define-command-prompt quit-prompt-buffer (prompt-buffer)
   "Close the PROMPT-BUFFER without further action."
