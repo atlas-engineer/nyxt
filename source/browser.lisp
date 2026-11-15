@@ -72,7 +72,6 @@ This slot is mostly meant to clean up the thread if necessary.")
    (messages-content
     '()
     :export t
-    :reader messages-content
     :documentation "A list of all echoed messages.
 Most recent messages are first.")
    (clipboard-ring
