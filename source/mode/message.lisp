@@ -10,39 +10,81 @@ All the APIs of the `message-mode' are exported, no implementation details."))
 (define-mode message-mode ()
   "Mode for log and message listing.
 Mainly used on `list-messages' page."
-  ()
+  ((messages
+    (make-instance 'user-interface:dynamic-element
+                   :tag :p
+                   :html-class "empty"
+                   :text "No messages."
+                   :template #'message-row)
+    :export nil
+    :documentation "The list shown on `list-messages'.
+A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
 
 (define-command clear-messages ()
   "Clear the *Messages* buffer and the underlying message data."
-  (setf (slot-value *browser* 'messages-content) '())
-  (echo "Messages cleared.")
-  (dolist (buffer (buffer-list))
-    (when (eq 'list-messages (internal-page-name (url buffer)))
-      (ffi-buffer-reload buffer))))
+  (setf (messages-content *browser*) '())
+  (echo "Messages cleared."))
 
 (-> message-parts (string) (values string string &optional))
 (defun message-parts (message)
   "Return LEVEL and TEXT for a simple-layout line.
-LEVEL is a capitalized word such as \"Info\" when MESSAGE starts with
-\"INFO - \". TEXT is the rest. A leading \"Warning: \" is dropped when
-LEVEL is Warn, since the level already says it."
+LEVEL is a capitalized word such as \"Info\" when MESSAGE contains
+\"INFO - \". TEXT is the rest of the line."
   (let* ((line (str:trim message))
-         (separator (search " - " line))
-         (head (and separator (plusp separator) (subseq line 0 separator))))
-    (if (and head (every #'alphanumericp head))
-        (let ((level (string-capitalize head))
-              (text (subseq line (+ separator 3))))
-          (when (and (string-equal level "Warn")
-                     (str:starts-with-p "Warning: " text))
-            (setf text (subseq text (length "Warning: "))))
-          (values level (str:collapse-whitespaces (str:trim text))))
+         (parts (str:split " - " line :limit 2 :omit-nulls nil)))
+    (if (second parts)
+        (values (str:capitalize (first parts))
+                (str:collapse-whitespaces (str:trim (second parts))))
         (values "" (str:collapse-whitespaces line)))))
 
-(-> message-level-class (string) string)
-(defun message-level-class (level)
-  "Return the class for a LEVEL other than Info."
-  (format nil "level ~(~a~)" level))
+(-> message-row (string) (values t &optional))
+(defun message-row (message)
+  "Return a row for MESSAGE, or nil when it has no text.
+The row is a level and the text. A missing level is blank."
+  (multiple-value-bind (level text) (message-parts message)
+    (unless (str:emptyp text)
+      (make-instance 'user-interface:element
+                     :tag :li
+                     :children (list (make-instance 'user-interface:element
+                                                    :tag :span
+                                                    :html-class (if (str:emptyp level)
+                                                                    "level"
+                                                                    (format nil "level ~(~a~)"
+                                                                            level))
+                                                    :text level)
+                                     (make-instance 'user-interface:element
+                                                    :tag :span
+                                                    :html-class "text"
+                                                    :title text
+                                                    :text text))))))
+
+(-> present-messages (message-mode (maybe browser)) t)
+(defun present-messages (mode browser)
+  "Show BROWSER's messages in MODE.
+The list element keeps a row it has already built."
+  (let ((element (messages mode))
+        (content (if browser (messages-content browser) '())))
+    (user-interface:batch (element)
+      (setf (user-interface:items element)
+            (coerce (nreverse (loop for message in content
+                                    unless (str:emptyp (nth-value 1 (message-parts message)))
+                                      collect message))
+                    'vector))
+      (if (plusp (length (user-interface:items element)))
+          (setf (user-interface:tag element) :ul
+                (user-interface:html-class element) "messages"
+                (user-interface:text element) nil)
+          (setf (user-interface:tag element) :p
+                (user-interface:html-class element) "empty"
+                (user-interface:text element) "No messages.")))))
+
+(defmethod customize-instance :after ((mode message-mode) &key)
+  "Keep MODE's list in step with `messages-content'."
+  (define-setf-handler browser messages-content mode
+    (lambda (browser)
+      (present-messages mode browser)))
+  (present-messages mode *browser*))
 
 (define-internal-page-command-global list-messages ()
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
@@ -50,10 +92,8 @@ LEVEL is Warn, since the level already says it."
   ;; One list, flush with the title. Each message is a single 44px line:
   ;; 17px text, ellipsis, no wrap. Info has no label. Any other level sits
   ;; on that same line, at 11px, and a warning uses the warning color.
-  (let ((rows (loop for message in (reverse (nyxt:messages-content *browser*))
-                    for parts = (multiple-value-list (message-parts message))
-                    unless (str:emptyp (second parts))
-                      collect parts)))
+  (let ((messages (messages (find-submode 'message-mode buffer))))
+    (user-interface:connect messages buffer)
     (spinneret:with-html-string
       (:nstyle
         '("ul.messages"
@@ -91,6 +131,8 @@ LEVEL is Warn, since the level already says it."
           :font-weight "600"
           :line-height "17px"
           :color ,theme:primary-color)
+        '("ul.messages .level:empty"
+          :display "none")
         `("ul.messages .level.warn, ul.messages .level.error, ul.messages .level.fatal"
           :color ,theme:warning-color)
         `("p.empty"
@@ -100,14 +142,4 @@ LEVEL is Warn, since the level already says it."
           :color ,theme:primary-color))
       (render-menu 'nyxt/mode/message:message-mode buffer)
       (:h1 "Messages")
-      (if rows
-          (:ul :class "messages"
-            (dolist (parts rows)
-              (let ((level (first parts))
-                    (text (second parts)))
-                (:li
-                 (unless (or (str:emptyp level)
-                             (string-equal level "Info"))
-                   (:span :class (message-level-class level) level))
-                 (:span :class "text" :title text text)))))
-          (:p :class "empty" "No messages.")))))
+      (user-interface:to-html messages))))
