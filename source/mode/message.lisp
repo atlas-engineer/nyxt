@@ -26,6 +26,17 @@ A `user-interface:dynamic-element'."))
   (setf (messages-content *browser*) '())
   (echo "Messages cleared."))
 
+(define-command set-message-level ()
+  "Set the least severe log level that is recorded."
+  (let ((level (prompt1
+                :prompt "Message level"
+                :sources (make-instance
+                          'prompter:source
+                          :name "Level"
+                          :constructor '(:fatal :error :warn :info :debug :trace)))))
+    (log:config level)
+    (echo "Recording ~(~a~) messages and above." level)))
+
 (-> message-parts (string) (values string string &optional))
 (defun message-parts (message)
   "Return LEVEL and TEXT for a simple-layout line.
