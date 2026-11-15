@@ -80,6 +80,7 @@
                 ((:file "time")
                  (:file "keyscheme")
                  (:file "conditions")
+                 (:file "setf-handler")
                  (:file "user-interface")))
                (:module "Core"
                 :pathname ""
