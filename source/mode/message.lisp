@@ -89,9 +89,6 @@ The list element keeps a row it has already built."
 (define-internal-page-command-global list-messages ()
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
   "Show the *Messages* buffer."
-  ;; One list, flush with the title. Each message is a single 44px line:
-  ;; 17px text, ellipsis, no wrap. Info has no label. Any other level sits
-  ;; on that same line, at 11px, and a warning uses the warning color.
   (let ((messages (messages (find-submode 'message-mode buffer))))
     (user-interface:connect messages buffer)
     (spinneret:with-html-string
