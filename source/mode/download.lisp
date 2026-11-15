@@ -221,10 +221,6 @@ Later updates of those values redraw on BUFFER."
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a list of downloads for this session."
-  ;; One list, the same rows as history: the file name over one short line.
-  ;; That line is the progress, or the destination path when the file is
-  ;; ready. A 2px bar sits on the hairline while the download is running.
-  ;; Cancel is the hover control used on the buffer and bookmark lists.
   (labels ((download-row (download)
              "Present DOWNLOAD as its file name and a short status line."
              ;; Fresh binding so each row's callback closes over its own download.
@@ -271,7 +267,6 @@ Later updates of those values redraw on BUFFER."
                                              (cancel-download download)))
                                  "×")))))))
     (spinneret:with-html-string
-      ;; Cancel is 28px inside the 17px inset. 17 + 28 + 17 = 62.
       (:nstyle
         '("ul.list > li.loading > a, ul.list > li.unloaded > a"
           :padding-right "62px")
