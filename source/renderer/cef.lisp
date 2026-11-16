@@ -458,7 +458,7 @@ the default height.")
   (:metaclass user-class)
   (:documentation "CEF buffer class."))
 
-(defun panel-buffer-p (buffer)
+(defun bar-view-p (buffer)
   "Status, message, and prompt views share the window with the page view."
   (or (status-buffer-p buffer)
       (message-buffer-p buffer)
@@ -506,7 +506,8 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
   (let ((*defer-native-view-p* (defer-native-view-p buffer initargs)))
     (prog1 (apply #'call-next-method buffer
                   :alloy-p t
-                  :isolated-context-p (panel-buffer-p buffer)
+                  :isolated-context-p (or (bar-view-p buffer)
+                                          (typep buffer 'panel-buffer))
                   initargs)
       (when (and *defer-native-view-p* (prompt-buffer-p buffer))
         (adopt-prompt-view buffer)))))
@@ -763,7 +764,7 @@ height of the status/prompt/message buffer."
 
 (defmethod (setf ffi-height) ((height integer) (buffer cef-buffer))
   (setf (set-height buffer) height)
-  (if (panel-buffer-p buffer)
+  (if (bar-view-p buffer)
       ;; A preferred height of 0 is an empty size, which the box layout
       ;; ignores, so the bar stays on screen. `set-bar-height' hides it.
       (cef:set-bar-height buffer height)
@@ -1086,7 +1087,7 @@ returns to the message loop."
 
 (defmethod ffi-window-delete ((window cef-window))
   (dolist (view (cef:views window))
-    (when (panel-buffer-p view)
+    (when (bar-view-p view)
       (ignore-errors (cef:kill view))))
   (dolist (prompt (nyxt::active-prompt-buffers window))
     (when prompt
@@ -1098,7 +1099,7 @@ returns to the message loop."
     (when (and view (ignore-errors (cef:web-contents view)))
       (ignore-errors (cef:kill view))))
   (when-let ((page (or (current-view window) (active-buffer window))))
-    (when (and (not (panel-buffer-p page))
+    (when (and (not (bar-view-p page))
                (ignore-errors (cef:web-contents page))
                (find page (cef:views window)))
       (ignore-errors (cef:remove-view window page :kill-view-p nil))))
@@ -1114,13 +1115,25 @@ returns to the message loop."
 (defmethod (setf ffi-window-title) (title (window cef-window))
   (cef:set-title window title))
 
+(defmethod ffi-add-panel-buffer ((window cef-window) (buffer cef-buffer) side width)
+  (cef:set-side-width buffer (or width 0) :side side)
+  (cef:add-content-view window buffer :side side)
+  buffer)
+
+(defmethod ffi-remove-panel-buffer ((window cef-window) (buffer cef-buffer))
+  (cef:set-side-width buffer 0
+                      :side (if (and (panel-buffer-p buffer)
+                                     (eq (side buffer) :right))
+                                :right
+                                :left))
+  buffer)
+
 (defmethod ffi-window-set-buffer ((window cef-window)
                                   (buffer cef-buffer)
                                   &key (focus t))
   (when (current-view window)
     (cef:remove-view window (current-view window) :kill-view-p nil))
-  ;; Index 0 keeps the page above the bars when the buffer changes.
-  (cef:add-view-at window buffer 0)
+  (cef:add-content-view window buffer :side :page)
   (unless (panel-views-p window)
     (place-panel-views window)
     (setf (panel-views-p window) t)

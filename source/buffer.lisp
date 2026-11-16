@@ -824,7 +824,9 @@ Return the created buffer."
                            (map 'list #'plump:text
                                 (clss:select "p" dom))))))))))
 
+(export-always 'dead-buffer-p)
 (defun dead-buffer-p (buffer)
+  "Return non-nil when BUFFER has been removed from the browser."
   (not (buffer-get (id buffer))))
 
 (defmethod document-model ((buffer buffer) &key use-cached-p)
@@ -919,14 +921,21 @@ See `make-buffer'."
 (defun add-to-recent-buffers (buffer)
   "Push BUFFER to the front of `recent-buffers'.
 The notion of first element is dictated by `containers:first-item'."
-  (when (web-buffer-p buffer)
+  (when (and (web-buffer-p buffer)
+             (include-in-buffer-list-p buffer))
     (containers:delete-item (recent-buffers *browser*) buffer)
     (containers:insert-item (recent-buffers *browser*) buffer)))
+
+(export-always 'include-in-buffer-list-p)
+(defgeneric include-in-buffer-list-p (buffer)
+  (:method ((buffer buffer)) t)
+  (:documentation "Whether BUFFER should be included in the buffer list."))
 
 (export-always 'buffer-list)
 (defun buffer-list ()
   "Order is stable."
-  (sort (alex:hash-table-values (buffers *browser*))
+  (sort (remove-if-not #'include-in-buffer-list-p
+                       (alex:hash-table-values (buffers *browser*)))
         #'>
         :key #'id))
 
@@ -938,7 +947,8 @@ The notion of first element is dictated by `containers:first-item'."
             (alex:flatten (loop for window in (window-list)
                                 collect (active-prompt-buffers window)
                                 collect (status-buffer window)
-                                collect (message-buffer window))))))
+                                collect (message-buffer window)
+                                collect (panel-buffers window))))))
 
 (defun buffer-get (id)
   "Get the `buffer' with the corresponding ID."

@@ -62,6 +62,11 @@ the generic functions on `status-buffer'.  Finally set the `window'
     (make-instance 'message-buffer)
     :type message-buffer
     :documentation "The `message-buffer' instance for this window.")
+   (panel-buffers
+    '()
+    :type list
+    :documentation "Panel buffers beside the page.
+Each stays as tall as the page. Its `side' is `:left' or `:right'.")
    (window-set-buffer-hook
     (make-instance 'hook-window-buffer)
     :type hook-window-buffer
@@ -93,6 +98,17 @@ The handlers take the window as argument."))
 (defmethod titler ((window window))
   "Return the title of WINDOW."
   (str:concat (title (active-buffer window)) " － Nyxt"))
+
+(defgeneric window-shows-buffer-p (window buffer)
+  (:method ((window window) buffer)
+    (not (null
+          (and buffer
+               (or (find buffer (active-prompt-buffers window))
+                   (eq buffer (active-buffer window))
+                   (eq buffer (status-buffer window))
+                   (eq buffer (message-buffer window))
+                   (find buffer (panel-buffers window)))))))
+  (:documentation "Return non-nil when BUFFER is a view WINDOW is showing."))
 
 (defmethod (setf active-buffer) :around (value (window window))
   (declare (ignore value))

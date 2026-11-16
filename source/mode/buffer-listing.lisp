@@ -71,7 +71,7 @@ A `user-interface:dynamic-element'."))
 The list element keeps a row it has already built."
   (let ((page (buffer mode))
         (element (listing mode)))
-    (when (and *browser* page (find page (buffer-list)))
+    (when (and *browser* page (not (dead-buffer-p page)))
       (user-interface:batch (element)
         (setf (user-interface:items element) (buffer-list))
         (if (plusp (length (user-interface:items element)))
@@ -159,6 +159,21 @@ The handlers are the ones `status-buffer' uses for its tabs."
           :font-size "17px"
           :line-height "24px"
           :color ,theme:primary-color))
-      (render-menu 'buffer-listing-mode listing-buffer)
-      (:h1 "Buffers")
+      (when (include-in-buffer-list-p listing-buffer)
+        (render-menu 'buffer-listing-mode listing-buffer)
+        (:h1 "Buffers"))
       (user-interface:to-html listing))))
+
+(define-command-global add-buffer-listing-panel (&key ((:side panel-side) :left)
+                                                      (window (current-window)))
+  "Add a panel that lists the open buffers on SIDE of WINDOW."
+  (let ((panel (add-panel-buffer window
+                                 (make-instance 'nyxt:buffer-listing-panel
+                                                :side panel-side
+                                                :title "Buffers"))))
+    (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffers)))
+    panel))
+
+(define-command-global add-buffer-listing-panel-right (&optional (window (current-window)))
+  "Add a panel that lists the open buffers on the right of WINDOW."
+  (add-buffer-listing-panel :side :right :window window))
