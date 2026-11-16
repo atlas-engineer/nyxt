@@ -147,6 +147,25 @@
                (assert-eq beta-node (prompt-source-node view beta)))))
       (prompter:destroy prompt))))
 
+(define-test buffer-prompt-shows-stored-keywords-only ()
+  (let* ((*browser* (make-instance 'browser))
+         (ready (make-instance 'web-buffer
+                               :title "Ready"
+                               :url (quri:uri "https://example.com/ready")))
+         (waiting (make-instance 'web-buffer
+                                 :title "Waiting"
+                                 :url (quri:uri "https://example.com/waiting")))
+         (source (make-instance 'prompter:source :name "Attributes")))
+    (setf (nyxt::keywords ready) '(("nyxt" 1) ("lisp" 1)))
+    (assert-string= "nyxt lisp"
+                    (second (assoc "Keywords"
+                                   (prompter:object-attributes ready source)
+                                   :test #'string=)))
+    (assert-string= ""
+                    (second (assoc "Keywords"
+                                   (prompter:object-attributes waiting source)
+                                   :test #'string=)))))
+
 (define-test prompt-source-shows-a-window-around-the-cursor ()
   (let* ((*browser* (make-instance 'browser))
          (source (make-instance 'prompter:source

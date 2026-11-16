@@ -816,8 +816,13 @@ Return the created buffer."
                           (nyxt/dom::get-document-body-json))))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
       (unless (uiop:emptyp (plump:text dom))
-        (when (slot-boundp buffer 'keywords) (setf (keywords buffer) nil))
-        (setf (document-model buffer) dom)))))
+        (setf (document-model buffer) dom)
+        (when (web-buffer-p buffer)
+          (setf (keywords buffer)
+                (analysis:extract-keywords
+                 (str:join " "
+                           (map 'list #'plump:text
+                                (clss:select "p" dom))))))))))
 
 (defun dead-buffer-p (buffer)
   (not (buffer-get (id buffer))))
@@ -856,14 +861,10 @@ In case the page changed more than `document-model-delta-threshold', runs
                     (slot-value buffer 'document-model))))))))
 
 (defmethod keywords ((buffer web-buffer))
-  "Return the terms that best describe the contents of BUFFER."
-  (or (slot-value buffer 'keywords)
-      (when-let ((document (document-model buffer)))
-        (setf (slot-value buffer 'keywords)
-              (analysis:extract-keywords
-               (str:join " "
-                         (map 'list #'plump:text
-                              (clss:select "p" document))))))))
+  "Return the terms that best describe the contents of BUFFER.
+They are parsed when the page's document is read. NIL until then, and when
+the page has none."
+  (slot-value buffer 'keywords))
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
@@ -1044,12 +1045,19 @@ If none exist, make a new inactive buffer."
 The `prompter:actions-on-current-suggestion' are set up to preview/switch to the
 buffer currently chosen as suggestion."))
 
+(defun buffer-keyword-line (buffer)
+  "Return BUFFER's stored keywords on one line, or the empty string."
+  (format nil "~{~a~^ ~}"
+          (mapcar #'first (if (web-buffer-p buffer)
+                              (or (keywords buffer) '())
+                              '()))))
+
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
   `(("Title" ,(title buffer) (:width 3))
     ("URL" ,(render-url (url buffer)) (:width 2))
-    ,(when (web-buffer-p buffer)
-       `("Keywords" ,(format nil "~:{~a~^ ~}" (keywords buffer)) (:width 2)))
+    ,@(when (web-buffer-p buffer)
+        `(("Keywords" ,(buffer-keyword-line buffer) (:width 2))))
     ("ID" ,(id buffer) (:width 1))))
 
 (define-command switch-buffer ()
