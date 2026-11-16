@@ -94,3 +94,85 @@
              (assert-equal '("a1" "a2" "b1" "b2")
                            (mapcar #'prompter:value (prompter:suggestions composite))))
         (prompter:destroy prompt)))))
+
+(defun prompt-source-node (view source)
+  (car (gethash source (user-interface::nodes view))))
+
+(define-test prompt-suggestions-keep-an-unchanged-source ()
+  (let* ((*browser* (make-instance 'browser))
+         (alpha (make-instance 'prompter:source
+                               :name "Alpha"
+                               :filter nil
+                               :enable-marks-p t
+                               :constructor '("one" "two" "three")))
+         (beta (make-instance 'prompter:source
+                              :name "Beta"
+                              :filter nil
+                              :constructor '("beta-one")))
+         (prompt (make-instance 'prompt-buffer
+                                :prompt "Pick"
+                                :sources (list alpha beta))))
+    (unwind-protect
+         (progn
+           (assert-true (bordeaux-threads:with-timeout (5)
+                          (prompter:all-ready-p prompt)))
+           (setf (prompter::current-suggestion prompt) (list alpha 0)
+                 (prompter:marks alpha) '("one"))
+           (assert-equal (list alpha beta)
+                         (nyxt::prompt-visible-sources prompt))
+           (let ((view (make-instance
+                        'user-interface:dynamic-element
+                        :template (lambda (source)
+                                    (nyxt::prompt-source-view prompt source))
+                        :item-key (lambda (source)
+                                    (nyxt::prompt-source-stamp prompt source)))))
+             (setf (user-interface:items view) (list alpha beta))
+             (let ((html (spinneret:with-html-string
+                           (user-interface:to-html view)))
+                   (alpha-node (prompt-source-node view alpha))
+                   (beta-node (prompt-source-node view beta)))
+               (assert-true (search "Alpha" html))
+               (assert-true (search "Beta" html))
+               (assert-true (search "one" html))
+               (assert-true (search "selection" html))
+               (assert-true (search "marked" html))
+               (assert-true (search "checkbox" html))
+               (assert-true (search "source-content" html))
+               (setf (user-interface:items view) (list alpha beta))
+               (assert-eq alpha-node (prompt-source-node view alpha))
+               (assert-eq beta-node (prompt-source-node view beta))
+               (setf (prompter::current-suggestion prompt) (list alpha 1))
+               (setf (user-interface:items view) (list alpha beta))
+               (assert-false (eq alpha-node (prompt-source-node view alpha)))
+               (assert-eq beta-node (prompt-source-node view beta)))))
+      (prompter:destroy prompt))))
+
+(define-test prompt-source-shows-a-window-around-the-cursor ()
+  (let* ((*browser* (make-instance 'browser))
+         (source (make-instance 'prompter:source
+                                :name "Rows"
+                                :filter nil
+                                :constructor (loop for index from 0 below 10
+                                                   collect (format nil "row-~d" index))))
+         (prompt (make-instance 'prompt-buffer :sources (list source))))
+    (unwind-protect
+         (progn
+           (assert-true (bordeaux-threads:with-timeout (5)
+                          (prompter:all-ready-p prompt)))
+           (setf (prompter::current-suggestion prompt) (list source 0))
+           (let ((html (spinneret:with-html-string
+                         (user-interface:to-html
+                          (nyxt::prompt-source-view prompt source)))))
+             (assert-true (search "row-0" html))
+             (assert-true (search "row-7" html))
+             (assert-false (search "row-8" html)))
+           (setf (prompter::current-suggestion prompt) (list source 9))
+           (let ((html (spinneret:with-html-string
+                         (user-interface:to-html
+                          (nyxt::prompt-source-view prompt source)))))
+             (assert-false (search "row-0" html))
+             (assert-false (search "row-5" html))
+             (assert-true (search "row-6" html))
+             (assert-true (search "row-9" html))
+             (assert-true (search "selection" html))))
+      (prompter:destroy prompt))))

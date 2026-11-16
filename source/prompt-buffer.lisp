@@ -68,6 +68,28 @@ Only one caller waits on `prompter:next-ready-p'.")
       :initarg nil
       :documentation "Whether `prompter:destroy' has run.
 Input updates after this are ignored.")
+     (suggestions-view
+      nil
+      :type (or null user-interface:dynamic-element)
+      :export nil
+      :initarg nil
+      :documentation "The sources drawn under the input.
+A `user-interface:dynamic-element'. A source already drawn is kept
+when what it shows has not changed.")
+     (prompt-count-view
+      nil
+      :type (or null user-interface:element)
+      :export nil
+      :initarg nil
+      :documentation "The bracketed count beside the prompt.
+A `user-interface:element'.")
+     (prompt-modes-view
+      nil
+      :type (or null user-interface:element)
+      :export nil
+      :initarg nil
+      :documentation "The mode names beside the input.
+A `user-interface:element'.")
      (style
       (theme:themed-css (theme *browser*)
         '(:font-face :font-family "public sans" :font-style "normal"
@@ -561,30 +583,34 @@ The window has one prompt view. Only this prompt draws into it."
        (eq prompt-buffer
            (first (active-prompt-buffers (window prompt-buffer))))))
 
+(-> prompt-modes-text (prompt-buffer) string)
+(defun prompt-modes-text (prompt-buffer)
+  "Return the mode names PROMPT-BUFFER shows beside its input."
+  (let ((window (or (window prompt-buffer) (current-window))))
+    (if (and window (status-buffer window))
+        (str:join " "
+                  (mapcar (curry #'mode-status (status-buffer window))
+                          (sort-modes-for-status (enabled-modes prompt-buffer))))
+        "")))
+
 (-> prompt-render-loading (prompt-buffer) boolean)
 (defun prompt-render-loading (prompt-buffer)
   "Show the loading mark in the suggestion count while a source is computing."
   (let ((loading-p (notevery #'prompter:ready-p (prompter:sources prompt-buffer))))
     (when (prompt-current-p prompt-buffer)
-      (ps-eval :async t :buffer prompt-buffer
-        (let ((count (nyxt/ps:qs document "#prompt-count")))
-          (when count
-            (setf (ps:@ count |innerHTML|)
-                  (ps:lisp (prompt-count-html prompt-buffer)))))))
+      (ensure-prompt-views prompt-buffer)
+      (setf (user-interface:raw (prompt-count-view prompt-buffer))
+            (prompt-count-html prompt-buffer)))
     loading-p))
 
 (defmethod render-prompt ((prompt-buffer prompt-buffer))
   (when (prompt-current-p prompt-buffer)
-    (ps-eval :async t :buffer prompt-buffer
-    (setf (ps:@ (nyxt/ps:qs document "#prompt-count") |innerHTML|)
-          (ps:lisp (prompt-count-html prompt-buffer)))
-    (setf (ps:@ (nyxt/ps:qs document "#prompt-modes") |innerHTML|)
-          (ps:lisp
-           (str:join
-            " "
-            (mapcar (curry #'mode-status
-                           (status-buffer (current-window)))
-                    (sort-modes-for-status (enabled-modes prompt-buffer)))))))))
+    (ensure-prompt-views prompt-buffer)
+    (user-interface:batch ((prompt-count-view prompt-buffer))
+      (setf (user-interface:raw (prompt-count-view prompt-buffer))
+            (prompt-count-html prompt-buffer)
+            (user-interface:text (prompt-modes-view prompt-buffer))
+            (prompt-modes-text prompt-buffer)))))
 
 (defmethod attribute-widths ((source prompter:source))
   "Return the widths of SOURCE's attribute columns (as ratios)."
@@ -631,159 +657,348 @@ columns shown before column editing."
                 collect attribute)
         attributes)))
 
-(defun composite-rows (source)
-  "Return (INDEX SUGGESTION ATTRIBUTES) for each suggestion in SOURCE.
-ATTRIBUTES are the originating source's default columns."
-  (loop for suggestion in (prompter:suggestions source)
-        for index from 0
-        collect (list index
-                      suggestion
-                      (origin-default-attributes
-                       suggestion
-                       (prompter:match-data suggestion)))))
+(-> prompt-copy (t) string)
+(defun prompt-copy (text)
+  "Return TEXT as a string the caller can keep."
+  (if (stringp text)
+      (copy-seq text)
+      ""))
 
-(defun pad-attributes (attributes length)
-  "Return ATTRIBUTES followed by empty columns until it is LENGTH long."
-  (append attributes
-          (make-list (max 0 (- length (length attributes)))
-                     :initial-element '("" ""))))
+(-> prompt-suggestion-window () integer)
+(defun prompt-suggestion-window ()
+  "Return how many rows a regular source shows."
+  8)
 
-(defun render-composite-attributes (source prompt-buffer)
-  "Render SOURCE as one table with no column headings.
-Every row has as many cells as the suggestion with the most default columns,
-so the columns line up. Shorter rows leave the extra cells empty."
-  (let* ((rows (composite-rows source))
-         (column-count (reduce #'max rows
-                               :key (lambda (row) (length (third row)))
-                               :initial-value 0))
-         (widest (find column-count rows
-                       :key (lambda (row) (length (third row)))))
-         (widths (attribute-width-ratios (if widest (third widest) '()))))
-    (spinneret:with-html
-      (when (plusp column-count)
-        (:table :class "source-content composite"
-                (:colgroup
-                 (dolist (width widths)
-                   (:col :style (format nil "width: ~,2f%" (* 100 width)))))
-                (dolist (row rows)
-                  (let ((suggestion-index (first row))
-                        (suggestion (second row)))
-                    (:tr :id (when (equal (list suggestion source)
-                                          (multiple-value-list
-                                           (prompter:%current-suggestion
-                                            prompt-buffer)))
-                               "selection")
-                         (loop for attribute in (pad-attributes (third row)
-                                                                column-count)
-                               for text = (attribute-text attribute)
-                               collect
-                               (:td :title text
-                                    :onclick
-                                    (ps:ps
-                                      (cond
-                                        ((ps:chain window event ctrl-key)
-                                         (nyxt/ps:lisp-eval
-                                          (:title "mark-this-suggestion"
-                                           :buffer prompt-buffer)
-                                          (prompter::set-current-suggestion-by-class-and-index
-                                           prompt-buffer
-                                           (class-name (class-of source))
-                                           suggestion-index)
-                                          (prompter:toggle-mark prompt-buffer)
-                                          (prompt-render-suggestions prompt-buffer)))
-                                        (t
-                                         (nyxt/ps:lisp-eval
-                                          (:title "return-this-suggestion"
-                                           :buffer prompt-buffer)
-                                          (prompter::set-current-suggestion-by-class-and-index
-                                           prompt-buffer
-                                           (class-name (class-of source))
-                                           suggestion-index)
-                                          (prompter:run-action-on-return
-                                           prompt-buffer)))))
-                                    text))))))))))
+(-> prompt-source-name (prompter:source) string)
+(defun prompt-source-name (source)
+  "Return SOURCE's name as text."
+  (let ((name (prompter:name source)))
+    (if (stringp name)
+        name
+        "")))
 
-(defun render-attributes (source prompt-buffer)
-  (when (typep source 'prompter:composite-source)
-    (return-from render-attributes
-      (render-composite-attributes source prompt-buffer)))
-  (spinneret:with-html
-    (when (prompter:suggestions source)
-      (:table :class "source-content"
-              (:colgroup
-               (when (prompter:enable-marks-p source)
-                 (:col :class "mark" :style "width: 28px"))
-               (dolist (width (attribute-widths source))
-                 (:col :style (format nil "width: ~,2f%" (* 100 width)))))
-              (:tr
-               :style (if (sera:single (prompter:active-attributes-keys source))
-                          "display:none;"
-                          "display:revert;")
-               (when (prompter:enable-marks-p source) (:th :class "mark" " "))
-               (loop for attribute-key in (prompter:active-attributes-keys source)
-                     collect (:th (spinneret:escape-string attribute-key))))
-              (loop
-                ;; TODO: calculate how many lines fit in the prompt buffer
-                with max-suggestion-count = 8
-                repeat max-suggestion-count
-                with cursor-index = (prompter:current-suggestion-position prompt-buffer)
-                for suggestion-index from (max 0 (- cursor-index (- (/ max-suggestion-count 2) 1)))
-                for suggestion in (nthcdr suggestion-index (prompter:suggestions source))
-                collect
-                (let ((suggestion-index suggestion-index))
-                  (:tr :id (when (equal (list suggestion source)
-                                        (multiple-value-list
-                                         (prompter:%current-suggestion
-                                          prompt-buffer)))
-                             "selection")
-                       :class (when (prompter:marked-p source (prompter:value suggestion))
-                                "marked")
-                       (when (prompter:enable-marks-p source)
-                         (:td :class "mark"
-                          (:input
-                           :type "checkbox"
-                           :checked (prompter:marked-p
-                                     source (prompter:value suggestion))
-                           :onchange (ps:ps
-                                       (nyxt/ps:lisp-eval
-                                        (:title "unmark-this-suggestion"
-                                         :buffer prompt-buffer)
-                                        (prompter::set-current-suggestion-by-class-and-index
-                                         prompt-buffer
-                                         (class-name (class-of source))
-                                         suggestion-index)
-                                        (prompter:toggle-mark prompt-buffer)
-                                        (prompt-render-suggestions prompt-buffer))))))
-                       (loop for (nil attribute)
-                               in (prompter:active-attributes
-                                   suggestion :source source)
-                             collect
-                             (:td
-                              :title attribute
-                              :onclick
-                              (ps:ps
-                                (cond
-                                  ((ps:chain window event ctrl-key)
-                                   (nyxt/ps:lisp-eval
-                                    (:title "mark-this-suggestion"
-                                     :buffer prompt-buffer)
-                                    (prompter::set-current-suggestion-by-class-and-index
-                                     prompt-buffer
-                                     (class-name (class-of source))
-                                     suggestion-index)
-                                    (prompter:toggle-mark prompt-buffer)
-                                    (prompt-render-suggestions prompt-buffer)))
-                                  (t
-                                   (nyxt/ps:lisp-eval
-                                    (:title "return-this-suggestion"
-                                     :buffer prompt-buffer)
-                                    (prompter::set-current-suggestion-by-class-and-index
-                                     prompt-buffer
-                                     (class-name (class-of source))
-                                     suggestion-index)
-                                    (prompter:run-action-on-return
-                                     prompt-buffer)))))
-                              attribute)))))))))
+(-> prompt-suggestion-selected-p (prompt-buffer prompter:source t) boolean)
+(defun prompt-suggestion-selected-p (prompt-buffer source suggestion)
+  "Return non-nil when SUGGESTION is PROMPT-BUFFER's current one in SOURCE."
+  (equal (list suggestion source)
+         (multiple-value-list (prompter:%current-suggestion prompt-buffer))))
+
+(-> prompt-row-attributes (prompter:source t) list)
+(defun prompt-row-attributes (source suggestion)
+  "Return the columns SOURCE shows for SUGGESTION.
+A composite row uses the originating source's default columns. A missing
+column is an empty one, so every row of a regular source has one cell per
+active key. Reading these does not start asynchronous attribute work."
+  (if (typep source 'prompter:composite-source)
+      (origin-default-attributes suggestion (prompter:match-data suggestion))
+      (loop for key in (prompter:active-attributes-keys source)
+            collect (or (assoc key (prompter:attributes suggestion) :test #'string=)
+                        (list key "")))))
+
+(-> prompt-visible-rows (prompt-buffer prompter:source) list)
+(defun prompt-visible-rows (prompt-buffer source)
+  "Return (INDEX SUGGESTION ATTRIBUTES) for each row SOURCE shows.
+A composite source shows every suggestion. A regular source shows eight
+rows, starting three before the cursor once the cursor is that far down.
+The cursor is the prompt's current position, including when SOURCE is not
+the current source."
+  (if (typep source 'prompter:composite-source)
+      (loop for suggestion in (prompter:suggestions source)
+            for index from 0
+            collect (list index
+                          suggestion
+                          (prompt-row-attributes source suggestion)))
+      (let* ((window (prompt-suggestion-window))
+             (start (max 0
+                         (- (or (prompter:current-suggestion-position prompt-buffer)
+                                0)
+                            (1- (floor window 2))))))
+        (loop for suggestion in (nthcdr start (prompter:suggestions source))
+              for index from start
+              repeat window
+              collect (list index
+                            suggestion
+                            (prompt-row-attributes source suggestion))))))
+
+(-> prompt-visible-sources (prompt-buffer) list)
+(defun prompt-visible-sources (prompt-buffer)
+  "Return the sources PROMPT-BUFFER shows, from the current one downward.
+A source with no suggestions is omitted once it is ready."
+  (let ((current (current-source prompt-buffer))
+        (sources (prompter:sources prompt-buffer)))
+    (if (and current (member current sources))
+        (loop for source in (member current sources)
+              when (or (prompter:suggestions source)
+                       (not (prompter:ready-p source)))
+                collect source)
+        '())))
+
+(-> prompt-column-widths (prompter:source list) list)
+(defun prompt-column-widths (source rows)
+  "Return a width ratio for each column SOURCE shows."
+  (attribute-width-ratios
+   (cond
+     ((typep source 'prompter:composite-source)
+      (let* ((count (reduce #'max rows
+                            :key (lambda (row) (length (third row)))
+                            :initial-value 0))
+             (widest (find count rows
+                           :key (lambda (row) (length (third row))))))
+        (if widest
+            (third widest)
+            '())))
+     ((prompter:suggestions source)
+      (prompt-row-attributes source (first (prompter:suggestions source))))
+     (t '()))))
+
+(-> prompt-row-stamp (prompt-buffer prompter:source list) list)
+(defun prompt-row-stamp (prompt-buffer source row)
+  "Return the displayed state of ROW, a fresh list."
+  (destructuring-bind (index suggestion attributes) row
+    (list index
+          (mapcar #'prompt-copy (mapcar #'attribute-text attributes))
+          (and (prompt-suggestion-selected-p prompt-buffer source suggestion) t)
+          (and (not (typep source 'prompter:composite-source))
+               (prompter:marked-p source (prompter:value suggestion))
+               t))))
+
+(-> prompt-source-stamp (prompt-buffer prompter:source) list)
+(defun prompt-source-stamp (prompt-buffer source)
+  "Return the value that changes when SOURCE should be drawn again.
+The list is fresh, so later changes to a suggestion do not rewrite it."
+  (let ((rows (prompt-visible-rows prompt-buffer source)))
+    (list (prompt-copy (prompt-source-name source))
+          (and (prompter:ready-p source) t)
+          (and (prompter:enable-marks-p source) t)
+          (mapcar #'prompt-copy (prompter:active-attributes-keys source))
+          (length (prompter:suggestions source))
+          (length (prompter:marks source))
+          (prompt-column-widths source rows)
+          (mapcar (lambda (row)
+                    (prompt-row-stamp prompt-buffer source row))
+                  rows))))
+
+(-> prompt-row-scripts (prompt-buffer prompter:source integer)
+    (values string string string &optional))
+(defun prompt-row-scripts (prompt-buffer source index)
+  "Return the click, control-click, and mark scripts for SOURCE at INDEX."
+  (let ((class-name (class-name (class-of source))))
+    (values
+     (ps:ps
+       (nyxt/ps:lisp-eval
+        (:title "return-this-suggestion"
+         :buffer prompt-buffer)
+        (prompter::set-current-suggestion-by-class-and-index
+         prompt-buffer class-name index)
+        (prompter:run-action-on-return prompt-buffer)))
+     (ps:ps
+       (nyxt/ps:lisp-eval
+        (:title "mark-this-suggestion"
+         :buffer prompt-buffer)
+        (prompter::set-current-suggestion-by-class-and-index
+         prompt-buffer class-name index)
+        (prompter:toggle-mark prompt-buffer)
+        (prompt-render-suggestions prompt-buffer)))
+     (ps:ps
+       (nyxt/ps:lisp-eval
+        (:title "unmark-this-suggestion"
+         :buffer prompt-buffer)
+        (prompter::set-current-suggestion-by-class-and-index
+         prompt-buffer class-name index)
+        (prompter:toggle-mark prompt-buffer)
+        (prompt-render-suggestions prompt-buffer))))))
+
+(-> prompt-table-row (prompt-buffer prompter:source integer t list) t)
+(defun prompt-table-row (prompt-buffer source index suggestion attributes)
+  "Return the table row for SUGGESTION at INDEX in SOURCE."
+  (multiple-value-bind (action control-action mark-action)
+      (prompt-row-scripts prompt-buffer source index)
+    (user-interface:make-table-row
+     (mapcar #'attribute-text attributes)
+     :selected-p (prompt-suggestion-selected-p prompt-buffer source suggestion)
+     :marked-p (and (not (typep source 'prompter:composite-source))
+                    (prompter:marked-p source (prompter:value suggestion))
+                    t)
+     :action action
+     :control-action control-action
+     :mark-action mark-action)))
+
+(-> prompt-schedule-attributes (prompter:source list) t)
+(defun prompt-schedule-attributes (source rows)
+  "Start SOURCE's asynchronous attribute work for the suggestions in ROWS.
+A composite source has no such work. A suggestion whose attributes are
+already strings is left alone."
+  (unless (typep source 'prompter:composite-source)
+    (dolist (row rows)
+      (prompter:active-attributes (second row) :source source)))
+  nil)
+
+(-> prompt-table-columns (prompter:source list) list)
+(defun prompt-table-columns (source rows)
+  "Return the columns of the table for SOURCE."
+  (let ((widths (prompt-column-widths source rows)))
+    (mapcar (lambda (text width)
+              (make-instance 'user-interface:column
+                             :text (if (stringp text) text "")
+                             :width width))
+            (if (typep source 'prompter:composite-source)
+                (make-list (length widths) :initial-element "")
+                (prompter:active-attributes-keys source))
+            widths)))
+
+(-> prompt-source-table (prompt-buffer prompter:source list) t)
+(defun prompt-source-table (prompt-buffer source rows)
+  "Return the table of ROWS for SOURCE."
+  (prompt-schedule-attributes source rows)
+  (make-instance
+   'user-interface:table
+   :html-class (if (typep source 'prompter:composite-source)
+                   "source-content composite"
+                   "source-content")
+   :marks-p (and (prompter:enable-marks-p source)
+                 (not (typep source 'prompter:composite-source))
+                 t)
+   :header-p (not (typep source 'prompter:composite-source))
+   :header-visible-p (not (sera:single (prompter:active-attributes-keys source)))
+   :columns (prompt-table-columns source rows)
+   :rows (mapcar (lambda (row)
+                   (destructuring-bind (index suggestion attributes) row
+                     (prompt-table-row prompt-buffer source index
+                                       suggestion attributes)))
+                 rows)))
+
+(-> prompt-command-label (prompt-buffer t string) string)
+(defun prompt-command-label (prompt-buffer command description)
+  "Return DESCRIPTION followed by COMMAND's binding in PROMPT-BUFFER."
+  (format nil "~a (~a)"
+          description
+          (binding-keys (sym:resolve-symbol command :command)
+                        :modes (enabled-modes prompt-buffer))))
+
+(-> prompt-command-button (prompt-buffer &key (:id string) (:label string)
+                                         (:raw t) (:command t))
+    t)
+(defun prompt-command-button (prompt-buffer &key id label raw command)
+  "Return a button that runs COMMAND in PROMPT-BUFFER.
+LABEL is the tooltip. RAW is the button body, such as an icon."
+  (make-instance 'user-interface:button
+                 :id id
+                 :alt-text label
+                 :raw raw
+                 :action (ps:ps
+                           (nyxt/ps:lisp-eval
+                            (:title id
+                             :buffer prompt-buffer)
+                            (funcall (sym:resolve-symbol command :command))))))
+
+(-> prompt-attributes-button (prompt-buffer prompter:source) t)
+(defun prompt-attributes-button (prompt-buffer source)
+  "Return the button that edits which columns SOURCE shows."
+  (make-instance
+   'user-interface:button
+   :id "toggle-attributes"
+   :alt-text (format nil "Toggle attributes display (~a)"
+                     (binding-keys
+                      (sym:resolve-symbol 'toggle-attributes-display :command)
+                      :modes (enabled-modes prompt-buffer)))
+   :raw "<span class=\"attribute-delta\">Δ</span>"
+   :action (ps:ps
+             (nyxt/ps:lisp-eval
+              (:title "toggle-attributes"
+               :buffer prompt-buffer)
+              (funcall (sym:resolve-symbol :toggle-attributes-display :command)
+                       :source source)))))
+
+(-> prompt-source-count (prompt-buffer prompter:source) t)
+(defun prompt-source-count (prompt-buffer source)
+  "Return the mark and suggestion count shown for SOURCE."
+  (make-instance 'user-interface:element
+                 :tag :span
+                 :html-class "suggestion-and-mark-count"
+                 :raw (suggestion-and-mark-count
+                       prompt-buffer
+                       (prompter:suggestions source)
+                       (prompter:marks source)
+                       :enable-marks-p (and (prompter:enable-marks-p source) t)
+                       :loading-p (not (prompter:ready-p source)))))
+
+(-> prompt-source-header (prompt-buffer prompter:source) t)
+(defun prompt-source-header (prompt-buffer source)
+  "Return SOURCE's heading: its navigation, its name, and its count."
+  (let ((main (make-instance
+               'user-interface:element
+               :tag :div
+               :children (list (prompt-command-button
+                                prompt-buffer
+                                :id "next-source"
+                                :label (prompt-command-label
+                                        prompt-buffer :next-source "Next source")
+                                :raw (gethash "down.svg" *static-data*)
+                                :command :next-source)
+                               (prompt-command-button
+                                prompt-buffer
+                                :id "previous-source"
+                                :label (prompt-command-label
+                                        prompt-buffer :previous-source
+                                        "Previous source")
+                                :raw (gethash "up.svg" *static-data*)
+                                :command :previous-source)
+                               (prompt-source-name source)
+                               (prompt-source-count prompt-buffer source)))))
+    (make-instance
+     'user-interface:element
+     :tag :div
+     :html-class "source-name"
+     :children (if (typep source 'prompter:composite-source)
+                   (list main)
+                   (list main
+                         (make-instance
+                          'user-interface:element
+                          :tag :div
+                          :children (list (prompt-attributes-button
+                                           prompt-buffer source))))))))
+
+(-> prompt-source-view (prompt-buffer prompter:source) t)
+(defun prompt-source-view (prompt-buffer source)
+  "Return the element for SOURCE: its heading and, when it has rows, its table."
+  (let ((rows (prompt-visible-rows prompt-buffer source)))
+    (make-instance
+     'user-interface:element
+     :tag :div
+     :html-class "source"
+     :children (if rows
+                   (list (prompt-source-header prompt-buffer source)
+                         (prompt-source-table prompt-buffer source rows))
+                   (list (prompt-source-header prompt-buffer source))))))
+
+(defun ensure-prompt-views (prompt-buffer)
+  "Create PROMPT-BUFFER's count, modes, and suggestion list the first time."
+  (unless (suggestions-view prompt-buffer)
+    (setf (prompt-count-view prompt-buffer)
+          (make-instance 'user-interface:element
+                         :id "prompt-count"
+                         :tag :span
+                         :raw (prompt-count-html prompt-buffer))
+          (prompt-modes-view prompt-buffer)
+          (make-instance 'user-interface:element
+                         :id "prompt-modes"
+                         :tag :div
+                         :html-class "arrow-left"
+                         :text (prompt-modes-text prompt-buffer))
+          (suggestions-view prompt-buffer)
+          (make-instance 'user-interface:dynamic-element
+                         :id "suggestions"
+                         :attributes (list :style
+                                           (if (invisible-input-p prompt-buffer)
+                                               "visibility:hidden;"
+                                               "visibility:visible;"))
+                         :template (lambda (source)
+                                     (prompt-source-view prompt-buffer source))
+                         :item-key (lambda (source)
+                                     (prompt-source-stamp prompt-buffer source))))
+    (user-interface:connect (prompt-count-view prompt-buffer) prompt-buffer)
+    (user-interface:connect (prompt-modes-view prompt-buffer) prompt-buffer)
+    (user-interface:connect (suggestions-view prompt-buffer) prompt-buffer)))
 
 (export 'prompt-render-suggestions)
 (defmethod prompt-render-suggestions :around ((prompt-buffer prompt-buffer))
@@ -791,111 +1006,60 @@ so the columns line up. Shorter rows leave the extra cells empty."
     (call-next-method)))
 
 (defmethod prompt-render-suggestions ((prompt-buffer prompt-buffer))
-  "Refresh the rendering of the suggestion list in PROMPT-BUFFER."
-  (let* ((sources (prompter:sources prompt-buffer))
-         (current-source-index (position (current-source prompt-buffer) sources))
-         (last-source-index (1- (length sources))))
-    (flet ((source->html (source)
-             (spinneret:with-html-string
-               (:div.source
-                (:div.source-name
-                 (:div
-                  (:nbutton
-                    :id "next-source"
-                    :text (:raw (gethash "down.svg" *static-data*))
-                    :title (format nil "Next source (~a)"
-                                   (binding-keys (sym:resolve-symbol
-                                                  :next-source :command)
-                                                 :modes (enabled-modes
-                                                         prompt-buffer)))
-                    :buffer prompt-buffer
-                    '(funcall (sym:resolve-symbol :next-source :command)))
-                  (:nbutton
-                    :id "previous-source"
-                    :text (:raw (gethash "up.svg" *static-data*))
-                    :title (format nil "Previous source (~a)"
-                                   (binding-keys (sym:resolve-symbol
-                                                  :previous-source :command)
-                                                 :modes (enabled-modes
-                                                         prompt-buffer)))
-                    :buffer prompt-buffer
-                    '(funcall (sym:resolve-symbol :previous-source :command)))
-                  (prompter:name source)
-                  (:span
-                   :class "suggestion-and-mark-count"
-                   ;; To hide the suggestion count for the source, subclass
-                   ;; `prompter:source' and handle the condition.  Note that
-                   ;; `suggestion-and-mark-count' relies on the global prompt
-                   ;; value `hide-suggestion-count-p'.
-                   (:raw (suggestion-and-mark-count
-                          prompt-buffer
-                          (prompter:suggestions source)
-                          (prompter:marks source)
-                          :enable-marks-p (prompter:enable-marks-p source)
-                          :loading-p (not (prompter:ready-p source))))))
-                 (unless (typep source 'prompter:composite-source)
-                   (:div
-                    (:nbutton
-                      :id "toggle-attributes"
-                      :text (:raw "<span class=\"attribute-delta\">Δ</span>")
-                      :title (format nil "Toggle attributes display (~a)"
-                                     (binding-keys
-                                      (sym:resolve-symbol
-                                       'toggle-attributes-display :command)
-                                      :modes (enabled-modes prompt-buffer)))
-                      :buffer prompt-buffer
-                      `(funcall (sym:resolve-symbol
-                                 :toggle-attributes-display :command)
-                                :source ,source)))))
-                (render-attributes source prompt-buffer)))))
-      (ps-eval :async t :buffer prompt-buffer
-        (setf (ps:@ (nyxt/ps:qs document "#suggestions") |innerHTML|)
-              (ps:lisp
-               (sera:string-join
-                (loop for i from current-source-index to last-source-index
-                      for source = (nth i sources)
-                      when (or (prompter:suggestions source)
-                               (not (prompter:ready-p source)))
-                        collect (source->html source))
-                +newline+)))))
-    (render-prompt prompt-buffer)))
+  "Refresh the sources shown in PROMPT-BUFFER.
+A source view already built is kept when what it shows has not changed."
+  (ensure-prompt-views prompt-buffer)
+  (let ((view (suggestions-view prompt-buffer)))
+    (user-interface:batch (view)
+      (setf (user-interface:items view)
+            (prompt-visible-sources prompt-buffer))))
+  (render-prompt prompt-buffer))
+
+(-> prompt-close-button (prompt-buffer) t)
+(defun prompt-close-button (prompt-buffer)
+  "Return the button that closes PROMPT-BUFFER."
+  (make-instance 'user-interface:button
+                 :text "×"
+                 :alt-text "Close prompt"
+                 :action (ps:ps
+                           (nyxt/ps:lisp-eval
+                            (:title "quit-prompt-buffer"
+                             :buffer prompt-buffer)
+                            (funcall (sym:resolve-symbol
+                                      :quit-prompt-buffer :command))))))
+
+(-> prompt-document (prompt-buffer) string)
+(defun prompt-document (prompt-buffer)
+  "Return PROMPT-BUFFER's document."
+  (spinneret:with-html-string
+    (:head (:nstyle (style prompt-buffer)))
+    (:body
+     (:div
+      :id "root"
+      (:div
+       :id "prompt-area"
+       (:div :id "prompt" (prompter:prompt prompt-buffer))
+       (:div :id "prompt-extra" :class "arrow-right"
+             (user-interface:to-html (prompt-count-view prompt-buffer)))
+       (:div :id "prompt-input"
+             (:input :type (if (invisible-input-p prompt-buffer)
+                               "password"
+                               "text")
+                     :id "input"
+                     :value (prompter:input prompt-buffer)))
+       (user-interface:to-html (prompt-modes-view prompt-buffer))
+       (:div :id "close-button" :class "arrow-left"
+             (user-interface:to-html (prompt-close-button prompt-buffer))))
+      (user-interface:to-html (suggestions-view prompt-buffer))))))
 
 (defun prompt-render-skeleton (prompt-buffer)
   ;; Synchronous. `html-write' returns before CEF applies the document, and
   ;; `update-prompt-input' then reads `#input' while it is still missing.
   (when (prompt-current-p prompt-buffer)
+    (ensure-prompt-views prompt-buffer)
     (ps-eval :buffer prompt-buffer
-    (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-          (ps:lisp
-           (spinneret:with-html-string
-             (:head (:nstyle (style prompt-buffer)))
-             (:body
-              (:div
-               :id "root"
-               (:div
-                :id "prompt-area"
-                (:div :id "prompt" (prompter:prompt prompt-buffer))
-                (:div :id "prompt-extra" :class "arrow-right"
-                      (:span :id "prompt-count"
-                             (:raw (prompt-count-html prompt-buffer))))
-                (:div :id "prompt-input"
-                      (:input :type (if (invisible-input-p prompt-buffer)
-                                        "password"
-                                        "text")
-                              :id "input"
-                              :value (prompter:input prompt-buffer)))
-                (:div :id "prompt-modes" :class "arrow-left" "")
-                (:div :id "close-button" :class "arrow-left"
-                      (:nbutton
-                        :text "×"
-                        :title "Close prompt"
-                        :buffer prompt-buffer
-                        '(funcall (sym:resolve-symbol
-                                   :quit-prompt-buffer :command)))))
-               (:div :id "suggestions"
-                     :style (if (invisible-input-p prompt-buffer)
-                                "visibility:hidden;"
-                                "visibility:visible;"))))))))))
+      (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
+            (ps:lisp (prompt-document prompt-buffer))))))
 
 (defun prompt-render-focus (prompt-buffer)
   (when (prompt-current-p prompt-buffer)
