@@ -5,11 +5,102 @@
   (:documentation "Package for `buffer-listing-mode', mode for buffer listing."))
 (in-package :nyxt/mode/buffer-listing)
 
+(-> buffer-stamp (buffer) list)
+(defun buffer-stamp (buffer)
+  "Return the parts of BUFFER the list shows."
+  (list (title buffer) (render-url (url buffer))))
+
+(-> buffer-row (buffer buffer) t)
+(defun buffer-row (buffer page)
+  "Return a row for BUFFER: its title, its address, and a close control."
+  (let* ((url (render-url (url buffer)))
+         (title (title buffer))
+         (heading (if (str:emptyp title) url title))
+         (detail (unless (string= heading url)
+                   url)))
+    (make-instance
+     'user-interface:element
+     :tag :li
+     :children
+     (list (make-instance 'user-interface:element
+                          :tag :a
+                          :title (or detail heading)
+                          :attributes '(:href "#")
+                          :action (ps:ps
+                                    (ps:chain event (prevent-default))
+                                    (nyxt/ps:lisp-eval
+                                     (:title "switch-buffer"
+                                      :buffer page)
+                                     (set-current-buffer buffer))
+                                    nil)
+                          :children
+                          (list (make-instance 'user-interface:element
+                                               :tag :span
+                                               :text heading)
+                                (make-instance 'user-interface:element
+                                               :tag :span
+                                               :text (or detail ""))))
+           (make-instance 'user-interface:button
+                          :html-class "close"
+                          :alt-text "Close"
+                          :text "×"
+                          :attributes '(:type "button")
+                          :action (ps:ps
+                                    (nyxt/ps:lisp-eval
+                                     (:title "close-buffer"
+                                      :buffer page)
+                                     (delete-buffer :buffers buffer))))))))
+
 (define-mode buffer-listing-mode ()
   "Mode for buffer-listing.
 Hosts `list-buffers' page."
-  ()
+  ((listing
+    (make-instance 'user-interface:dynamic-element
+                   :tag :p
+                   :html-class "empty"
+                   :text "No buffers."
+                   :item-key #'buffer-stamp)
+    :export nil
+    :documentation "The list shown on `list-buffers'.
+A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
+
+(-> present-buffers (buffer-listing-mode) t)
+(defun present-buffers (mode)
+  "Show the buffers in MODE.
+The list element keeps a row it has already built."
+  (let ((page (buffer mode))
+        (element (listing mode)))
+    (when (and *browser* page (find page (buffer-list)))
+      (user-interface:batch (element)
+        (setf (user-interface:items element) (buffer-list))
+        (if (plusp (length (user-interface:items element)))
+            (setf (user-interface:tag element) :ul
+                  (user-interface:html-class element) "list"
+                  (user-interface:text element) nil)
+            (setf (user-interface:tag element) :p
+                  (user-interface:html-class element) "empty"
+                  (user-interface:text element) "No buffers."))))))
+
+(defmethod customize-instance :after ((mode buffer-listing-mode) &key)
+  "Keep MODE's list in step with the buffers.
+The handlers are the ones `status-buffer' uses for its tabs."
+  (setf (user-interface:template (listing mode))
+        (lambda (buffer)
+          (buffer-row buffer (buffer mode))))
+  (define-setf-handler document-buffer url mode
+    (lambda (_)
+      (declare (ignore _))
+      (present-buffers mode)))
+  (define-setf-handler document-buffer title mode
+    (lambda (_)
+      (declare (ignore _))
+      (present-buffers mode)))
+  (define-setf-handler browser buffers mode
+    (lambda (_)
+      (declare (ignore _))
+      (present-buffers mode)))
+  (present-buffers mode))
 
 (define-internal-page-command-global list-buffers ()
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
@@ -18,43 +109,9 @@ Hosts `list-buffers' page."
   (when (or (str:emptyp (title listing-buffer))
             (string= (title listing-buffer) (render-url (url listing-buffer))))
     (setf (title listing-buffer) "*Buffers*"))
-  (labels ((buffer-row (buffer)
-             "Present BUFFER as a title, its URL, and a close control."
-             ;; Fresh binding so each row's callback closes over its own buffer.
-             (let* ((buffer buffer)
-                    (url (render-url (url buffer)))
-                    (title (title buffer))
-                    (heading (if (str:emptyp title) url title))
-                    (detail (unless (string= heading url)
-                              url)))
-               (spinneret:with-html
-                 (:li
-                   (:a :href "#"
-                       :title (or detail heading)
-                       :onclick (ps:ps
-                                  (ps:chain event (prevent-default))
-                                  (nyxt/ps:lisp-eval
-                                   (:title "switch-buffer"
-                                    :buffer listing-buffer)
-                                   (set-current-buffer buffer))
-                                  nil)
-                       (:span heading)
-                       (:span detail))
-                   (:button :class "close"
-                            :type "button"
-                            :title "Close"
-                            :onclick (ps:ps
-                                       (nyxt/ps:lisp-eval
-                                        (:title "close-buffer"
-                                         :buffer listing-buffer)
-                                        (delete-buffer :buffers buffer)
-                                        (unless (eq buffer listing-buffer)
-                                          (ffi-buffer-reload listing-buffer))))
-                            "×"))))))
+  (let ((listing (listing (find-submode 'buffer-listing-mode listing-buffer))))
+    (user-interface:connect listing listing-buffer)
     (spinneret:with-html-string
-      (:nstyle (style listing-buffer))
-      ;; Close control is 28px inside a 17px inset. 17 + 28 + 17 = 62.
-      ;; The control sits on the link, so the link's own hover ends there.
       (:nstyle
         '("ul.list > li > a"
           :padding-right "62px")
@@ -96,9 +153,12 @@ Hosts `list-buffers' page."
         `("ul.list button.close:focus-visible"
           :outline "2px solid"
           :outline-color ,theme:action-color
-          :outline-offset "2px"))
+          :outline-offset "2px")
+        `("p.empty"
+          :margin "0"
+          :font-size "17px"
+          :line-height "24px"
+          :color ,theme:primary-color))
       (render-menu 'buffer-listing-mode listing-buffer)
       (:h1 "Buffers")
-      (:ul :class "list"
-           (dolist (buffer (buffer-list))
-             (buffer-row buffer))))))
+      (user-interface:to-html listing))))
