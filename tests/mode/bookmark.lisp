@@ -78,3 +78,24 @@
            '("https://example.com/a" "https://example.com/b"))
           (assert-eq :p (tag))
           (assert-true (search "No bookmarks" (page))))))))
+
+(define-test list-bookmarks-drops-its-handler-when-the-buffer-is-deleted ()
+  (let* ((*browser* (make-instance 'browser))
+         (buffer (make-instance 'web-buffer))
+         (file (make-instance 'nyxt/mode/bookmark:bookmarks-file
+                              :profile (make-instance 'files:virtual-profile))))
+    (with-current-buffer buffer
+      (enable-modes* 'nyxt/mode/bookmark:bookmark-mode buffer)
+      (setf (nyxt/mode/bookmark:bookmarks-file
+             (find-submode 'nyxt/mode/bookmark:bookmark-mode buffer))
+            file)
+      (enable-modes* 'nyxt/mode/bookmark:bookmark-listing-mode buffer)
+      (let ((mode (find-submode 'nyxt/mode/bookmark:bookmark-listing-mode buffer)))
+        (nyxt::buffer-delete (id buffer))
+        (nyxt/mode/bookmark:persist-bookmark (quri:uri "https://example.com/a")
+                                             :title "Alpha")
+        (assert-eq :p (user-interface:tag (nyxt/mode/bookmark::listing mode)))
+        (assert-false (search "Alpha"
+                              (spinneret:with-html-string
+                                (user-interface:to-html
+                                 (nyxt/mode/bookmark::listing mode)))))))))
