@@ -587,16 +587,6 @@ Return BUFFER."
         (t nil))
   buffer)
 
-(-> window-shows-buffer-p (window buffer) boolean)
-(defun window-shows-buffer-p (window buffer)
-  "Return non-nil when BUFFER is a view WINDOW is showing."
-  (not (null
-        (and buffer
-             (or (find buffer (active-prompt-buffers window))
-                 (eq buffer (active-buffer window))
-                 (eq buffer (status-buffer window))
-                 (eq buffer (message-buffer window)))))))
-
 (export-always 'current-prompt-buffer)
 (defun current-prompt-buffer ()
   "Return the prompt buffer that keyboard input acts on.

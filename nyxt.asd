@@ -144,6 +144,7 @@
                (:file "mode/terminal" :depends-on ("Core modes"))
                (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
                (:file "status" :depends-on ("Core"))
+               (:file "panel" :depends-on ("status" "Core modes"))
                (:module "Help"
                 :pathname ""
                 :depends-on ("Core modes" "Modes")

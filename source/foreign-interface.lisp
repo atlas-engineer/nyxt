@@ -37,6 +37,11 @@ If the `:setter-p' option is non-nil, then a dummy setf method is defined."
                       ((or *quitting-nyxt-p*
                            (> (hash-table-count windows) 1))
                        (remove-setf-handlers (status-buffer window))
+                       (dolist (panel (panel-buffers window))
+                         (ignore-errors (ffi-remove-panel-buffer window panel))
+                         (ignore-errors (ffi-buffer-delete panel))
+                         (buffer-delete (id panel)))
+                       (setf (panel-buffers window) '())
                        (hooks:run-hook (window-delete-hook window) window)
                        (remhash (id window) windows)
                        (call-next-method)
@@ -112,6 +117,16 @@ The specialized method must fallback on the primary method below, as to account
 for the case when the renderer reports that none of the windows are focused.
 
 The `:around' method ensures that `last-active-window' is set."))
+
+(define-ffi-generic ffi-add-panel-buffer (window buffer side width)
+  (:documentation "Show BUFFER beside WINDOW's page.
+SIDE is `:left' or `:right'. WIDTH is the strip's width in pixels.
+The strip is as tall as the page. A window holds any number of them.
+Status and message bars stay full width."))
+
+(define-ffi-generic ffi-remove-panel-buffer (window buffer)
+  (:documentation "Take BUFFER off WINDOW.
+The buffer stays alive. `ffi-add-panel-buffer' shows it again."))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   (:method :around ((window window) (buffer buffer) &key focus &allow-other-keys)

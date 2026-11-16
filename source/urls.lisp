@@ -513,15 +513,26 @@ requests."
                                        `(lambda () ,@body)))))
     (ps:create :mode "no-cors")))
 
+(defvar *lisp-request-url* nil
+  "The `lisp' request URL while its callback runs.
+A callback can read query arguments that the page appended.")
+
+(defvar *lisp-callback-buffer-hook* nil
+  "Function of one buffer, or NIL.
+Return the buffer that buffer's `lisp' callback should run in, or NIL to keep it.")
+
 (-> lisp-callback-buffer (buffer) buffer)
 (defun lisp-callback-buffer (buffer)
   "Return the buffer in which BUFFER's `lisp' callback should run.
 A status buffer stores its callbacks the same way any `lisp' URL buffer does.
-The commands on that panel, such as `history-backwards', act on the window's
-page. They read `current-buffer', which would otherwise be the panel."
+The commands on that strip, such as `history-backwards', act on the window's
+page. They read `current-buffer', which would otherwise be the strip.
+`*lisp-callback-buffer-hook*' does the same for the side panel."
   (or (and (status-buffer-p buffer)
            (window buffer)
            (active-buffer (window buffer)))
+      (and *lisp-callback-buffer-hook*
+           (funcall *lisp-callback-buffer-hook* buffer))
       buffer))
 
 (define-internal-scheme "lisp"
@@ -538,12 +549,14 @@ page. They read `current-buffer', which would otherwise be the panel."
                    request-id buffer title)
         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                               (gethash request-id (lisp-url-callbacks buffer)))))
-          (let ((target (lisp-callback-buffer buffer)))
+          (let ((target (lisp-callback-buffer buffer))
+                (request-url %url))
             (run-thread "lisp-url"
-              (with-current-buffer target
-                (handler-case (run callback)
-                  (prompt-buffer-canceled ()
-                    (log:debug "Prompt buffer interrupted"))))))
+              (let ((*lisp-request-url* request-url))
+                (with-current-buffer target
+                  (handler-case (run callback)
+                    (prompt-buffer-canceled ()
+                      (log:debug "Prompt buffer interrupted")))))))
           (log:warn "Request ~a isn't bound to a callback in buffer ~a"
                     %url buffer))
         (values "{}" "application/json")))
