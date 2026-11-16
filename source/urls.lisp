@@ -487,7 +487,7 @@ IPv4 rewrite of a numeric host."
 `lisp' is a standard scheme, so the URL has a host. `lisp:ID' is not a URL
 `fetch' will send, and a numeric host is rewritten to dotted IPv4."
   (sera:synchronized ((lisp-url-callbacks buffer))
-    (log:debug "Registering callback ~a in buffer ~a" id buffer)
+    (log:trace "Registering callback ~a in buffer ~a" id buffer)
     (setf (gethash id (lisp-url-callbacks buffer)) callback))
   (quri:make-uri :scheme "lisp"
                  :host "callback"
