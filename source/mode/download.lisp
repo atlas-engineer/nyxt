@@ -24,7 +24,7 @@ Should be redefined by the renderer."))
     :type (member :unloaded :loading :finished :failed :canceled)
     :documentation "Status of the download.")
    (status-text
-    (make-instance 'user-interface:paragraph)
+    (make-instance 'user-interface:element :tag :span)
     :export nil)
    (completion-percentage
     0.0
@@ -104,14 +104,23 @@ The `downloads' slot is populated by a list of these objects."))
 
 (defmethod initialize-instance :after ((download download)
                                        &key &allow-other-keys)
-  (hooks:run-hook (before-download-hook download) download)
-  (list-downloads))
+  (hooks:run-hook (before-download-hook download) download))
+
+(-> focus-downloads () t)
+(defun focus-downloads ()
+  "Show the downloads page.
+An open page is focused without loading it again."
+  (alex:if-let ((buffer (find 'list-downloads (buffer-list)
+                              :key (lambda (buffer)
+                                     (internal-page-name (url buffer))))))
+    (set-current-buffer buffer)
+    (list-downloads)))
 
 (defmethod cancel-download ((download download))
   "Call `cancel-function' with URL as argument."
   (funcall (cancel-function download))
   (echo "Download canceled: ~a." (url download))
-  (buffer-load-internal-page-focus 'list-downloads))
+  (focus-downloads))
 
 (-> format-unit (real string) (values string &optional))
 (defun format-unit (value unit)
@@ -188,12 +197,16 @@ or the status word when it failed or was canceled."
         (download-summary download)))
 
 (defmethod (setf status) (value (download download))
-  (setf (slot-value download 'status) value)
-  (refresh-download-summary download)
-  ;; Refresh the downloads page and show it when the file is ready.
-  (when (eq value :finished)
-    (buffer-load-internal-page-focus 'list-downloads)
-    (hooks:run-hook (after-download-hook download) download)))
+  (let ((finished-p (and (not (eq value (status download)))
+                         (eq value :finished))))
+    (prog1 (call-with-download-stamp download
+             (lambda ()
+               (setf (slot-value download 'status) value)
+               (refresh-download-summary download)
+               value))
+      (when finished-p
+        (focus-downloads)
+        (hooks:run-hook (after-download-hook download) download)))))
 
 (defmethod (setf completion-percentage) (percentage (download download))
   (setf (slot-value download 'completion-percentage) percentage)
@@ -207,65 +220,143 @@ or the status word when it failed or was canceled."
   (setf (slot-value download 'bytes-downloaded) bytes)
   (refresh-download-summary download))
 
-(defmethod connect ((download download) buffer)
-  "Connect DOWNLOAD's summary and progress bar to BUFFER.
-Later updates of those values redraw on BUFFER."
-  (user-interface:connect (status-text download) buffer)
-  (user-interface:connect (progress download) buffer))
+(defmethod (setf url) :around (value (download download))
+  (declare (ignore value))
+  (call-with-download-stamp download #'call-next-method))
+
+(defmethod (setf destination-path) :around (value (download download))
+  (declare (ignore value))
+  (call-with-download-stamp download #'call-next-method))
+
+(defmethod (setf downloads) :around (value (browser browser))
+  "Show the downloads page when a download is added."
+  (prog1 (call-next-method)
+    (when value
+      (focus-downloads))))
+
+(-> download-stamp (download) list)
+(defun download-stamp (download)
+  "Return the parts of DOWNLOAD the row is rebuilt for.
+Progress stays on the row's own elements."
+  (list (status download)
+        (download-filename download)
+        (render-url (url download))
+        (uiop:native-namestring (destination-path download))))
+
+(-> call-with-download-stamp (download function) t)
+(defun call-with-download-stamp (download function)
+  "Call FUNCTION and redraw the downloads list when DOWNLOAD's row changes."
+  (let ((stamp (download-stamp download)))
+    (prog1 (funcall function)
+      (unless (equal stamp (download-stamp download))
+        (refresh-download-pages)))))
+
+(-> download-row (download buffer) t)
+(defun download-row (download page)
+  "Return a row for DOWNLOAD: its name, its status, and a cancel control."
+  (let* ((status (status download))
+         (url (render-url (url download)))
+         (path (uiop:native-namestring (destination-path download)))
+         (finished-p (and (eq status :finished)
+                          (not (str:emptyp path))))
+         (summary (status-text download))
+         (bar (progress download))
+         (link (make-instance
+                'user-interface:element
+                :tag :a
+                :title (if finished-p path url)
+                :attributes (list :href (if finished-p "#" url))
+                :action (when finished-p
+                          (ps:ps
+                            (ps:chain event (prevent-default))
+                            (nyxt/ps:lisp-eval
+                             (:title "open-download"
+                              :buffer page)
+                             (nyxt/mode/file-manager:default-open-file-function
+                              (destination-path download)))
+                            nil))
+                :children (list (make-instance 'user-interface:element
+                                               :tag :span
+                                               :text (download-filename download))
+                                summary)))
+         (cancel (when (member status '(:unloaded :loading))
+                   (make-instance 'user-interface:button
+                                  :html-class "close"
+                                  :alt-text "Cancel"
+                                  :text "×"
+                                  :attributes '(:type "button")
+                                  :action (ps:ps
+                                            (nyxt/ps:lisp-eval
+                                             (:title "cancel-download"
+                                              :buffer page)
+                                             (cancel-download download)))))))
+    (setf (user-interface:text summary) (download-summary download)
+          (user-interface:percentage bar)
+          (let ((percentage (completion-percentage download)))
+            (if (and (realp percentage) (<= 0 percentage 100))
+                percentage
+                0)))
+    (make-instance 'user-interface:element
+                   :tag :li
+                   :html-class (string-downcase (symbol-name status))
+                   :children (if cancel
+                                 (list link bar cancel)
+                                 (list link bar)))))
 
 (define-mode download-mode ()
   "Display list of downloads."
-  ()
+  ((listing
+    (make-instance 'user-interface:dynamic-element
+                   :tag :p
+                   :html-class "empty"
+                   :text "No downloads."
+                   :item-key #'download-stamp)
+    :export nil
+    :documentation "The list shown on `list-downloads'.
+A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
+
+(-> present-downloads (download-mode) t)
+(defun present-downloads (mode)
+  "Show the downloads in MODE.
+The list element keeps a row it has already built."
+  (let ((element (listing mode)))
+    (user-interface:batch (element)
+      (setf (user-interface:items element)
+            (if *browser*
+                (downloads *browser*)
+                '()))
+      (if (plusp (length (user-interface:items element)))
+          (setf (user-interface:tag element) :ul
+                (user-interface:html-class element) "list"
+                (user-interface:text element) nil)
+          (setf (user-interface:tag element) :p
+                (user-interface:html-class element) "empty"
+                (user-interface:text element) "No downloads.")))))
+
+(defun refresh-download-pages ()
+  "Redraw each open downloads page."
+  (when *browser*
+    (dolist (buffer (buffer-list))
+      (alex:when-let ((mode (find-submode 'download-mode buffer)))
+        (present-downloads mode)))))
+
+(defmethod customize-instance :after ((mode download-mode) &key)
+  "Keep MODE's list in step with the downloads."
+  (setf (user-interface:template (listing mode))
+        (lambda (download)
+          (download-row download (buffer mode))))
+  (define-setf-handler browser downloads mode
+    (lambda (browser)
+      (declare (ignore browser))
+      (present-downloads mode)))
+  (present-downloads mode))
 
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a list of downloads for this session."
-  (labels ((download-row (download)
-             "Present DOWNLOAD as its file name and a short status line."
-             ;; Fresh binding so each row's callback closes over its own download.
-             (let* ((download download)
-                    (url (url download))
-                    (status (status download))
-                    (path (uiop:native-namestring (destination-path download)))
-                    (finished-p (and (eq status :finished)
-                                     (not (str:emptyp path))))
-                    (active-p (member status '(:unloaded :loading))))
-               (setf (user-interface:text (status-text download))
-                     (download-summary download)
-                     (user-interface:percentage (progress download))
-                     (let ((percentage (completion-percentage download)))
-                       (if (and (realp percentage) (<= 0 percentage 100))
-                           percentage
-                           0)))
-               (connect download buffer)
-               (spinneret:with-html
-                 (:li :class (string-downcase (symbol-name status))
-                      (:a :href (if finished-p "#" url)
-                          :title (if finished-p path url)
-                          :onclick (when finished-p
-                                     (ps:ps
-                                       (ps:chain event (prevent-default))
-                                       (nyxt/ps:lisp-eval
-                                        (:title "open-download"
-                                         :buffer buffer)
-                                        (nyxt/mode/file-manager:default-open-file-function
-                                         (destination-path download)))
-                                       nil))
-                          (:span (download-filename download))
-                          (:span :id (user-interface:id (status-text download))
-                                 (user-interface:text (status-text download))))
-                      (user-interface:to-html (progress download))
-                      (when active-p
-                        (:button :class "close"
-                                 :type "button"
-                                 :title "Cancel"
-                                 :onclick (ps:ps
-                                            (nyxt/ps:lisp-eval
-                                             (:title "cancel-download"
-                                              :buffer buffer)
-                                             (cancel-download download)))
-                                 "×")))))))
+  (let ((listing (listing (find-submode 'download-mode buffer))))
+    (user-interface:connect listing buffer)
     (spinneret:with-html-string
       (:nstyle
         '("ul.list > li.loading > a, ul.list > li.unloaded > a"
@@ -334,11 +425,7 @@ Later updates of those values redraw on BUFFER."
           :color ,theme:primary-color))
       (render-menu 'download-mode buffer)
       (:h1 "Downloads")
-      (if (downloads *browser*)
-          (:ul :class "list"
-               (dolist (download (downloads *browser*))
-                 (download-row download)))
-          (:p :class "empty" "No downloads.")))))
+      (user-interface:to-html listing))))
 
 (define-command-global download-url ()
   "Download the page or file of the current buffer."
