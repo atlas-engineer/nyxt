@@ -311,24 +311,35 @@ A list is copied. A vector is returned as itself."
       ((or (stringp item) (typep item 'ui-element)) item)
       (t nil))))
 
+(defun item-stamp (element item)
+  "Return the value that decides whether ITEM is drawn again.
+`item-key' computes it. Without one, the item itself is used."
+  (let ((key (item-key element)))
+    (if key
+        (funcall key item)
+        item)))
+
 (defun rendered-items (element)
   "Return ELEMENT's body in `items' order.
-An item already drawn is reused, compared with `eq'. An item no longer
-in `items' is dropped. A new item is built."
+An item already drawn is reused when its stamp is `equal' to the stamp
+it was built with. An item no longer in `items' is dropped. A new item,
+or one whose stamp changed, is built."
   (let ((nodes (nodes element))
         (seen (make-hash-table :test 'eq))
         (body '()))
     (each-child (items element)
                 (lambda (item)
                   (setf (gethash item seen) t)
-                  (multiple-value-bind (node found) (gethash item nodes)
-                    (unless found
+                  (let* ((stamp (item-stamp element item))
+                         (record (gethash item nodes))
+                         (node (car record)))
+                    (unless (and record (equal stamp (cdr record)))
                       (setf node (make-node element item)
-                            (gethash item nodes) node))
+                            (gethash item nodes) (cons node stamp)))
                     (when node
                       (push node body)))))
-    (maphash (lambda (item node)
-               (declare (ignore node))
+    (maphash (lambda (item record)
+               (declare (ignore record))
                (unless (gethash item seen)
                  (remhash item nodes)))
              nodes)
@@ -346,26 +357,37 @@ in `items' is dropped. A new item is built."
 (export-always 'items)
 (export-always 'item)
 (export-always 'template)
+(export-always 'item-key)
 (defclass dynamic-element (element)
   ((items :initform (make-array 0 :adjustable t :fill-pointer t)
           :initarg :items
           :accessor items
           :documentation "The items, a vector, from index 0.
-A list stored here is copied into a vector. Items are compared with `eq':
-one already drawn is kept, one that is gone is dropped, and a new one is
-built. Setting `items' or `item' redraws a connected element.
-`aref' and `vector-push-extend' do not.")
+A list stored here is copied into a vector. Items are compared with `eq'.
+One already drawn is kept when its `item-key' is `equal' to the last draw,
+one that is gone is dropped, and a new one is built. Setting `items' or
+`item' redraws a connected element. `aref' and `vector-push-extend' do not.")
    (template :initform nil
              :initarg :template
              :accessor template
              :documentation "Function of one item. Returns what to draw, or nil to skip the item.
 Nil draws the item itself: a string is text and a `ui-element' is nested.")
+   (item-key :initform nil
+             :initarg :item-key
+             :accessor item-key
+             :documentation "Function of one item, or nil.
+When the value it returns is `equal' to the value from the last draw, the
+node is kept. A different value builds the node again. Nil keeps a node
+for as long as the item is `eq'. Return a fresh value: a value that shares
+structure later code mutates keeps the old node.")
    (nodes :initform (make-hash-table :test 'eq)
           :accessor nodes
-          :documentation "Items drawn so far. Keys are compared with `eq'."))
+          :documentation "Items drawn so far, compared with `eq'.
+The value is the node and the stamp it was built with."))
   (:documentation "An `element' whose body follows an array of items.
 Adding an item builds one node. Removing an item drops its node.
-The other nodes stay. `children' is not the body."))
+A changed `item-key' builds that item again. The other nodes stay.
+`children' is not the body."))
 
 (defmethod initialize-instance :after ((element dynamic-element) &key)
   (setf (slot-value element 'items) (coerce-items (items element))))
@@ -380,6 +402,12 @@ The other nodes stay. `children' is not the body."))
 
 (defmethod (setf template) :after (template (element dynamic-element))
   (declare (ignorable template))
+  (clrhash (nodes element))
+  (connect-items element)
+  (queue-update element))
+
+(defmethod (setf item-key) :after (item-key (element dynamic-element))
+  (declare (ignorable item-key))
   (clrhash (nodes element))
   (connect-items element)
   (queue-update element))
