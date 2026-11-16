@@ -70,8 +70,8 @@ The row is a level and the text. A missing level is blank."
                                                     :title text
                                                     :text text))))))
 
-(-> present-messages (message-mode (maybe browser)) t)
-(defun present-messages (mode browser)
+(-> render-messages (message-mode (maybe browser)) t)
+(defun render-messages (mode browser)
   "Show BROWSER's messages in MODE.
 The list element keeps a row it has already built."
   (let ((element (messages mode))
@@ -94,8 +94,8 @@ The list element keeps a row it has already built."
   "Keep MODE's list in step with `messages-content'."
   (define-setf-handler browser messages-content mode
     (lambda (browser)
-      (present-messages mode browser)))
-  (present-messages mode *browser*))
+      (render-messages mode browser)))
+  (render-messages mode *browser*))
 
 (define-internal-page-command-global list-messages ()
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)

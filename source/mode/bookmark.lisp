@@ -476,8 +476,8 @@ A `bookmark-entry' is one row. A tag is that tag's group."
 A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
 
-(-> present-bookmarks (bookmark-listing-mode) t)
-(defun present-bookmarks (mode)
+(-> render-bookmarks (bookmark-listing-mode) t)
+(defun render-bookmarks (mode)
   "Show the buffer's bookmarks in MODE.
 The list element keeps a row it has already built."
   (let* ((element (listing mode))
@@ -523,8 +523,8 @@ The list element keeps a row it has already built."
             (when (or (eq file page-file)
                       (uiop:pathname-equal (files:expand file)
                                            (files:expand page-file)))
-              (present-bookmarks mode))))))
-    (present-bookmarks mode)))
+              (render-bookmarks mode))))))
+    (render-bookmarks mode)))
 
 (export-always 'list-bookmarks)
 (define-internal-page-command-global list-bookmarks ()

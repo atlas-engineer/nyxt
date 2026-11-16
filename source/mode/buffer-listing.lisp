@@ -65,8 +65,8 @@ Hosts `list-buffers' page."
 A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
 
-(-> present-buffers (buffer-listing-mode) t)
-(defun present-buffers (mode)
+(-> render-buffers (buffer-listing-mode) t)
+(defun render-buffers (mode)
   "Show the buffers in MODE.
 The list element keeps a row it has already built."
   (let ((page (buffer mode))
@@ -91,16 +91,16 @@ The handlers are the ones `status-buffer' uses for its tabs."
   (define-setf-handler document-buffer url mode
     (lambda (_)
       (declare (ignore _))
-      (present-buffers mode)))
+      (render-buffers mode)))
   (define-setf-handler document-buffer title mode
     (lambda (_)
       (declare (ignore _))
-      (present-buffers mode)))
+      (render-buffers mode)))
   (define-setf-handler browser buffers mode
     (lambda (_)
       (declare (ignore _))
-      (present-buffers mode)))
-  (present-buffers mode))
+      (render-buffers mode)))
+  (render-buffers mode))
 
 (define-internal-page-command-global list-buffers ()
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
