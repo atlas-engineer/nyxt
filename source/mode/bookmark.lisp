@@ -109,7 +109,13 @@ page, then by URL."
 
 (define-class bookmarks-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"bookmarks")
-   (files:name "bookmarks"))
+   (files:name "bookmarks")
+   (revision
+    0
+    :type integer
+    :documentation "How many times this file's bookmarks have been saved.
+Set this place after a save. A `define-setf-handler' on it redraws
+`list-bookmarks'."))
   (:export-class-name-p t))
 
 (define-class bookmark-entry ()
@@ -142,6 +148,15 @@ page, then by URL."
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (url-equal (url e1) (url e2)))
 
+(defmacro with-bookmarks ((bookmarks &optional (buffer '(current-buffer))) &body body)
+  "Bind BOOKMARKS to BUFFER's bookmark list for BODY, then save it.
+Saving bumps `revision', which redraws an open `list-bookmarks'."
+  (alex:with-gensyms (file)
+    `(let ((,file (bookmarks-file ,buffer)))
+       (files:with-file-content (,bookmarks ,file)
+         ,@body)
+       (incf (revision ,file)))))
+
 (-> persist-bookmark
     (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
     t)
@@ -151,7 +166,7 @@ In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
 Creates a `bookmark-entry' with DATE, TITLE, and TAGS, when provided.
 If there's a bookmarks with the same URL, update the TITLE, TAGS, and DATE
 instead."
-  (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
+  (with-bookmarks (bookmarks)
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries bookmarks-without-url)
@@ -301,7 +316,7 @@ against date, given `prompter:active-attributes-keys' configuration."))
   "Delete bookmark(s) matching the chosen URLS-OR-BOOKMARK-ENTRIES.
 URLS-OR-BOOKMARK-ENTRIES could be a list or a single URL/`bookmark-entry'."
   (if urls-or-bookmark-entries
-      (files:with-file-content (bookmarks (bookmarks-file (current-buffer)))
+      (with-bookmarks (bookmarks)
         (setf bookmarks
               (set-difference
                bookmarks
@@ -361,134 +376,230 @@ buffers in the background."
                      (copy-to-clipboard (render-url (url (first suggestions)))))
                    'delete-bookmark))))
 
+(-> bookmark-stamp (bookmark-entry) list)
+(defun bookmark-stamp (bookmark)
+  "Return the parts of BOOKMARK the list shows."
+  (list (title bookmark)
+        (render-url (url bookmark))
+        (copy-list (tags bookmark))))
+
+(-> bookmarks-for-tag (t buffer) list)
+(defun bookmarks-for-tag (tag buffer)
+  "Return BUFFER's bookmarks grouped under TAG."
+  (let ((group (find tag (bookmark-groups buffer) :key #'first :test #'equalp)))
+    (if group
+        (second group)
+        '())))
+
+(-> bookmark-row (bookmark-entry buffer) t)
+(defun bookmark-row (bookmark buffer)
+  "Return a row for BOOKMARK: its title, its address, and edit and delete."
+  (let* ((url (render-url (url bookmark)))
+         (title (title bookmark))
+         (heading (if (str:emptyp title) url title))
+         (detail (unless (string= heading url) url)))
+    (make-instance
+     'user-interface:element
+     :tag :li
+     :children
+     (list (make-instance 'user-interface:element
+                          :tag :a
+                          :title (or detail heading)
+                          :attributes (list :href url)
+                          :children
+                          (list (make-instance 'user-interface:element
+                                               :tag :span
+                                               :text heading)
+                                (make-instance 'user-interface:element
+                                               :tag :span
+                                               :text (or detail ""))))
+           (make-instance 'user-interface:button
+                          :html-class "control edit"
+                          :alt-text "Edit"
+                          :attributes '(:type "button")
+                          :raw (gethash "edit.svg" *static-data*)
+                          :action (ps:ps
+                                    (nyxt/ps:lisp-eval
+                                     (:title "edit-bookmark"
+                                      :buffer buffer)
+                                     (edit-bookmark-entry bookmark))))
+           (make-instance 'user-interface:button
+                          :html-class "control close"
+                          :alt-text "Delete"
+                          :text "×"
+                          :attributes '(:type "button")
+                          :action (ps:ps
+                                    (nyxt/ps:lisp-eval
+                                     (:title "delete-bookmark"
+                                      :buffer buffer)
+                                     (delete-bookmark bookmark))))))))
+
+(-> bookmark-group (t buffer) t)
+(defun bookmark-group (tag buffer)
+  "Return the section for TAG, including its rows."
+  (make-instance
+   'user-interface:element
+   :tag :section
+   :html-class "bookmark-group"
+   :children
+   (list (make-instance 'user-interface:element
+                        :tag :h2
+                        :text (or tag "Unsorted"))
+         (make-instance 'user-interface:element
+                        :tag :ul
+                        :html-class "list"
+                        :children (mapcar (lambda (bookmark)
+                                            (bookmark-row bookmark buffer))
+                                          (bookmarks-for-tag tag buffer))))))
+
+(-> bookmark-item (t buffer) t)
+(defun bookmark-item (item buffer)
+  "Return the body for ITEM.
+A `bookmark-entry' is one row. A tag is that tag's group."
+  (if (bookmark-entry-p item)
+      (bookmark-row item buffer)
+      (bookmark-group item buffer)))
+
+(-> bookmark-item-key (t buffer) t)
+(defun bookmark-item-key (item buffer)
+  "Return the value that changes when ITEM should be drawn again."
+  (if (bookmark-entry-p item)
+      (bookmark-stamp item)
+      (mapcar #'bookmark-stamp (bookmarks-for-tag item buffer))))
+
+(define-mode bookmark-listing-mode ()
+  "Mode for the `list-bookmarks' page."
+  ((listing
+    nil
+    :export nil
+    :documentation "The list shown on `list-bookmarks'.
+A `user-interface:dynamic-element'."))
+  (:toggler-command-p nil))
+
+(-> present-bookmarks (bookmark-listing-mode) t)
+(defun present-bookmarks (mode)
+  "Show the buffer's bookmarks in MODE.
+The list element keeps a row it has already built."
+  (let* ((element (listing mode))
+         (buffer (buffer mode))
+         (groups (bookmark-groups buffer)))
+    (user-interface:batch (element)
+      (cond
+        ((null groups)
+         (setf (user-interface:items element) '()
+               (user-interface:tag element) :p
+               (user-interface:html-class element) "empty"
+               (user-interface:text element)
+               (format nil "No bookmarks in ~s."
+                       (files:expand (bookmarks-file buffer)))))
+        ((and (null (rest groups))
+              (null (first (first groups))))
+         (setf (user-interface:items element) (second (first groups))
+               (user-interface:tag element) :ul
+               (user-interface:html-class element) "list"
+               (user-interface:text element) nil))
+        (t
+         (setf (user-interface:items element) (mapcar #'first groups)
+               (user-interface:tag element) :div
+               (user-interface:html-class element) "bookmark-groups"
+               (user-interface:text element) nil))))))
+
+(defmethod customize-instance :after ((mode bookmark-listing-mode) &key)
+  "Keep MODE's list in step with the bookmark file."
+  (let ((buffer (buffer mode)))
+    (unless (listing mode)
+      (setf (listing mode)
+            (make-instance 'user-interface:dynamic-element
+                           :tag :p
+                           :html-class "empty"
+                           :text "No bookmarks."
+                           :template (lambda (item)
+                                       (bookmark-item item buffer))
+                           :item-key (lambda (item)
+                                       (bookmark-item-key item buffer))))
+      (define-setf-handler bookmarks-file revision mode
+        (lambda (file)
+          (let ((page-file (bookmarks-file buffer)))
+            (when (or (eq file page-file)
+                      (uiop:pathname-equal (files:expand file)
+                                           (files:expand page-file)))
+              (present-bookmarks mode))))))
+    (present-bookmarks mode)))
+
 (export-always 'list-bookmarks)
 (define-internal-page-command-global list-bookmarks ()
-    (bookmarks-buffer "*Bookmarks*")
+    (bookmarks-buffer "*Bookmarks*" 'nyxt/mode/bookmark:bookmark-listing-mode)
   "List all bookmarks in a new buffer.
 Splits bookmarks into groups by tags."
-  (labels ((bookmark-row (bookmark)
-             "Present BOOKMARK as a title, its URL, and edit and delete controls."
-             (let* ((url (render-url (url bookmark)))
-                    (title (title bookmark))
-                    (heading (if (str:emptyp title) url title))
-                    (detail (unless (string= heading url)
-                              url)))
-               (spinneret:with-html
-                 (:li
-                  (:a :href url
-                      :title (or detail heading)
-                      (:span heading)
-                      (:span detail))
-                  (:button :class "control edit"
-                           :type "button"
-                           :title "Edit"
-                           :onclick
-                           (ps:ps
-                             (nyxt/ps:lisp-eval
-                              (:title "edit-bookmark"
-                               :buffer bookmarks-buffer)
-                              (edit-bookmark-entry bookmark)
-                              (ffi-buffer-reload bookmarks-buffer)))
-                           (:raw (gethash "edit.svg" *static-data*)))
-                  (:button :class "control close"
-                           :type "button"
-                           :title "Delete"
-                           :onclick
-                           (ps:ps
-                             (nyxt/ps:lisp-eval
-                              (:title "delete-bookmark"
-                               :buffer bookmarks-buffer)
-                              (delete-bookmark url)
-                              (ffi-buffer-reload bookmarks-buffer)))
-                           "×"))))))
-    (let ((groups (bookmark-groups bookmarks-buffer)))
-      (spinneret:with-html-string
-        ;; Edit and delete are 28px with 7px between them, in a 17px inset.
-        ;; 17 + 28 + 7 + 28 + 17 = 97.
-        ;; The controls sit on the link, so the link's own hover ends there.
-        (:nstyle
-          '("ul.list > li > a"
-            :padding-right "97px")
-          `("ul.list > li:hover > a"
-            :background-color ,theme:background-color-
-            :opacity "1")
-          '("ul.list > li:hover::after"
-            :background-color "transparent")
-          '("ul.list > li:has(+ li:hover)::after"
-            :background-color "transparent")
-          `("ul.list button.control"
-            :position "absolute"
-            :z-index "1"
-            :top "13px"
-            :right "17px"
-            :display "flex"
-            :align-items "center"
-            :justify-content "center"
-            :box-sizing "border-box"
-            :width "28px"
-            :height "28px"
-            :margin "0"
-            :padding "0"
-            :border "none"
-            :border-radius "14px"
-            :appearance "none"
-            :background-color "transparent"
-            :color ,theme:primary-color
-            :font-size "17px"
-            :line-height "17px"
-            :cursor "pointer"
-            :opacity "0"
-            :transition "opacity 120ms ease, background-color 120ms ease")
-          '("ul.list button.edit"
-            :right "52px")
-          '("ul.list button.edit svg"
-            :display "block"
-            :width "17px"
-            :height "17px")
-          '("ul.list > li:hover > button.control, ul.list button.control:focus-visible"
-            :opacity "1")
-          `("ul.list button.control:hover"
-            :background-color ,theme:background-color
-            :color ,theme:on-background-color)
-          `("ul.list button.control:focus-visible"
-            :outline "2px solid"
-            :outline-color ,theme:action-color
-            :outline-offset "2px")
-          ;; 17px above the first tag, 37px above the later ones, 7px under it.
-          '("h1.grouped"
-            :margin-bottom "0")
-          '(".bookmark-groups"
-            :padding-top "17px")
-          '(".bookmark-group"
-            :margin-top "37px")
-          '(".bookmark-group:first-of-type"
-            :margin-top "0")
-          '(".bookmark-group h2"
-            :text-transform "capitalize"
-            :margin "0 0 7px"
-            :line-height "24px"))
-        (render-menu 'bookmark-mode bookmarks-buffer)
-        (cond
-          ((null groups)
-           (:h1 "Bookmarks")
-           (:p (format nil "No bookmarks in ~s."
-                       (files:expand (bookmarks-file bookmarks-buffer)))))
-          ;; No tags: the same list as the buffer page, without a heading.
-          ((and (null (rest groups))
-                (null (first (first groups))))
-           (:h1 "Bookmarks")
-           (:ul :class "list"
-                (dolist (bookmark (second (first groups)))
-                  (bookmark-row bookmark))))
-          (t
-           (:h1 :class "grouped" "Bookmarks")
-           (:div :class "bookmark-groups"
-                 (dolist (group groups)
-                   (:section :class "bookmark-group"
-                             (:h2 (or (first group) "Unsorted"))
-                             (:ul :class "list"
-                                  (dolist (bookmark (second group))
-                                    (bookmark-row bookmark))))))))))))
+  (let ((listing (listing (find-submode 'bookmark-listing-mode bookmarks-buffer))))
+    (user-interface:connect listing bookmarks-buffer)
+    (spinneret:with-html-string
+      (:nstyle
+        '("ul.list > li > a"
+          :padding-right "97px")
+        `("ul.list > li:hover > a"
+          :background-color ,theme:background-color-
+          :opacity "1")
+        '("ul.list > li:hover::after"
+          :background-color "transparent")
+        '("ul.list > li:has(+ li:hover)::after"
+          :background-color "transparent")
+        `("ul.list button.control"
+          :position "absolute"
+          :z-index "1"
+          :top "13px"
+          :right "17px"
+          :display "flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "28px"
+          :height "28px"
+          :margin "0"
+          :padding "0"
+          :border "none"
+          :border-radius "14px"
+          :appearance "none"
+          :background-color "transparent"
+          :color ,theme:primary-color
+          :font-size "17px"
+          :line-height "17px"
+          :cursor "pointer"
+          :opacity "0"
+          :transition "opacity 120ms ease, background-color 120ms ease")
+        '("ul.list button.edit"
+          :right "52px")
+        '("ul.list button.edit svg"
+          :display "block"
+          :width "17px"
+          :height "17px")
+        '("ul.list > li:hover > button.control, ul.list button.control:focus-visible"
+          :opacity "1")
+        `("ul.list button.control:hover"
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color)
+        `("ul.list button.control:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px")
+        ;; 17px above the first tag, 37px above the later ones, 7px under it.
+        '("h1.grouped"
+          :margin-bottom "0")
+        '("h1.grouped + ul.list, h1.grouped + p.empty"
+          :margin-top "17px")
+        '(".bookmark-groups"
+          :padding-top "17px")
+        '(".bookmark-group"
+          :margin-top "37px")
+        '(".bookmark-group:first-of-type"
+          :margin-top "0")
+        '(".bookmark-group h2"
+          :text-transform "capitalize"
+          :margin "0 0 7px"
+          :line-height "24px"))
+      (render-menu 'bookmark-mode bookmarks-buffer)
+      (:h1 :class "grouped" "Bookmarks")
+      (user-interface:to-html listing))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))
@@ -505,11 +616,6 @@ Splits bookmarks into groups by tags."
         (write-slot 'annotation)
         (when (date entry)
           (write-string " :date ")
-          ;; If we don't force the timezone, the timestamp could be serialized
-          ;; differently depending on the local timezone, e.g.
-          ;;     2020-12-10T11:46:02.500515+01:00
-          ;; instead of
-          ;;     2020-12-10T10:46:02.500515Z
           (format t "~s" (time:format-timestring nil (date entry)
                                                        :timezone time:+utc-zone+)))
         (when (tags entry)
@@ -557,7 +663,6 @@ Splits bookmarks into groups by tags."
 
 (define-command import-bookmarks-from-html
     (&key (html-file (prompt1
-                      ;; TODO: Is there a more intuitive directory for bookmarks?
                       :input (uiop:native-namestring (uiop:getcwd))
                       :extra-modes 'nyxt/mode/file-manager:file-manager-mode
                       :sources (make-instance
