@@ -957,12 +957,21 @@ The notion of first element is dictated by `containers:first-item'."
     ;; update the status buffer.
     (setf (buffers *browser*) (buffers *browser*))))
 
+(-> drop-buffer-setf-handlers (buffer) t)
+(defun drop-buffer-setf-handlers (buffer)
+  "Drop `define-setf-handler' handlers for BUFFER and its modes."
+  (remove-setf-handlers buffer)
+  (mapc #'remove-setf-handlers (modes buffer)))
+
 (defun buffer-delete (id)
   "Remove `buffers' hash table entry matching key ID.
+Handlers from `define-setf-handler' on that buffer and its modes are dropped.
 
 This is a low-level function.  See `buffer-delete' and `delete-buffer'."
   ;; Mutate state of the hash table.
   (when *browser*
+    (when-let ((buffer (gethash id (slot-value *browser* 'buffers))))
+      (drop-buffer-setf-handlers buffer))
     (remhash id (slot-value *browser* 'buffers))
     ;; Notify `buffers' of the new hash table state. Useful, for example, to
     ;; update the status buffer.
