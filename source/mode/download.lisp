@@ -316,8 +316,8 @@ Progress stays on the row's own elements."
 A `user-interface:dynamic-element'."))
   (:toggler-command-p nil))
 
-(-> present-downloads (download-mode) t)
-(defun present-downloads (mode)
+(-> render-downloads (download-mode) t)
+(defun render-downloads (mode)
   "Show the downloads in MODE.
 The list element keeps a row it has already built."
   (let ((element (listing mode)))
@@ -339,7 +339,7 @@ The list element keeps a row it has already built."
   (when *browser*
     (dolist (buffer (buffer-list))
       (alex:when-let ((mode (find-submode 'download-mode buffer)))
-        (present-downloads mode)))))
+        (render-downloads mode)))))
 
 (defmethod customize-instance :after ((mode download-mode) &key)
   "Keep MODE's list in step with the downloads."
@@ -349,8 +349,8 @@ The list element keeps a row it has already built."
   (define-setf-handler browser downloads mode
     (lambda (browser)
       (declare (ignore browser))
-      (present-downloads mode)))
-  (present-downloads mode))
+      (render-downloads mode)))
+  (render-downloads mode))
 
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
