@@ -1031,7 +1031,7 @@ BUFFER does not own that browser. Hiding BUFFER leaves the view in the window."
                     "font-weight:400;src:url(\"nyxt-resource:PublicSans-Regular.woff\")"
                     " format(\"woff\");}"
                     "@font-face{font-family:\"DejaVu Sans Mono\";"
-                    "src:url(\"nyxt-resource:DejaVuSansMono.ttf\") format(\"ttf\");}"))
+                    "src:url(\"nyxt-resource:DejaVuSansMono.ttf\") format(\"truetype\");}"))
                  (html
                    (concatenate
                     'string

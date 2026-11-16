@@ -80,7 +80,7 @@
         "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')"
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
-        "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+        "url('nyxt-resource:DejaVuSansMono.ttf')" "format('truetype')")
       '(html
         :height "100%"
         :overflow "hidden")

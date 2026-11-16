@@ -109,7 +109,7 @@ inherited from the superclasses.")
         "900" :src "url('nyxt-resource:PublicSans-BlackItalic.woff')"
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono"
-        :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
+        :src "url('nyxt-resource:DejaVuSansMono.ttf')" "format('truetype')")
       '(*
         :box-sizing border-box)
       `(body
