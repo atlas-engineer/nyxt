@@ -342,7 +342,7 @@ An entry with the same label, compared case-insensitively, is replaced."
     (setf authenticators
           (cons entry
                 (remove (label entry)
-                        (or authenticators '())
+                        authenticators
                         :key #'label
                         :test #'string-equal)))))
 
@@ -351,7 +351,7 @@ An entry with the same label, compared case-insensitively, is replaced."
   "Remove ENTRIES from BUFFER's `authenticators-file', matched by label."
   (files:with-file-content (authenticators (authenticators-file buffer))
     (setf authenticators
-          (set-difference (or authenticators '())
+          (set-difference authenticators
                           entries
                           :key #'label
                           :test #'string-equal))))
@@ -359,7 +359,7 @@ An entry with the same label, compared case-insensitively, is replaced."
 (-> authenticator-entries (buffer) list)
 (defun authenticator-entries (buffer)
   "Return the authenticators saved for BUFFER."
-  (or (files:content (authenticators-file buffer)) '()))
+  (files:content (authenticators-file buffer)))
 
 (-> use-code (authenticator-entry) string)
 (defun use-code (entry)
@@ -423,7 +423,7 @@ Advance and save `counter' when ENTRY is HOTP."
 (define-class authenticator-source (prompter:source)
   ((prompter:name "Authenticators")
    (prompter:constructor
-    (or (files:content (authenticators-file (current-buffer))) '()))
+    (files:content (authenticators-file (current-buffer))))
    (prompter:actions-on-return
     (list *authenticator-copy-action* *authenticator-paste-action*)))
   (:export-class-name-p t)

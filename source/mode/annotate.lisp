@@ -279,7 +279,7 @@ and edit and delete controls."
 (-> live-notes (list buffer) (values list &optional))
 (defun live-notes (notes buffer)
   "Return NOTES still stored for BUFFER, in the same order, after edits."
-  (let ((current (copy-list (or (files:content (annotations-file buffer)) '()))))
+  (let ((current (copy-list (files:content (annotations-file buffer)))))
     (remove nil
             (mapcar (lambda (note)
                       (when-let ((stored (stored-annotation note current)))

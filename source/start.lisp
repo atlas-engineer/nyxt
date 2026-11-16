@@ -240,7 +240,8 @@ directory. On another distribution that directory is missing and every Lisp
 download fails verification."
   (unless (uiop:getenv "SSL_CERT_FILE")
     (when-let ((ca-file (system-ca-file)))
-      (setf (uiop:getenv "SSL_CERT_FILE") ca-file))))
+      (require :sb-posix)
+      (uiop:symbol-call :sb-posix :setenv "SSL_CERT_FILE" ca-file 1))))
 
 (export-always 'entry-point)
 (defun entry-point ()

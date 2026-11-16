@@ -897,7 +897,7 @@ heading sinks."
                                     (frame-source-selection))))
                        (when (and ready (not (equal urls last-urls)))
                          (setf last-urls urls)
-                         (replace-frame-suggestions source (or urls '()))
+                         (replace-frame-suggestions source urls)
                          (prompter:refresh prompt)
                          (prompt-render-suggestions prompt))
                        (unless (eql ended last-ended)

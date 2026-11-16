@@ -480,6 +480,15 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
            (getf initargs :window)
            t)))
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (when (find-class 'cef:view nil)
+    (let ((method (find-method #'initialize-instance
+                               '(:after)
+                               (list (find-class 'cef:view))
+                               nil)))
+      (when method
+        (remove-method #'initialize-instance method)))))
+
 (defmethod initialize-instance :after ((view cef:view) &key (url "about:blank"))
   "Create VIEW's browser unless one is already attached or creation is deferred."
   (unless (or *defer-native-view-p* (cef:web-contents view))

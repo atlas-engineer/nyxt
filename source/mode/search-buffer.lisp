@@ -281,8 +281,7 @@ Note that only contiguous matches are considered.  For example:
            for i downfrom (min (length delta) (length str)) to 1
            for beg = (search delta str :end1 i :start2 (- len-str i) :test test)
            when beg
-             do (return (values (subseq delta 0 i) (list beg (+ beg i))))
-             and do (loop-finish)))
+             do (return (values (subseq delta 0 i) (list beg (+ beg i))))))
     (t
      (when-let* ((delta (sera:string-replace found-pattern pattern ""))
                  (len-delta (min (length delta) (length str)))
