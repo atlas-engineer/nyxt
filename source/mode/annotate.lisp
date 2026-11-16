@@ -30,7 +30,13 @@ internal programming APIs."
 
 (define-class annotations-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"annotations")
-   (files:name "annotations"))
+   (files:name "annotations")
+   (revision
+    0
+    :type integer
+    :documentation "How many times this file's annotations have been saved.
+Set this place after a save. A `define-setf-handler' on it redraws
+an open annotations list."))
   (:export-class-name-p t))
 
 (define-class annotation ()
@@ -126,71 +132,115 @@ first. ANNOTATIONS are already newest first."
             (alex:read-file-into-string
              (asdf:system-relative-pathname :nyxt "assets/glyphs/edit.svg")))))
 
-(defun annotation-note (annotation buffer refresh)
-  "Present ANNOTATION as the comment, the highlighted passage, its tags and date,
-and edit and delete controls."
+(-> annotation-note (annotation buffer) t)
+(defun annotation-note (annotation buffer)
+  "Return the row for ANNOTATION.
+The row is the comment, the highlighted passage, the tags and the date,
+and edit and delete."
   (let ((text (str:trim (or (data annotation) "")))
         (snippet (if (snippet-annotation-p annotation)
                      (str:trim (or (snippet annotation) ""))
                      ""))
         (meta (annotation-meta annotation)))
-    (spinneret:with-html
-      (:li
-       (unless (str:emptyp text)
-         (:p :class "text" text))
-       (unless (str:emptyp snippet)
-         (:p :class "snippet" snippet))
-       (unless (str:emptyp meta)
-         (:p :class "meta" meta))
-       (:div :class "controls"
-         (:button :class "control edit"
-                  :type "button"
-                  :title "Edit"
-                  :onclick
-                  (ps:ps
-                    (nyxt/ps:lisp-eval
-                     (:title "edit-annotation"
-                      :buffer buffer)
-                     (edit-annotation-note annotation)
-                     (funcall refresh)))
-                  (:raw (edit-glyph)))
-         (:button :class "control close"
-                  :type "button"
-                  :title "Delete"
-                  :onclick
-                  (ps:ps
-                    (nyxt/ps:lisp-eval
-                     (:title "delete-annotation"
-                      :buffer buffer)
-                     (remove-annotation annotation)
-                     (funcall refresh)))
-                  "×"))))))
+    (make-instance
+     'user-interface:element
+     :tag :li
+     :children
+     (append
+      (unless (str:emptyp text)
+        (list (make-instance 'user-interface:element
+                             :tag :p
+                             :html-class "text"
+                             :text text)))
+      (unless (str:emptyp snippet)
+        (list (make-instance 'user-interface:element
+                             :tag :p
+                             :html-class "snippet"
+                             :text snippet)))
+      (unless (str:emptyp meta)
+        (list (make-instance 'user-interface:element
+                             :tag :p
+                             :html-class "meta"
+                             :text meta)))
+      (list (make-instance
+             'user-interface:element
+             :tag :div
+             :html-class "controls"
+             :children
+             (list (make-instance 'user-interface:button
+                                  :html-class "control edit"
+                                  :alt-text "Edit"
+                                  :attributes '(:type "button")
+                                  :raw (edit-glyph)
+                                  :action (ps:ps
+                                            (nyxt/ps:lisp-eval
+                                             (:title "edit-annotation"
+                                              :buffer buffer)
+                                             (edit-annotation-note annotation))))
+                   (make-instance 'user-interface:button
+                                  :html-class "control close"
+                                  :alt-text "Delete"
+                                  :text "×"
+                                  :attributes '(:type "button")
+                                  :action (ps:ps
+                                            (nyxt/ps:lisp-eval
+                                             (:title "delete-annotation"
+                                              :buffer buffer)
+                                             (remove-annotation annotation)))))))))))
 
-(defun annotation-group (group buffer refresh)
-  "Present GROUP as the page, then its notes."
+(-> annotation-section (list buffer) t)
+(defun annotation-section (group buffer)
+  "Return the section for GROUP: the page, then its notes."
   (destructuring-bind (url title notes) group
-    (let* ((url-string (and url (render-url url)))
+    (let* ((title (or title ""))
+           (url-string (and url (render-url url)))
            (heading (if (str:emptyp title) (or url-string "") title))
            (detail (and url-string
                         (not (string= heading url-string))
-                        url-string)))
-      (spinneret:with-html
-        (:section :class "annotation-group"
-          (if url-string
-              (:a :class "source"
-                  :href url-string
-                  :title (or detail heading)
-                  (:span :class "heading" heading)
-                  (:span :class "url" detail))
-              (:div :class "source"
-                    (:span :class "heading" heading)
-                    (:span :class "url" detail)))
-          (:ul :class "notes"
-            (dolist (annotation notes)
-              (annotation-note annotation buffer refresh))))))))
+                        url-string))
+           (heading-element (make-instance 'user-interface:element
+                                           :tag :span
+                                           :html-class "heading"
+                                           :text heading))
+           (url-element (make-instance 'user-interface:element
+                                       :tag :span
+                                       :html-class "url"
+                                       :text (or detail ""))))
+      (make-instance
+       'user-interface:element
+       :tag :section
+       :html-class "annotation-group"
+       :children
+       (list (if url-string
+                 (make-instance 'user-interface:element
+                                :tag :a
+                                :html-class "source"
+                                :title (or detail heading)
+                                :attributes (list :href url-string)
+                                :children (list heading-element url-element))
+                 (make-instance 'user-interface:element
+                                :tag :div
+                                :html-class "source"
+                                :children (list heading-element url-element)))
+             (make-instance 'user-interface:element
+                            :tag :ul
+                            :html-class "notes"
+                            :children (mapcar (lambda (note)
+                                                (annotation-note note buffer))
+                                              notes)))))))
+
+(defmacro with-annotations ((annotations &optional (buffer '(current-buffer))) &body body)
+  "Bind ANNOTATIONS to BUFFER's annotation list for BODY, then save it.
+Saving bumps `revision', which redraws an open annotations list."
+  (alex:with-gensyms (file)
+    `(let ((,file (annotations-file ,buffer)))
+       (prog1
+           (files:with-file-content (,annotations ,file)
+             ,@body)
+         (incf (revision ,file))))))
 
 (defun annotation-add (annotation)
-  (files:with-file-content (annotations (annotations-file (current-buffer)))
+  (with-annotations (annotations)
     (push annotation annotations)))
 
 (defun annotations ()
@@ -242,7 +292,7 @@ and edit and delete controls."
     (values (maybe annotation) &optional))
 (defun save-annotation (annotation &key data tags)
   "Store DATA and TAGS on the file copy of ANNOTATION."
-  (files:with-file-content (annotations (annotations-file (current-buffer)))
+  (with-annotations (annotations)
     (when-let ((stored (stored-annotation annotation annotations)))
       (setf (data stored) (or data "")
             (tags stored) (annotation-tag-list tags))
@@ -251,30 +301,10 @@ and edit and delete controls."
 (-> remove-annotation (annotation) (values (maybe annotation) &optional))
 (defun remove-annotation (annotation)
   "Remove one ANNOTATION from the annotations file."
-  (files:with-file-content (annotations (annotations-file (current-buffer)))
+  (with-annotations (annotations)
     (when-let ((stored (stored-annotation annotation annotations)))
       (setf annotations (remove stored annotations :count 1 :test #'eq))
       stored)))
-
-(-> annotation-list-page-p (buffer) boolean)
-(defun annotation-list-page-p (buffer)
-  "Return T when BUFFER is a page that lists annotations without prompting."
-  (and (url buffer)
-       (member (internal-page-name (url buffer))
-               '(show-annotations show-annotations-for-current-url))
-       t))
-
-(-> show-annotation-page-p (buffer) boolean)
-(defun show-annotation-page-p (buffer)
-  "Return T when BUFFER is the prompted annotations page."
-  (and (url buffer)
-       (eq 'show-annotation (internal-page-name (url buffer)))))
-
-(defun reload-annotation-pages ()
-  "Reload every open annotations list."
-  (dolist (buffer (buffer-list))
-    (when (annotation-list-page-p buffer)
-      (ffi-buffer-reload buffer))))
 
 (-> live-notes (list buffer) (values list &optional))
 (defun live-notes (notes buffer)
@@ -333,187 +363,274 @@ make-instance."
                                  :data data
                                  :tags tags)))
 
-(defun render-annotations (annotations buffer)
-  "Show ANNOTATIONS in BUFFER.
-Notes for one page stay together, newest page first. The page is a title
-over its address, the same row as a list. Under it, each note is the
-comment, then the highlighted passage, then the tags and the date.
-Edit and delete sit on the note, the same controls as the bookmark list."
-  ;; 17px inside a page, 37px between pages. The page row is 55px:
-  ;; 7 + 24 + 17 + 7. 7px keeps a passage and the tags with the comment.
-  (let ((shown annotations))
-    (labels ((refresh ()
-               (reload-annotation-pages)
-               (when (show-annotation-page-p buffer)
-                 (setf shown (live-notes shown buffer))
-                 (nyxt::html-set (markup shown) buffer)))
-             (markup (notes)
-               (let ((groups (annotation-groups notes)))
-                 (spinneret:with-html-string
-                   (:nstyle
-                     `(".source"
-                       :display "block"
-                       :box-sizing "border-box"
-                       :height "55px"
-                       :margin "0 -17px 17px"
-                       :padding "7px 17px"
-                       :border-radius "7px"
-                       :text-decoration "none"
-                       :color ,theme:on-background-color)
-                     `("a.source:hover"
-                       :background-color ,theme:background-color-
-                       :opacity "1")
-                     `("a.source:focus-visible"
-                       :outline "2px solid"
-                       :outline-color ,theme:action-color
-                       :outline-offset "2px"
-                       :opacity "1")
-                     '(".source span"
-                       :display "block"
-                       :overflow "hidden"
-                       :text-overflow "ellipsis"
-                       :white-space "nowrap")
-                     '(".source span.heading"
-                       :height "24px"
-                       :font-size "17px"
-                       :font-weight "600"
-                       :line-height "24px")
-                     `(".source span.url"
-                       :height "17px"
-                       :font-size "11px"
-                       :font-weight "400"
-                       :line-height "17px"
-                       :color ,theme:primary-color)
-                     '("ul.notes"
-                       :list-style "none"
-                       :margin "0"
-                       :padding "0")
-                     '("ul.notes > li"
-                       :position "relative"
-                       :min-height "28px"
-                       :margin "0 -17px"
-                       :padding "17px 97px 17px 17px")
-                     '("ul.notes > li:first-child"
-                       :padding-top "0")
-                     '("ul.notes > li:not(:first-child)"
-                       :min-height "45px")
-                     '("ul.notes > li:last-child"
-                       :padding-bottom "0")
-                     `("ul.notes > li:hover"
-                       :background-color ,theme:background-color-
-                       :border-radius "7px")
-                     `("ul.notes > li:not(:last-child)::after"
-                       :content ""
-                       :position "absolute"
-                       :right "17px"
-                       :bottom "0"
-                       :left "17px"
-                       :height "1px"
-                       :background-color ,theme:background-color-)
-                     '("ul.notes > li:hover::after, ul.notes > li:has(+ li:hover)::after"
-                       :background-color "transparent")
-                     '("ul.notes .controls"
-                       :display "contents")
-                     `("ul.notes button.control"
-                       :position "absolute"
-                       :z-index "1"
-                       :top "50%"
-                       :right "17px"
-                       :transform "translateY(-50%)"
-                       :display "flex"
-                       :align-items "center"
-                       :justify-content "center"
-                       :box-sizing "border-box"
-                       :width "28px"
-                       :height "28px"
-                       :margin "0"
-                       :padding "0"
-                       :border "none"
-                       :border-radius "14px"
-                       :appearance "none"
-                       :background-color "transparent"
-                       :color ,theme:primary-color
-                       :font-size "17px"
-                       :line-height "17px"
-                       :cursor "pointer"
-                       :opacity "0"
-                       :transition "opacity 120ms ease, background-color 120ms ease, color 120ms ease")
-                     '("ul.notes button.edit"
-                       :right "52px")
-                     '("ul.notes button.edit svg"
-                       :display "block"
-                       :width "17px"
-                       :height "17px"
-                       :stroke "currentColor")
-                     `("ul.notes > li:hover button.control"
-                       :opacity "1"
-                       :color ,theme:on-background-color)
-                     `("ul.notes > li:focus-within button.control"
-                       :opacity "1"
-                       :color ,theme:on-background-color)
-                     `("ul.notes button.control:hover"
-                       :opacity "1"
-                       :background-color ,theme:background-color
-                       :color ,theme:on-background-color)
-                     `("ul.notes button.control:focus-visible"
-                       :outline "2px solid"
-                       :outline-color ,theme:action-color
-                       :outline-offset "2px")
-                     '("ul.notes .text"
-                       :margin "0"
-                       :font-size "17px"
-                       :font-weight "400"
-                       :line-height "24px"
-                       :overflow-wrap "anywhere")
-                     `("ul.notes .snippet"
-                       :margin "7px 0 0"
-                       :font-size "17px"
-                       :font-weight "400"
-                       :line-height "24px"
-                       :overflow-wrap "anywhere"
-                       :color ,theme:primary-color)
-                     `("ul.notes .meta"
-                       :margin "7px 0 0"
-                       :font-size "11px"
-                       :font-weight "400"
-                       :line-height "17px"
-                       :color ,theme:primary-color)
-                     '("ul.notes > li > :first-child"
-                       :margin-top "0")
-                     '("h1.grouped"
-                       :margin-bottom "0")
-                     '(".annotation-groups"
-                       :padding-top "17px")
-                     '(".annotation-group"
-                       :margin-top "37px")
-                     '(".annotation-group:first-of-type"
-                       :margin-top "0")
-                     `("p.empty"
-                       :margin "0"
-                       :font-size "17px"
-                       :line-height "24px"
-                       :color ,theme:primary-color))
-                   (render-menu 'annotate-mode buffer)
-                   (cond
-                     (groups
-                      (:h1 :class "grouped" "Annotations")
-                      (:div :class "annotation-groups"
-                        (dolist (group groups)
-                          (annotation-group group buffer #'refresh))))
-                     (t
-                      (:h1 "Annotations")
-                      (:p :class "empty" "No annotations.")))))))
-      (markup shown))))
+(-> annotation-stamp (annotation) list)
+(defun annotation-stamp (annotation)
+  "Return the parts of ANNOTATION the list shows."
+  (list (or (data annotation) "")
+        (when (snippet-annotation-p annotation)
+          (or (snippet annotation) ""))
+        (and (tags annotation) (copy-list (tags annotation)))
+        (and (date annotation) (annotation-date annotation))
+        (or (page-title annotation) "")
+        (let ((url (annotation-url annotation)))
+          (and url (render-url url)))))
+
+(-> annotation-group-of (annotation list) (values (maybe list) &optional))
+(defun annotation-group-of (annotation annotations)
+  "Return the group of ANNOTATION in ANNOTATIONS."
+  (find-if (lambda (group)
+             (find annotation (third group) :test #'eq))
+           (annotation-groups annotations)))
+
+(define-mode annotation-listing-mode ()
+  "Mode for the annotations pages."
+  ((listing
+    nil
+    :export nil
+    :documentation "The list shown on the annotations pages.
+A `user-interface:dynamic-element'.")
+   (filter
+    nil
+    :type (maybe function)
+    :export nil
+    :documentation "Function of the annotation list, or nil.
+Nil shows every annotation. The function returns the annotations to show."))
+  (:toggler-command-p nil))
+
+(-> visible-annotations (annotation-listing-mode) list)
+(defun visible-annotations (mode)
+  "Return the annotations MODE shows."
+  (let ((annotations (or (files:content (annotations-file (buffer mode))) '())))
+    (if (filter mode)
+        (or (funcall (filter mode) annotations) '())
+        annotations)))
+
+(-> annotation-item (annotation annotation-listing-mode) t)
+(defun annotation-item (annotation mode)
+  "Return the section for ANNOTATION's page."
+  (let ((group (annotation-group-of annotation (visible-annotations mode))))
+    (when group
+      (annotation-section group (buffer mode)))))
+
+(-> annotation-item-key (annotation annotation-listing-mode) t)
+(defun annotation-item-key (annotation mode)
+  "Return the value that changes when ANNOTATION's page should be drawn again."
+  (let ((group (annotation-group-of annotation (visible-annotations mode))))
+    (when group
+      (mapcar #'annotation-stamp (third group)))))
+
+(-> render-annotations (annotation-listing-mode) t)
+(defun render-annotations (mode)
+  "Show MODE's annotations.
+Notes for one page stay together, newest page first. The list element keeps
+a group it has already built."
+  (let* ((element (listing mode))
+         (groups (annotation-groups (visible-annotations mode))))
+    (user-interface:batch (element)
+      (cond
+        ((null groups)
+         (setf (user-interface:items element) '()
+               (user-interface:tag element) :p
+               (user-interface:html-class element) "empty"
+               (user-interface:text element) "No annotations."))
+        (t
+         (setf (user-interface:items element)
+               (mapcar (lambda (group) (first (third group))) groups)
+               (user-interface:tag element) :div
+               (user-interface:html-class element) "annotation-groups"
+               (user-interface:text element) nil))))))
+
+(defmethod customize-instance :after ((mode annotation-listing-mode) &key)
+  "Keep MODE's list in step with the annotations file."
+  (let ((buffer (buffer mode)))
+    (unless (listing mode)
+      (setf (listing mode)
+            (make-instance 'user-interface:dynamic-element
+                           :tag :p
+                           :html-class "empty"
+                           :text "No annotations."
+                           :template (lambda (annotation)
+                                       (annotation-item annotation mode))
+                           :item-key (lambda (annotation)
+                                       (annotation-item-key annotation mode))))
+      (define-setf-handler annotations-file revision mode
+        (lambda (file)
+          (let ((page-file (annotations-file buffer)))
+            (when (or (eq file page-file)
+                      (uiop:pathname-equal (files:expand file)
+                                           (files:expand page-file)))
+              (render-annotations mode))))))
+    (render-annotations mode)))
+
+(-> annotation-page (buffer) string)
+(defun annotation-page (buffer)
+  "Return the annotations page for BUFFER."
+  (let ((listing (listing (find-submode 'annotation-listing-mode buffer))))
+    (user-interface:connect listing buffer)
+    (spinneret:with-html-string
+      (:nstyle
+        `(".source"
+          :display "block"
+          :box-sizing "border-box"
+          :height "55px"
+          :margin "0 -17px 17px"
+          :padding "7px 17px"
+          :border-radius "7px"
+          :text-decoration "none"
+          :color ,theme:on-background-color)
+        `("a.source:hover"
+          :background-color ,theme:background-color-
+          :opacity "1")
+        `("a.source:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px"
+          :opacity "1")
+        '(".source span"
+          :display "block"
+          :overflow "hidden"
+          :text-overflow "ellipsis"
+          :white-space "nowrap")
+        '(".source span.heading"
+          :height "24px"
+          :font-size "17px"
+          :font-weight "600"
+          :line-height "24px")
+        `(".source span.url"
+          :height "17px"
+          :font-size "11px"
+          :font-weight "400"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '("ul.notes"
+          :list-style "none"
+          :margin "0"
+          :padding "0")
+        '("ul.notes > li"
+          :position "relative"
+          :min-height "28px"
+          :margin "0 -17px"
+          :padding "17px 97px 17px 17px")
+        '("ul.notes > li:first-child"
+          :padding-top "0")
+        '("ul.notes > li:not(:first-child)"
+          :min-height "45px")
+        '("ul.notes > li:last-child"
+          :padding-bottom "0")
+        `("ul.notes > li:hover"
+          :background-color ,theme:background-color-
+          :border-radius "7px")
+        `("ul.notes > li:not(:last-child)::after"
+          :content ""
+          :position "absolute"
+          :right "17px"
+          :bottom "0"
+          :left "17px"
+          :height "1px"
+          :background-color ,theme:background-color-)
+        '("ul.notes > li:hover::after, ul.notes > li:has(+ li:hover)::after"
+          :background-color "transparent")
+        '("ul.notes .controls"
+          :display "contents")
+        `("ul.notes button.control"
+          :position "absolute"
+          :z-index "1"
+          :top "50%"
+          :right "17px"
+          :transform "translateY(-50%)"
+          :display "flex"
+          :align-items "center"
+          :justify-content "center"
+          :box-sizing "border-box"
+          :width "28px"
+          :height "28px"
+          :margin "0"
+          :padding "0"
+          :border "none"
+          :border-radius "14px"
+          :appearance "none"
+          :background-color "transparent"
+          :color ,theme:primary-color
+          :font-size "17px"
+          :line-height "17px"
+          :cursor "pointer"
+          :opacity "0"
+          :transition "opacity 120ms ease, background-color 120ms ease, color 120ms ease")
+        '("ul.notes button.edit"
+          :right "52px")
+        '("ul.notes button.edit svg"
+          :display "block"
+          :width "17px"
+          :height "17px"
+          :stroke "currentColor")
+        `("ul.notes > li:hover button.control"
+          :opacity "1"
+          :color ,theme:on-background-color)
+        `("ul.notes > li:focus-within button.control"
+          :opacity "1"
+          :color ,theme:on-background-color)
+        `("ul.notes button.control:hover"
+          :opacity "1"
+          :background-color ,theme:background-color
+          :color ,theme:on-background-color)
+        `("ul.notes button.control:focus-visible"
+          :outline "2px solid"
+          :outline-color ,theme:action-color
+          :outline-offset "2px")
+        '("ul.notes .text"
+          :margin "0"
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :overflow-wrap "anywhere")
+        `("ul.notes .snippet"
+          :margin "7px 0 0"
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :overflow-wrap "anywhere"
+          :color ,theme:primary-color)
+        `("ul.notes .meta"
+          :margin "7px 0 0"
+          :font-size "11px"
+          :font-weight "400"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '("ul.notes > li > :first-child"
+          :margin-top "0")
+        '("h1.grouped"
+          :margin-bottom "0")
+        '("h1.grouped + p.empty"
+          :margin-top "24px")
+        '(".annotation-groups"
+          :padding-top "17px")
+        '(".annotation-group"
+          :margin-top "37px")
+        '(".annotation-group:first-of-type"
+          :margin-top "0")
+        `("p.empty"
+          :margin "0"
+          :font-size "17px"
+          :line-height "24px"
+          :color ,theme:primary-color))
+      (render-menu 'annotate-mode buffer)
+      (:h1 :class "grouped" "Annotations")
+      (user-interface:to-html listing))))
 
 (define-internal-page show-annotations-for-current-url
     (&key (id (id (current-buffer))))
-    (:title "*Annotations*")
+    (:title "*Annotations*" :page-mode 'annotation-listing-mode)
   "Display the annotations associated to buffer with ID."
-  (let ((buffer (nyxt::buffer-get id)))
-    (render-annotations (sera:filter (curry #'url-equal (url buffer))
-                                     (files:content (annotations-file buffer))
-                                     :key (compose #'quri:uri #'url))
-                        %buffer%)))
+  (let* ((source (nyxt::buffer-get id))
+         (url (url source))
+         (mode (find-submode 'annotation-listing-mode %buffer%)))
+    (setf (filter mode)
+          (lambda (annotations)
+            (sera:filter (curry #'url-equal url)
+                         annotations
+                         :key (compose #'quri:uri #'url))))
+    (render-annotations mode)
+    (annotation-page %buffer%)))
 
 (define-command-global show-annotations-for-current-url
     (&key (buffer (current-buffer)))
@@ -582,10 +699,8 @@ Edit and delete sit on the note, the same controls as the bookmark list."
                           (prompt
                            :prompt "Edit annotation(s)"
                            :sources (make-instance 'annotation-source))))))
-    (unwind-protect
-         (dolist (annotation annotations)
-           (edit-annotation-note annotation))
-      (reload-annotation-pages))))
+    (dolist (annotation annotations)
+      (edit-annotation-note annotation))))
 
 (define-command delete-annotation (&optional annotations)
   "Delete annotation(s)."
@@ -595,19 +710,25 @@ Edit and delete sit on the note, the same controls as the bookmark list."
                            :prompt "Delete annotation(s)"
                            :sources (make-instance 'annotation-source))))))
     (dolist (annotation annotations)
-      (remove-annotation annotation))
-    (reload-annotation-pages)))
+      (remove-annotation annotation))))
 
 (define-internal-page-command-global show-annotation ()
-    (buffer "*Annotations*")
+    (buffer "*Annotations*" 'annotation-listing-mode)
   "Show prompted annotations."
-  (handler-case (render-annotations
-                 (prompt :prompt "Show annotation(s)"
-                         :sources (make-instance 'annotation-source))
-                 buffer)
-    (nyxt:prompt-buffer-canceled () (render-annotations nil buffer))))
+  (let ((mode (find-submode 'annotation-listing-mode buffer)))
+    (handler-case
+        (let ((selected (prompt :prompt "Show annotation(s)"
+                                :sources (make-instance 'annotation-source))))
+          (setf (filter mode)
+                (lambda (annotations)
+                  (declare (ignore annotations))
+                  (live-notes selected buffer))))
+      (nyxt:prompt-buffer-canceled ()
+        (setf (filter mode) (constantly '()))))
+    (render-annotations mode)
+    (annotation-page buffer)))
 
 (define-internal-page-command-global show-annotations ()
-    (buffer "*Annotations*")
-  "Show all annotations"
-  (render-annotations (files:content (annotations-file buffer)) buffer))
+    (buffer "*Annotations*" 'annotation-listing-mode)
+  "Show all annotations."
+  (annotation-page buffer))
