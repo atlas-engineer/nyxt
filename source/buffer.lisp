@@ -1375,30 +1375,44 @@ requested.  When the first word of `data' matches the `shortcut' of a
                   (format-url search-query search-engine)
                   data))))
 
+(defun literal-search-suggestions (suggestions source input)
+  "Return the URL or search for INPUT, or nothing when INPUT is blank."
+  (declare (ignore suggestions source))
+  (let ((input (str:trim input)))
+    (unless (str:blankp input)
+      (list (make-instance 'url-or-query :data input)))))
+
+(defun url-or-query-suggestions (suggestions source input)
+  "Return search completions for INPUT.
+The typed query is a separate source. A URL or a file has no completions.
+A search waits briefly before requesting completions, so a burst of
+keystrokes does not request each one."
+  (declare (ignore suggestions source))
+  (let ((query (make-instance 'url-or-query :data input)))
+    (if (and (eq :search-query (kind query))
+             (search-engine-suggestions-p *browser*))
+        (progn
+          (sleep 0.15)
+          (or (remove (search-query query)
+                      (search-suggestions query)
+                      :key #'search-query
+                      :test #'string-equal)
+              '()))
+        '())))
+
 (define-class url-or-query-source (prompter:source)
-  ((prompter:name "URL or search query")
-   (prompter:filter-preprocessor
-    (lambda (suggestions source input)
-      (declare (ignore suggestions source))
-      (list (make-instance 'url-or-query :data input))))
-   (prompter:filter-postprocessor
-    (lambda (prompt-suggestions source input)
-      (declare (ignore source input))
-      (sleep 0.15) ; Delay search suggestions while typing.
-      (if-let ((_ (search-engine-suggestions-p *browser*))
-               (completion (search-suggestions
-                            (prompter:value (first prompt-suggestions)))))
-        completion
-        prompt-suggestions)))
+  ((prompter:name "Suggestions")
+   (prompter:filter-preprocessor nil)
+   (prompter:filter-postprocessor 'url-or-query-suggestions)
    (prompter:filter nil)
    (prompter:actions-on-return #'buffer-load*))
   (:export-class-name-p t)
   (:metaclass user-class)
-  (:documentation "Source listing URL queries from user input in a DWIM fashion.
-See `url-or-query'."))
+  (:documentation "Search-engine completions for the current input.
+The typed URL or search is a separate source. See `url-or-query'."))
 
 (defmethod prompter:object-attributes ((query url-or-query)
-                                       (source url-or-query-source))
+                                       (source prompter:source))
   (declare (ignore source))
   (with-slots (data kind search-engine search-query) query
     `(("Input" ,(or search-query data) (:width 5))
@@ -1411,10 +1425,17 @@ See `url-or-query'."))
 (defmethod url-sources ((buffer buffer) actions-on-return)
   "Return list of `set-url' sources.
 The returned sources should have `url' or `prompter:actions-on-return' methods
-specified for their contents."
+specified for their contents.
+The search for the typed text is first, so it is ready while history and
+completions are still loading."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
-     (list (make-instance 'url-or-query-source
+     (list (make-instance 'prompter:source
+                          :name "URL or search query"
+                          :filter-preprocessor 'literal-search-suggestions
+                          :filter nil
+                          :actions-on-return actions-on-return)
+           (make-instance 'url-or-query-source
                           :actions-on-return actions-on-return)
            (make-instance 'global-history-source
                           :actions-on-return actions-on-return))
@@ -1424,7 +1445,9 @@ specified for their contents."
 (define-command set-url (&key (default-action #'buffer-load*))
   "Set the URL for the current buffer, completing with history.
 The prompt starts with a `composite-source', the top suggestions from each
-source, so a result can be chosen without moving through every source."
+source, so a result can be chosen without moving through every source.
+When the input is a search, the first suggestion searches for that text and
+is ready before history and search completions."
   (let* ((history (set-url-history *browser*))
          (actions-on-return
            (list #'buffer-load*

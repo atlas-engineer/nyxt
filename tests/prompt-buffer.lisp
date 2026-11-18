@@ -195,3 +195,49 @@
              (assert-true (search "row-9" html))
              (assert-true (search "selection" html))))
       (prompter:destroy prompt))))
+
+(define-test literal-search-source-is-ready-before-slower-sources ()
+  (let* ((*browser* (make-instance 'browser))
+         (search (make-instance 'prompter:source
+                                 :name "URL or search query"
+                                 :filter nil
+                                 :filter-preprocessor #'nyxt::literal-search-suggestions
+                                 :actions-on-return #'buffer-load*))
+         (history (make-instance 'prompter:source
+                                 :name "History"
+                                 :filter nil
+                                 :constructor '("https://example.com/nyxt-quick")))
+         (delayed (make-instance 'prompter:source
+                                 :name "Delayed"
+                                 :filter nil
+                                 :constructor '("late")
+                                 :filter-postprocessor
+                                 (lambda (suggestions source input)
+                                   (declare (ignore source input))
+                                   (sleep 1)
+                                   suggestions)))
+         (sources (nyxt::add-composite-source (list search history delayed)))
+         (composite (first sources))
+         (prompt (prompter:make :input "nyxt-quick" :sources sources)))
+    (unwind-protect
+         (progn
+           (assert-true (bordeaux-threads:with-timeout (1)
+                          (loop until (and (prompter:ready-p search)
+                                           (prompter:ready-p history)
+                                           (prompter:suggestions composite))
+                                do (sleep 0.01)
+                                finally (return t))))
+           (assert-false (prompter:ready-p delayed))
+           (let ((first (prompter:value (first (prompter:suggestions composite)))))
+             (assert-eq :search-query (kind first))
+             (assert-string= "nyxt-quick" (search-query first))
+             (assert-string= "https://duckduckgo.com/?q=nyxt-quick"
+                             (render-url (url first)))))
+           (assert-string= "https://example.com/nyxt-quick"
+                           (prompter:value (second (prompter:suggestions composite))))
+           (assert-eq nil (nyxt::literal-search-suggestions nil nil "  "))
+           (assert-eq :url (kind (first (nyxt::literal-search-suggestions
+                                         nil nil "https://nyxt.atlas.engineer"))))
+           (assert-equal '() (nyxt::url-or-query-suggestions
+                              nil nil "https://nyxt.atlas.engineer")))
+      (prompter:destroy prompt))))
