@@ -219,6 +219,10 @@ See `scheme'."))
 (define-ffi-generic ffi-buffer-evaluate-javascript-async (buffer javascript &optional world-name)
   (:documentation "Asynchronous version of `ffi-buffer-evaluate-javascript'."))
 
+(define-ffi-generic ffi-buffer-set-background-color (buffer color)
+  (:documentation "Set the color BUFFER shows before its document paints.
+COLOR is a CSS color."))
+
 (define-ffi-generic ffi-buffer-add-user-style (buffer style)
   (:documentation "Apply the CSS style to BUFFER."))
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style)

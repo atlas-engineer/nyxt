@@ -689,6 +689,16 @@ view before those threads run, and a call into the missing view has no method."
      (when-let ((contents (cef:web-contents buffer)))
        (cef:set-zoom-factor contents value)))))
 
+(defmethod ffi-buffer-set-background-color ((view cef:view) color)
+  (let ((argb (css-color-argb color)))
+    (when (and (plusp argb) (plusp (cef:id view)))
+      (cef:set-background-color view argb))))
+
+(defmethod ffi-buffer-set-background-color ((buffer prompt-buffer) color)
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-background-color view color)))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
   (declare (ignore world-name))
