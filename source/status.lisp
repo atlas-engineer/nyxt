@@ -350,9 +350,9 @@
 
 (defun sort-modes-for-status (modes)
   "Return visible modes in MODES, with `nyxt/mode/keyscheme:keyscheme-mode'
- placed first."
+placed first."
   (multiple-value-bind (keyscheme-mode other-modes)
-      (sera:partition #'nyxt/mode/keyscheme::keyscheme-mode-p
+      (sera:partition #'nyxt/mode/keyscheme:keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
     (append keyscheme-mode other-modes)))
 
