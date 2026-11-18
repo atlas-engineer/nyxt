@@ -128,6 +128,15 @@ Status and message bars stay full width."))
   (:documentation "Take BUFFER off WINDOW.
 The buffer stays alive. `ffi-add-panel-buffer' shows it again."))
 
+(define-ffi-generic on-signal-focus (buffer)
+  (:method ((buffer buffer))
+    (when-let ((window (window buffer)))
+      (setf (keyboard-buffer window) buffer))
+    buffer)
+  (:documentation "Record that BUFFER's view has keyboard focus.
+The renderer calls this from its own focus signal.
+Key presses are delivered to that view."))
+
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   (:method :around ((window window) (buffer buffer) &key focus &allow-other-keys)
     (hooks:run-hook (window-set-buffer-hook window) window buffer)
@@ -138,7 +147,7 @@ The buffer stays alive. `ffi-add-panel-buffer' shows it again."))
   (:method :after ((window window) (buffer buffer) &key (focus t) &allow-other-keys)
     (setf (active-buffer window) buffer)
     (when focus
-      (setf (keyboard-buffer window) buffer)))
+      (on-signal-focus buffer)))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
 When FOCUS is non-nil, the default, BUFFER receives keyboard focus.
 Run `window-set-buffer-hook' over WINDOW and BUFFER before proceeding."))
