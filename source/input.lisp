@@ -131,79 +131,25 @@ Return nil to forward to renderer or non-nil otherwise."
            nil))))))
 
 (defmethod ffi-focus-buffer :after (buffer)
-  (when-let ((window (ignore-errors (window buffer))))
-    (setf (keyboard-buffer window) buffer)))
-
-(-> keyboard-buffer-for (buffer) buffer)
-(defun keyboard-buffer-for (sender)
-  "Return the buffer that handles a key event delivered to SENDER.
-The buffer that has keyboard focus wins. SENDER is used when no focus has
-been recorded, because the renderer delivered the event to that view."
-  (let ((window (ignore-errors (window sender))))
-    (or (and window
-             (let ((keyboard (keyboard-buffer window)))
-               (and (window-shows-buffer-p window keyboard)
-                    keyboard)))
-        sender)))
-
-(-> select-keyboard-buffer (buffer) buffer)
-(defun select-keyboard-buffer (buffer)
-  "Give BUFFER keyboard focus so later key presses are routed to it."
-  (when-let ((window (ignore-errors (window buffer))))
-    (setf (keyboard-buffer window) buffer))
-  (ffi-focus-buffer buffer)
-  buffer)
-
-(-> insert-forwarded-key (buffer keymaps:key) boolean)
-(defun insert-forwarded-key (buffer key)
-  "Insert KEY's character into BUFFER when the renderer delivered it elsewhere.
-Control and meta chords are left alone. Shift uppercases a single letter."
-  (let ((value (keymaps:key-value key))
-        (modifiers (keymaps:key-modifiers key)))
-    (flet ((has-modifier-p (name)
-             (fset:do-set (modifier modifiers)
-               (when (keymaps:modifier= modifier name)
-                 (return t)))))
-      (when (and (stringp value)
-                 (= (length value) 1)
-                 (not (or (has-modifier-p keymaps:+control+)
-                          (has-modifier-p keymaps:+meta+)
-                          (has-modifier-p keymaps:+super+)
-                          (has-modifier-p "alt"))))
-        (ffi-buffer-paste buffer
-                          (if (has-modifier-p keymaps:+shift+)
-                              (string-upcase value)
-                              value))
-        t))))
+  (on-signal-focus buffer))
 
 (export-always 'dispatch-key-press)
 (-> dispatch-key-press (buffer t keymaps:key) *)
-(defun dispatch-key-press (sender event key)
-  "Route KEY to the focused buffer.
-SENDER is the view the renderer delivered the event to. When keyboard focus
-is on another view, the event is handled there and consumed for SENDER.
-A character that the focused buffer does not bind is inserted there."
-  (let ((buffer (keyboard-buffer-for sender)))
-    (alex:appendf (key-stack buffer) (list (keymaps:copy-key key)))
-    (multiple-value-bind (bound-function)
-        (keymaps:lookup-key (key-stack buffer) (current-keymaps buffer))
-      (when (and (not (eq buffer sender))
-                 (null bound-function))
-        (insert-forwarded-key buffer key)))
-    (run-thread "on-signal-key-press"
-      (on-signal-key-press buffer key))
-    (let ((consumed (dispatch-input-event event buffer)))
-      (if (eq buffer sender)
-          consumed
-          t))))
+(defun dispatch-key-press (buffer event key)
+  "Handle KEY in BUFFER, the view that has focus.
+The renderer delivers the event to that view. Return nil to forward KEY
+to the view, or non-nil when BUFFER handled it."
+  (alex:appendf (key-stack buffer) (list (keymaps:copy-key key)))
+  (run-thread "on-signal-key-press"
+    (on-signal-key-press buffer key))
+  (dispatch-input-event event buffer))
 
 (export-always 'dispatch-pointer-press)
 (-> dispatch-pointer-press (buffer t keymaps:key) *)
-(defun dispatch-pointer-press (sender event key)
-  "Route a pointer press to SENDER and make SENDER the keyboard focus.
-The view under the pointer receives the event."
-  (select-keyboard-buffer sender)
-  (alex:appendf (key-stack sender) (list (keymaps:copy-key key)))
+(defun dispatch-pointer-press (buffer event key)
+  "Handle a pointer press in BUFFER, the view under the pointer.
+Return nil to forward the press to the view, or non-nil when BUFFER handled it."
+  (alex:appendf (key-stack buffer) (list (keymaps:copy-key key)))
   (run-thread "on-signal-button-press"
-    (on-signal-button-press sender key))
-  (dispatch-input-event event sender))
+    (on-signal-button-press buffer key))
+  (dispatch-input-event event buffer))

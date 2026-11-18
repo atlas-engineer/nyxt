@@ -548,6 +548,10 @@ view before those threads run, and a call into the missing view has no method."
        ,@body)))
 
 (defmethod initialize-listeners ((buffer cef-buffer))
+  (cef:add-listener buffer :focus
+                    (lambda (buffer event)
+                      (declare (ignore event))
+                      (on-signal-focus buffer)))
   (cef:add-listener buffer :before-input-event
                     (lambda (buffer event)
                       (on-signal-key-press-event buffer event)))
@@ -972,6 +976,12 @@ Creating that browser is the slow part of opening a prompt."
   "Return WINDOW's prompt view and route its input to the active prompt."
   (let ((view (ensure-prompt-buffer-view window)))
     (unless (prompt-view-listeners-p window)
+      (cef:add-listener
+       view :focus
+       (lambda (view event)
+         (declare (ignore view event))
+         (when-let ((prompt (first (nyxt::active-prompt-buffers window))))
+           (on-signal-focus prompt))))
       (cef:add-listener
        view :before-input-event
        (lambda (view event)
