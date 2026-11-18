@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the message buffer is attached.")
    (height
-    32
+    16
     :type integer
     :writer nil
     :reader height
@@ -80,8 +80,8 @@
       `(body
         :display "flex"
         :align-items "center"
-        :height "calc(100% - 16px)"
-        :margin "8px"
+        :height "calc(100% - 4px)"
+        :margin "2px"
         :overflow "hidden"
         :white-space "nowrap"
         :text-overflow "ellipsis"
@@ -89,7 +89,7 @@
         :color ,theme:on-background-color
         :font-family ,theme:font-family
         :font-size "12px"
-        :line-height "16px"
+        :line-height "12px"
         :padding 0
         :padding-left "10px"))))
   (:export-class-name-p t)
