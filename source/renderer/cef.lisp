@@ -462,12 +462,6 @@ the default height.")
   (:metaclass user-class)
   (:documentation "CEF buffer class."))
 
-(defun bar-view-p (buffer)
-  "Status, message, and prompt views share the window with the page view."
-  (or (status-buffer-p buffer)
-      (message-buffer-p buffer)
-      (prompt-buffer-p buffer)))
-
 (defvar *defer-native-view-p* nil
   "When non-nil, initializing a `cef:view' does not create a native browser.
 A prompt buffer shares the window's prompt view, so it must not build one.
@@ -510,7 +504,7 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
   (let ((*defer-native-view-p* (defer-native-view-p buffer initargs)))
     (prog1 (apply #'call-next-method buffer
                   :alloy-p t
-                  :isolated-context-p (or (bar-view-p buffer)
+                  :isolated-context-p (or (auxiliary-buffer-p buffer)
                                           (typep buffer 'panel-buffer))
                   initargs)
       (when (and *defer-native-view-p* (prompt-buffer-p buffer))
@@ -782,7 +776,7 @@ height of the status/prompt/message buffer."
 
 (defmethod (setf ffi-height) ((height integer) (buffer cef-buffer))
   (setf (set-height buffer) height)
-  (if (bar-view-p buffer)
+  (if (auxiliary-buffer-p buffer)
       ;; A preferred height of 0 is an empty size, which the box layout
       ;; ignores, so the bar stays on screen. `set-bar-height' hides it.
       (cef:set-bar-height buffer height)
@@ -1111,7 +1105,7 @@ returns to the message loop."
 
 (defmethod ffi-window-delete ((window cef-window))
   (dolist (view (cef:views window))
-    (when (bar-view-p view)
+    (when (auxiliary-buffer-p view)
       (ignore-errors (cef:kill view))))
   (dolist (prompt (nyxt::active-prompt-buffers window))
     (when prompt
@@ -1123,7 +1117,7 @@ returns to the message loop."
     (when (and view (ignore-errors (cef:web-contents view)))
       (ignore-errors (cef:kill view))))
   (when-let ((page (or (current-view window) (active-buffer window))))
-    (when (and (not (bar-view-p page))
+    (when (and (not (auxiliary-buffer-p page))
                (ignore-errors (cef:web-contents page))
                (find page (cef:views window)))
       (ignore-errors (cef:remove-view window page :kill-view-p nil))))

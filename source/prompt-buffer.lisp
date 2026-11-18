@@ -5,7 +5,7 @@
 
 (eval-always
   (define-class prompt-buffer
-      (network-buffer input-buffer modable-buffer prompter:prompter)
+      (network-buffer input-buffer modable-buffer auxiliary-buffer prompter:prompter)
     ((window
       nil
       :type (or null window)

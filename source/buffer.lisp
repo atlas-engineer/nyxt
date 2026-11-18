@@ -568,6 +568,14 @@ on may want to have dynamic interactions."))
   (:metaclass user-class)
   (:documentation "A buffer in which the user can input."))
 
+(define-class auxiliary-buffer (buffer)
+  ()
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class)
+  (:documentation "A strip that shares the window with the page.
+The status buffer, the message buffer, and the prompt buffer are auxiliary buffers."))
+
 (define-class document-buffer (buffer)
   ((document-model-delta-threshold
     10
