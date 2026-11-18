@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class message-buffer (input-buffer)
+(define-class message-buffer (input-buffer auxiliary-buffer)
   ((window
     nil
     :type (maybe window)
