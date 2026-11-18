@@ -754,7 +754,14 @@ Example:
     nil
     :reader nil
     :writer t
-    :documentation "The keywords parsed from the current web buffer."))
+    :documentation "The keywords parsed from the current web buffer.")
+   (background-color
+    nil
+    :reader nil
+    :writer t
+    :type (or null string)
+    :documentation "The page's computed background color, as a CSS color.
+NIL until the page has been read. Read with the keywords."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -797,6 +804,109 @@ Return the created buffer."
   (buffer-set (id buffer) buffer)
   buffer)
 
+(defgeneric sample-page-background-p (buffer)
+  (:method ((buffer t)) t)
+  (:documentation "Whether BUFFER's painted background is a page color.
+A panel is a surface beside the page, so its own document is not sampled."))
+
+(-> read-page-background-color (buffer) (or null string))
+(defun read-page-background-color (buffer)
+  "Return the background color visible in BUFFER, or NIL when none is painted.
+Several points in the viewport are sampled. A transparent element does not
+count: the color of the element behind it does. That is the color of a page
+whose fill is an inner node, such as a table or a full-page container, rather
+than `body'. A view that is already gone yields NIL without a warning."
+  (unless (and (sample-page-background-p buffer)
+               (not (dead-buffer-p buffer)))
+    (return-from read-page-background-color nil))
+  (let ((color (handler-bind ((warning #'muffle-warning))
+                 (ignore-errors
+                   (ffi-buffer-evaluate-javascript
+                    buffer
+                    (ps:ps
+                   ((lambda ()
+                      (flet ((solid (color)
+                               (cond ((or (not color)
+                                          (equal color "transparent")
+                                          (equal color "rgba(0, 0, 0, 0)"))
+                                      "")
+                                     ((and (ps:chain color (starts-with "rgba("))
+                                           (ps:chain color (ends-with ", 0)")))
+                                      "")
+                                     (t color)))
+                             (painted (element)
+                               (let ((found ""))
+                                 (loop while (and element (not (eql element document)))
+                                       do (let ((color (solid
+                                                        (ps:@ (ps:chain window
+                                                                        (get-computed-style
+                                                                         element))
+                                                              background-color))))
+                                            (if (> (length color) 0)
+                                                (progn (setf found color)
+                                                       (setf element nil))
+                                                (setf element (ps:@ element parent-element)))))
+                                 found)))
+                        (let* ((width (or (ps:@ window inner-width) 0))
+                               (height (or (ps:@ window inner-height) 0))
+                               (spots (list (list (* width 0.5) (* height 0.5))
+                                            (list (* width 0.5) (* height 0.2))
+                                            (list (* width 0.08) (* height 0.5))
+                                            (list (* width 0.92) (* height 0.5))
+                                            (list (* width 0.5) (* height 0.85))))
+                               (counts (ps:create))
+                               (choice "")
+                               (choice-count 0))
+                          (dolist (spot spots)
+                            (let* ((element (ps:chain document
+                                                      (element-from-point (aref spot 0)
+                                                                          (aref spot 1))))
+                                   (color (if element (painted element) "")))
+                              (when (> (length color) 0)
+                                (setf (ps:getprop counts color)
+                                      (+ (or (ps:getprop counts color) 0) 1))
+                                (when (> (ps:getprop counts color) choice-count)
+                                  (setf choice color
+                                        choice-count (ps:getprop counts color))))))
+                          (if (> (length choice) 0)
+                              choice
+                              (or (solid (ps:@ (ps:chain window
+                                                        (get-computed-style
+                                                         (ps:@ document body)))
+                                               background-color))
+                                  (solid (ps:@ (ps:chain window
+                                                        (get-computed-style
+                                                         (ps:@ document document-element)))
+                                               background-color))))))))))))))
+    (when (and (stringp color) (plusp (length color)))
+      color)))
+
+(-> remember-page-background (buffer) t)
+(defun remember-page-background (buffer)
+  "Store BUFFER's visible background color when one can be read."
+  (when (buffer-get (id buffer))
+    (alex:when-let ((color (read-page-background-color buffer)))
+      (setf (background-color buffer) color)))
+  nil)
+
+(-> schedule-page-facts (buffer (or null string)) t)
+(defun schedule-page-facts (buffer text)
+  "Read BUFFER's keywords and background color on their own thread.
+TEXT is the page copy already taken from the document. The same pass can grow
+to hold anything else read from the page. The background is read again shortly
+after, because a page may paint its fill after the load signal."
+  (when (and (web-buffer-p buffer)
+             (sample-page-background-p buffer))
+    (run-thread "page-facts"
+      (when (buffer-get (id buffer))
+        (when (and text (not (uiop:emptyp text)))
+          (setf (keywords buffer) (analysis:extract-keywords text)))
+        (remember-page-background buffer))
+      (sleep 0.8)
+      (when (buffer-get (id buffer))
+        (remember-page-background buffer))))
+  nil)
+
 (export-always 'update-document-model)
 (defun update-document-model (&key (buffer (current-buffer)))
   "Update BUFFER's `document-model' as to include Nyxt identifiers."
@@ -820,17 +930,16 @@ Return the created buffer."
       nyxt-identifier-counter)
     (setf nyxt-identifier-counter
           (add-nyxt-identifiers (ps:chain document body))))
-  (when-let ((body-json (with-current-buffer buffer
-                          (nyxt/dom::get-document-body-json))))
-    (let ((dom (nyxt/dom::named-json-parse body-json)))
-      (unless (uiop:emptyp (plump:text dom))
-        (setf (document-model buffer) dom)
+  (let ((text nil))
+    (when-let ((body-json (with-current-buffer buffer
+                            (nyxt/dom::get-document-body-json))))
+      (let ((dom (nyxt/dom::named-json-parse body-json)))
+        (unless (uiop:emptyp (plump:text dom))
+          (setf (document-model buffer) dom))
         (when (web-buffer-p buffer)
-          (setf (keywords buffer)
-                (analysis:extract-keywords
-                 (str:join " "
-                           (map 'list #'plump:text
-                                (clss:select "p" dom))))))))))
+          (setf text (str:join " " (map 'list #'plump:text
+                                        (clss:select "p" dom)))))))
+    (schedule-page-facts buffer text)))
 
 (export-always 'dead-buffer-p)
 (defun dead-buffer-p (buffer)
@@ -875,6 +984,11 @@ In case the page changed more than `document-model-delta-threshold', runs
 They are parsed when the page's document is read. NIL until then, and when
 the page has none."
   (slot-value buffer 'keywords))
+
+(defmethod background-color ((buffer web-buffer))
+  "Return the CSS color behind BUFFER's page.
+NIL until `schedule-page-facts' has read the page."
+  (slot-value buffer 'background-color))
 
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
@@ -1065,9 +1179,8 @@ buffer currently chosen as suggestion."))
 (defun buffer-keyword-line (buffer)
   "Return BUFFER's stored keywords on one line, or the empty string."
   (format nil "~{~a~^ ~}"
-          (mapcar #'first (if (web-buffer-p buffer)
-                              (or (keywords buffer) '())
-                              '()))))
+          (mapcar #'first (when (web-buffer-p buffer)
+                            (keywords buffer)))))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
