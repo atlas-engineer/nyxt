@@ -1134,7 +1134,7 @@ returns to the message loop."
   (cef:set-title window title))
 
 (defmethod ffi-add-panel-buffer ((window cef-window) (buffer cef-buffer) side width)
-  (cef:set-side-width buffer (or width 0) :side side)
+  (cef:set-side-width buffer width :side side)
   (cef:add-content-view window buffer :side side)
   buffer)
 
