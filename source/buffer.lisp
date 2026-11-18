@@ -1093,7 +1093,10 @@ The notion of first element is dictated by `containers:first-item'."
 (defun drop-buffer-setf-handlers (buffer)
   "Drop `define-setf-handler' handlers for BUFFER and its modes."
   (remove-setf-handlers buffer)
-  (mapc #'remove-setf-handlers (modes buffer)))
+  (mapc #'remove-setf-handlers (modes buffer))
+  (when (modable-buffer-p buffer)
+    (when-let ((page (page-mode buffer)))
+      (remove-setf-handlers page))))
 
 (defun buffer-delete (id)
   "Remove `buffers' hash table entry matching key ID.
