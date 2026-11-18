@@ -154,7 +154,7 @@ A `user-interface:element'.")
           :box-sizing "border-box")
         `(html
           :height "100%"
-          :background-color ,(theme:background-color (theme *browser*)))
+          :background-color "transparent")
         `(body
           :height "calc(100% - 16px)"
           :margin "8px"
@@ -1067,7 +1067,9 @@ A source view already built is kept when what it shows has not changed."
     (ensure-prompt-views prompt-buffer)
     (ps-eval :buffer prompt-buffer
       (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-            (ps:lisp (prompt-document prompt-buffer))))))
+            (ps:lisp (prompt-document prompt-buffer))))
+    (ffi-buffer-set-background-color
+     prompt-buffer (panel-backdrop-color (window prompt-buffer)))))
 
 (defun prompt-render-focus (prompt-buffer)
   (when (prompt-current-p prompt-buffer)
