@@ -94,6 +94,10 @@
   (:export-predicate-name-p t)
   (:metaclass user-class))
 
+(defmethod include-in-buffer-list-p ((buffer message-buffer))
+  "A message buffer is not one of the window's tabs."
+  nil)
+
 (defmethod initialize-instance :after ((message-buffer message-buffer)
                                        &key &allow-other-keys)
   (ffi-print-message message-buffer "Ready."))

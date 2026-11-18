@@ -443,6 +443,10 @@ invoking `prompt-buffer:history'.
 See `prompt' for how to invoke prompts.")
     (:metaclass user-class)))
 
+(defmethod include-in-buffer-list-p ((buffer prompt-buffer))
+  "A prompt buffer is not one of the window's tabs."
+  nil)
+
 (define-class composite-source (prompter:composite-source)
   ()
   (:metaclass user-class)

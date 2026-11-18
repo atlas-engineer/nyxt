@@ -921,8 +921,7 @@ See `make-buffer'."
 (defun add-to-recent-buffers (buffer)
   "Push BUFFER to the front of `recent-buffers'.
 The notion of first element is dictated by `containers:first-item'."
-  (when (and (web-buffer-p buffer)
-             (include-in-buffer-list-p buffer))
+  (when (include-in-buffer-list-p buffer)
     (containers:delete-item (recent-buffers *browser*) buffer)
     (containers:insert-item (recent-buffers *browser*) buffer)))
 
