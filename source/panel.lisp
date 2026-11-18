@@ -359,15 +359,13 @@ Example:
 (-> panel-backdrop-color (window) string)
 (defun panel-backdrop-color (window)
   "Return the color behind WINDOW's page, or the theme background.
-The page is read now. The color stored when the document loaded is used
-only when that read fails, so a prompt opened without a reload still
-matches the page on screen."
+The color is the one stored when the page loaded. A page that has not
+been read yet uses the theme."
   (let ((page (and window (active-buffer window))))
     (or (and page
              (web-buffer-p page)
              (not (panel-buffer-p page))
-             (or (read-page-background-color page)
-                 (background-color page)))
+             (background-color page))
         (theme:background-color (theme *browser*)))))
 
 (-> apply-panel-backdrop (buffer string) t)
@@ -404,7 +402,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
   nil)
 
 (defmethod (setf background-color) :after (color (buffer web-buffer))
-  "A page's background is read with its other facts. Panels follow it."
+  "Panels and bars follow the page they float on."
   (declare (ignore color))
   (dolist (window (window-list))
     (when (eq buffer (active-buffer window))
@@ -412,16 +410,13 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 
 (-> refresh-panel-backdrop (window) t)
 (defun refresh-panel-backdrop (window)
-  "Read the active page's background again and paint WINDOW's panels from it.
+  "Read the active page's background again.
 Switching to a page that is already open does not load it again, so the color
-has to be read here."
+stored at load time may be stale."
   (when-let ((page (and window (active-buffer window))))
     (when (and (web-buffer-p page) (not (panel-buffer-p page)))
-      (run-thread "panel-backdrop"
-        (when (and (buffer-get (id page))
-                   (eq page (active-buffer window)))
-          (remember-page-background page)
-          (paint-panel-backdrops window)))))
+      (run-thread "page-background"
+        (update-page-background page))))
   nil)
 
 (defmethod (setf active-buffer) :after ((buffer web-buffer) (window window))
@@ -453,10 +448,6 @@ uses the unspecialized method, does not replace it."
   (declare (ignore value))
   (when (and (visible-p panel) (window panel))
     (install-panel-controls panel)))
-
-(defmethod sample-page-background-p ((buffer panel-buffer))
-  "A panel's document is not the page behind the window."
-  nil)
 
 (defmethod ffi-buffer-delete :before ((buffer panel-buffer))
   "Drop BUFFER's redraw handlers before its view is destroyed."
