@@ -47,6 +47,7 @@ A window shows any number of them. Each is as tall as the page and shows one thi
   (:documentation "Panel that lists the open buffers."))
 
 (defmethod include-in-buffer-list-p ((buffer panel-buffer))
+  "A panel is not one of the window's tabs."
   nil)
 
 (defmethod (setf width) :around (value (panel panel-buffer))

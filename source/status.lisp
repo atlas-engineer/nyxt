@@ -329,6 +329,10 @@
   (:export-predicate-name-p t)
   (:metaclass user-class))
 
+(defmethod include-in-buffer-list-p ((buffer status-buffer))
+  "A status buffer is not one of the window's tabs."
+  nil)
+
 (defmethod (setf height) (value (status-buffer status-buffer))
   (setf (ffi-height status-buffer) value)
   (setf (slot-value status-buffer 'height) value))
