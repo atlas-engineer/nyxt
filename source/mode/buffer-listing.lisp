@@ -164,16 +164,6 @@ The handlers are the ones `status-buffer' uses for its tabs."
         (:h1 "Buffers"))
       (user-interface:to-html listing))))
 
-(define-command-global add-buffer-listing-panel (&key ((:side panel-side) :left)
-                                                      (window (current-window)))
-  "Add a panel that lists the open buffers on SIDE of WINDOW."
-  (let ((panel (add-panel-buffer window
-                                 (make-instance 'nyxt:buffer-listing-panel
-                                                :side panel-side
-                                                :title "Buffers"))))
-    (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffers)))
-    panel))
-
-(define-command-global add-buffer-listing-panel-right (&optional (window (current-window)))
-  "Add a panel that lists the open buffers on the right of WINDOW."
-  (add-buffer-listing-panel :side :right :window window))
+(define-buffer-panel buffer-listing-panel (:title "Buffers")
+  "Panel that lists the open buffers."
+  (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffers))))

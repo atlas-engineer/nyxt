@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The window this panel is attached to.")
    (width
-    256
+    320
     :type integer
     :export nil
     :documentation "Width in pixels while the panel is shown.")
@@ -20,31 +20,13 @@
    (visible-p
     nil
     :type boolean
-    :documentation "Whether the panel is shown.")
-   (drag-origin
-    nil
-    :export nil
-    :type (or null integer)
-    :documentation "Screen position used while the panel is being resized.")
-   (link-url
-    nil
-    :export nil
-    :type (or null string)
-    :documentation "`lisp' URL that receives resize events from the panel."))
+    :documentation "Whether the panel is shown."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
   (:metaclass user-class)
   (:documentation "Buffer fixed to the left or right of the page.
 A window shows any number of them. Each is as tall as the page and shows one thing."))
-
-(define-class buffer-listing-panel (panel-buffer)
-  ()
-  (:export-class-name-p t)
-  (:export-accessor-names-p t)
-  (:export-predicate-name-p t)
-  (:metaclass user-class)
-  (:documentation "Panel that lists the open buffers."))
 
 (defmethod include-in-buffer-list-p ((buffer panel-buffer))
   "A panel is not one of the window's tabs."
@@ -57,6 +39,16 @@ A window shows any number of them. Each is as tall as the page and shows one thi
   (declare (ignore value))
   (when (and (visible-p panel) (window panel))
     (apply-panel-geometry panel)))
+
+(defmethod on-signal-notify-title ((buffer panel-buffer) title)
+  "Keep the title given to BUFFER.
+A page loaded in the panel does not replace it."
+  (declare (ignore title))
+  (when (str:emptyp (title buffer))
+    (setf (title buffer) (ffi-buffer-title buffer)))
+  (dolist (mode (enabled-modes buffer))
+    (on-signal-notify-title mode (url buffer)))
+  (title buffer))
 
 (-> clamp-panel-width (panel-buffer integer) integer)
 (defun clamp-panel-width (panel width)
@@ -99,155 +91,390 @@ A window shows any number of them. Each is as tall as the page and shows one thi
   (apply-panel-geometry panel)
   panel)
 
-(-> panel-event-param (string) (maybe string))
-(defun panel-event-param (name)
-  "Return the query value NAME from the `lisp' request in progress."
-  (when *lisp-request-url*
-    (assoc-value (quri:uri-query-params *lisp-request-url*) name :test #'equal)))
+(export-always 'define-buffer-panel)
+(defmacro define-buffer-panel (name initargs &body body)
+  "Define a `panel-buffer' subclass NAME and the commands that open it.
+INITARGS are passed to `make-instance'. `:side' is set by the command.
+The first string in BODY documents the class.
+The commands are `add-NAME-left' and `add-NAME-right'. Each takes an optional
+WINDOW, which defaults to `current-window'. BODY runs with PANEL bound to the
+new panel and WINDOW bound to that argument.
 
-(-> panel-drag-begin (panel-buffer (maybe integer)) t)
-(defun panel-drag-begin (panel x)
-  (when x
-    (setf (drag-origin panel)
-          (if (eq (side panel) :left)
-              (- x (width panel))
-              (+ x (width panel))))
-    (arm-panel-drag (and (window panel) (active-buffer (window panel)))
-                    (link-url panel))))
+Example:
 
-(-> panel-drag-move (panel-buffer (maybe integer)) t)
-(defun panel-drag-move (panel x)
-  (when (and x (numberp (drag-origin panel)))
-    (setf (width panel)
-          (if (eq (side panel) :left)
-              (- x (drag-origin panel))
-              (- (drag-origin panel) x)))))
+\(define-buffer-panel buffer-listing-panel (:title \"Buffers\")
+  \"Panel that lists the open buffers.\"
+  (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffers))))"
+  (unless (and (symbolp name) (not (keywordp name)))
+    (error "Panel name must be a symbol, got ~s." name))
+  (unless (and (listp initargs) (evenp (length initargs)))
+    (error "Initargs for panel ~a must be a plist, got ~s." name initargs))
+  (multiple-value-bind (forms declarations documentation)
+      (alex:parse-body body :documentation t)
+    (unless documentation
+      (error "Panel ~a requires documentation." name))
+    (flet ((command-name (suffix)
+             (without-package-locks
+               (intern (str:concat "ADD-" (symbol-name name) suffix)
+                       (symbol-package name))))
+           (command-documentation (side)
+             (let* ((base (string-right-trim ". " documentation))
+                    (base (if (uiop:string-prefix-p "Panel" base)
+                              (str:concat "Add a panel"
+                                          (subseq base (length "Panel")))
+                              base)))
+               (format nil "~a on the ~a of WINDOW."
+                       base
+                       (string-downcase (symbol-name side)))))
+           (symbol-from-caller (string)
+             (without-package-locks
+               (or (find-symbol string *package*)
+                   (loop for package in (package-use-list *package*)
+                         do (multiple-value-bind (symbol status)
+                                (find-symbol string package)
+                              (when (eq status :external)
+                                (return symbol))))
+                   (intern string *package*)))))
+      (alex:with-gensyms (side)
+        (let ((left (command-name "-LEFT"))
+              (right (command-name "-RIGHT"))
+              (helper (without-package-locks
+                       (intern (str:concat "%ADD-" (symbol-name name))
+                               (symbol-package name))))
+              (panel-var (symbol-from-caller "PANEL"))
+              (window-var (symbol-from-caller "WINDOW")))
+          `(progn
+             (eval-always
+               (define-class ,name (panel-buffer)
+                 ()
+                 (:export-class-name-p t)
+                 (:export-accessor-names-p t)
+                 (:export-predicate-name-p t)
+                 (:metaclass user-class)
+                 (:documentation ,documentation)))
+             (-> ,helper (window (member :left :right)) (values ,name &optional))
+             (defun ,helper (,window-var ,side)
+               ,(format nil "Open a `~(~a~)' on SIDE of WINDOW." name)
+               (let ((,panel-var (add-panel-buffer ,window-var
+                                                   (make-instance ',name
+                                                                  :side ,side
+                                                                  ,@initargs))))
+                 ,@declarations
+                 ,@forms
+                 ,panel-var))
+             (define-command-global ,left (&optional (,window-var (current-window)))
+               ,(command-documentation :left)
+               (,helper ,window-var :left))
+             (define-command-global ,right (&optional (,window-var (current-window)))
+               ,(command-documentation :right)
+               (,helper ,window-var :right))))))))
 
-(-> panel-drag-end (panel-buffer) t)
-(defun panel-drag-end (panel)
-  (setf (drag-origin panel) nil))
+(define-mode panel-mode ()
+  "Resize the panel this mode belongs to.
+`+' widens it and `hyphen' narrows it."
+  ((visible-in-status-p nil)
+   (width-step
+    32
+    :type integer
+    :documentation "Pixels added or removed by `widen-panel' and `narrow-panel'.")
+   (keyscheme-map
+    (define-keyscheme-map "panel-mode" ()
+      keyscheme:default
+      (list
+       "+" 'widen-panel
+       "hyphen" 'narrow-panel))))
+  (:toggler-command-p nil))
 
-(-> panel-handle-event (panel-buffer) t)
-(defun panel-handle-event (panel)
-  "Dispatch the resize event carried by `*lisp-request-url*'."
-  (let ((op (panel-event-param "op"))
-        (x (ignore-errors (parse-integer (or (panel-event-param "x") "")))))
-    (cond ((equal op "down") (panel-drag-begin panel x))
-          ((equal op "move") (panel-drag-move panel x))
-          ((equal op "up") (panel-drag-end panel)))))
+(defmethod default-modes append ((buffer panel-buffer))
+  '(panel-mode))
 
-(-> ensure-panel-link-callback (panel-buffer) string)
-(defun ensure-panel-link-callback (panel)
-  "Return the `lisp' URL PANEL's document uses while it is resized."
-  (or (link-url panel)
-      (setf (link-url panel)
-            (quri:render-uri
-             (lisp-url :buffer panel
-                       :title "panel-event"
-                       :callback (lambda ()
-                                   (panel-handle-event panel)))))))
+(-> panel-width-step (panel-buffer) integer)
+(defun panel-width-step (panel)
+  "Return the number of pixels PANEL's `panel-mode' resizes by."
+  (alex:if-let ((mode (find-if #'panel-mode-p (enabled-modes panel))))
+    (width-step mode)
+    32))
 
-(-> arm-panel-drag ((maybe buffer) (maybe string)) t)
-(defun arm-panel-drag (page callback-url)
-  "Listen for the pointer on PAGE so a drag can leave the panel."
-  (when (and page callback-url (not (panel-buffer-p page)))
-    (ffi-buffer-evaluate-javascript-async
-     page
-     (format nil "(function(){
-var callback = ~a;
-function send(op, x) {
-  fetch(callback + '&op=' + encodeURIComponent(op) + '&x=' + encodeURIComponent(x), {mode: 'no-cors'});
-}
-if (window.__nyxtPanelDragMove) {
-  document.removeEventListener('mousemove', window.__nyxtPanelDragMove, true);
-  document.removeEventListener('mouseup', window.__nyxtPanelDragUp, true);
-}
-window.__nyxtPanelDragMove = function(event) { send('move', event.screenX); };
-window.__nyxtPanelDragUp = function(event) {
-  document.removeEventListener('mousemove', window.__nyxtPanelDragMove, true);
-  document.removeEventListener('mouseup', window.__nyxtPanelDragUp, true);
-  window.__nyxtPanelDragMove = null;
-  window.__nyxtPanelDragUp = null;
-  send('up', event.screenX);
-};
-document.addEventListener('mousemove', window.__nyxtPanelDragMove, true);
-document.addEventListener('mouseup', window.__nyxtPanelDragUp, true);
-})();"
-             (cl-json:encode-json-to-string callback-url)))))
+(define-command widen-panel (&optional (panel (focused-panel)))
+  "Widen PANEL by one step."
+  (when panel
+    (incf (width panel) (panel-width-step panel))))
 
-(-> install-panel-chrome (panel-buffer) t)
-(defun install-panel-chrome (panel)
-  "Add the resize handle on PANEL's outer edge."
-  (let ((callback (cl-json:encode-json-to-string (ensure-panel-link-callback panel)))
-        (right (if (eq (side panel) :right) "true" "false"))
-        (line (cl-json:encode-json-to-string (theme:background-color- (theme *browser*)))))
-    (ffi-buffer-evaluate-javascript-async
-     panel
-     (format nil "(function(){
-var callback = ~a;
-var right = ~a;
-var line = ~a;
-function send(op, extra) {
-  var url = callback + '&op=' + encodeURIComponent(op);
-  if (extra !== undefined && extra !== null)
-    url += '&x=' + encodeURIComponent(String(extra));
-  fetch(url, {mode: 'no-cors'});
-}
-var old = document.getElementById('nyxt-panel-chrome');
-if (old) old.remove();
-var chrome = document.createElement('div');
-chrome.id = 'nyxt-panel-chrome';
-var handle = document.createElement('div');
-handle.id = 'nyxt-panel-handle';
-handle.style.cssText = 'position:fixed;top:0;bottom:0;width:6px;z-index:5;cursor:ew-resize;background:' + line + ';'
-  + (right ? 'left:0;' : 'right:0;');
-handle.addEventListener('mousedown', function(event) {
-  event.preventDefault();
-  send('down', event.screenX);
-  function move(ev) { send('move', ev.screenX); }
-  function up(ev) {
-    document.removeEventListener('mousemove', move, true);
-    document.removeEventListener('mouseup', up, true);
-    send('up', ev.screenX);
-  }
-  document.addEventListener('mousemove', move, true);
-  document.addEventListener('mouseup', up, true);
-});
-chrome.appendChild(handle);
-(document.body || document.documentElement).appendChild(chrome);
-})();"
-             callback right line))))
+(define-command narrow-panel (&optional (panel (focused-panel)))
+  "Narrow PANEL by one step."
+  (when panel
+    (decf (width panel) (panel-width-step panel))))
+
+(-> panel-resize-callback (panel-buffer (member :widen :narrow)) string)
+(defun panel-resize-callback (panel direction)
+  "Return a live `lisp' URL that resizes PANEL in DIRECTION."
+  (quri:render-uri
+   (lisp-url :buffer panel
+             :title (if (eq direction :widen) "widen-panel" "narrow-panel")
+             :callback (lambda ()
+                         (if (eq direction :widen)
+                             (widen-panel panel)
+                             (narrow-panel panel))))))
+
+(-> panel-close-callback (panel-buffer) string)
+(defun panel-close-callback (panel)
+  "Return a live `lisp' URL that closes PANEL."
+  (quri:render-uri
+   (lisp-url :buffer panel
+             :title "close-panel"
+             :callback (lambda ()
+                         (delete-panel-buffer panel)))))
+
+(-> panel-chrome-css (theme:theme) string)
+(defun panel-chrome-css (theme)
+  "Return the stylesheet for a panel's header and buttons."
+  (theme:themed-css theme
+    `(html
+      :background-color ,theme:background-color
+      :height "100%")
+    `(body
+      :background-color ,theme:surface-color
+      :backdrop-filter "saturate(180%) blur(20px)"
+      :-webkit-backdrop-filter "saturate(180%) blur(20px)"
+      :margin "12px" "8px" "8px"
+      :min-height "calc(100vh - 24px)"
+      :border-radius "6px")
+    `("#nyxt-panel-header"
+      :position "fixed"
+      :top "16px"
+      :left "8px"
+      :right "8px"
+      :z-index "6"
+      :box-sizing "border-box"
+      :display "flex"
+      :align-items "flex-start"
+      :justify-content "space-between"
+      :gap "7px"
+      :padding "24px" "24px" "0"
+      :background-color "transparent"
+      :color ,(theme:on-background-color theme)
+      :font-family ,(format nil "~s" (theme:font-family theme)))
+    '("#nyxt-panel-title"
+      :min-width "0"
+      :margin-top "-3px"
+      :overflow "hidden"
+      :white-space "nowrap"
+      :text-overflow "ellipsis"
+      :font-size "17px"
+      :font-weight "600"
+      :line-height "24px")
+    '("#nyxt-panel-actions"
+      :display "flex"
+      :flex "none"
+      :align-items "center"
+      :gap "2px"
+      :margin "-6px" "0" "0" "0")
+    `(".nyxt-panel-button"
+      :flex "none"
+      :box-sizing "border-box"
+      :appearance "none"
+      :display "inline-flex"
+      :align-items "center"
+      :justify-content "center"
+      :width "28px"
+      :height "28px"
+      :margin "0"
+      :padding "0"
+      :border "none"
+      :border-radius "14px"
+      :background-color "transparent"
+      :color ,(theme:on-background-color theme)
+      :font-size "17px"
+      :font-weight "400"
+      :line-height "17px"
+      :cursor "pointer")
+    `(".nyxt-panel-button:hover"
+      :background-color ,(theme:background-color- theme))
+    `(".nyxt-panel-button:focus-visible"
+      :outline "2px" "solid" ,(theme:action-color theme)
+      :outline-offset "2px")))
+
+(-> panel-chrome-script (panel-buffer string string string theme:theme) string)
+(defun panel-chrome-script (panel widen-url narrow-url close-url theme)
+  "Return JavaScript that installs PANEL's title and buttons."
+  (ps:ps
+    ((lambda ()
+       (let ((widen-url (ps:lisp widen-url))
+             (narrow-url (ps:lisp narrow-url))
+             (close-url (ps:lisp close-url))
+             (heading (ps:lisp (or (title panel) ""))))
+         (flet ((control (parent id label name url)
+                  (let ((button (ps:chain document (create-element "button"))))
+                    (setf (ps:@ button id) id
+                          (ps:@ button class-name) "nyxt-panel-button"
+                          (ps:@ button type) "button"
+                          (ps:@ button text-content) label)
+                    (ps:chain button (set-attribute "aria-label" name))
+                    (ps:chain button
+                              (add-event-listener
+                               "click"
+                               (lambda (event)
+                                 (ps:chain event (prevent-default))
+                                 (ps:chain event (stop-propagation))
+                                 (fetch url (ps:create :mode "no-cors")))))
+                    (ps:chain parent (append-child button)))))
+           (let ((old (ps:chain document (get-element-by-id "nyxt-panel-chrome"))))
+             (when old
+               (ps:chain old (remove))))
+           (let ((chrome (ps:chain document (create-element "div")))
+                 (style (ps:chain document (create-element "style")))
+                 (header (ps:chain document (create-element "div")))
+                 (label (ps:chain document (create-element "div")))
+                 (actions (ps:chain document (create-element "div"))))
+             (setf (ps:@ chrome id) "nyxt-panel-chrome"
+                   (ps:@ style text-content) (ps:lisp (panel-chrome-css theme))
+                   (ps:@ header id) "nyxt-panel-header"
+                   (ps:@ label id) "nyxt-panel-title"
+                   (ps:@ label text-content) heading
+                   (ps:@ actions id) "nyxt-panel-actions")
+             (control actions "nyxt-panel-widen-button" "+" "Widen panel" widen-url)
+             (control actions "nyxt-panel-narrow-button" "−" "Narrow panel" narrow-url)
+             (control actions "nyxt-panel-close-button" "×" "Close panel" close-url)
+             (ps:chain header (append-child label))
+             (ps:chain header (append-child actions))
+             (ps:chain chrome (append-child style))
+             (ps:chain chrome (append-child header))
+             (let ((root (or (ps:@ document body)
+                             (ps:@ document document-element))))
+               (when (and root (ps:@ root dataset nyxt-panel-offset))
+                 (setf (ps:@ root style padding-top) "")
+                 (delete (ps:@ root dataset nyxt-panel-offset)))
+               (when (and root (not (ps:@ root dataset nyxt-panel-pad)))
+                 (setf (ps:@ root dataset nyxt-panel-pad)
+                       (*string (or (parse-float
+                                     (ps:@ (ps:chain window (get-computed-style root))
+                                           padding-top))
+                                    0))))
+               (ps:chain root (append-child chrome))
+               (when root
+                 (let ((base (or (parse-float (ps:@ root dataset nyxt-panel-pad)) 0)))
+                   (setf (ps:@ root style padding-top)
+                         (+ (max base (+ (ps:@ header offset-height) 24)) "px"))))))))))))
+
+(-> panel-backdrop-color (window) string)
+(defun panel-backdrop-color (window)
+  "Return the color behind WINDOW's page, or the theme background.
+The page is read now. The color stored when the document loaded is used
+only when that read fails, so a prompt opened without a reload still
+matches the page on screen."
+  (let ((page (and window (active-buffer window))))
+    (or (and page
+             (web-buffer-p page)
+             (not (panel-buffer-p page))
+             (or (read-page-background-color page)
+                 (background-color page)))
+        (theme:background-color (theme *browser*)))))
+
+(-> apply-panel-backdrop (buffer string) t)
+(defun apply-panel-backdrop (panel color)
+  "Paint COLOR behind PANEL's rounded surface."
+  (ffi-buffer-set-background-color panel color)
+  (ffi-buffer-evaluate-javascript-async
+   panel
+   (ps:ps
+     (setf (ps:@ document document-element style background-color)
+           (ps:lisp color))))
+  nil)
+
+(-> backdrop-buffer-p (buffer) boolean)
+(defun backdrop-buffer-p (buffer)
+  "Whether BUFFER can take the color behind the page.
+The status bar, message bar, and prompt are not in the main buffer table, so
+`dead-buffer-p' does not describe them."
+  (and buffer
+       (or (auxiliary-buffer-p buffer)
+           (not (dead-buffer-p buffer)))))
+
+(-> paint-panel-backdrops (window) t)
+(defun paint-panel-backdrops (window)
+  "Give WINDOW's panels and bars the background of its active page."
+  (when window
+    (let ((color (panel-backdrop-color window)))
+      (dolist (buffer (append (panel-buffers window)
+                              (list (status-buffer window)
+                                    (message-buffer window))
+                              (active-prompt-buffers window)))
+        (when (backdrop-buffer-p buffer)
+          (apply-panel-backdrop buffer color)))))
+  nil)
+
+(defmethod (setf background-color) :after (color (buffer web-buffer))
+  "A page's background is read with its other facts. Panels follow it."
+  (declare (ignore color))
+  (dolist (window (window-list))
+    (when (eq buffer (active-buffer window))
+      (paint-panel-backdrops window))))
+
+(-> refresh-panel-backdrop (window) t)
+(defun refresh-panel-backdrop (window)
+  "Read the active page's background again and paint WINDOW's panels from it.
+Switching to a page that is already open does not load it again, so the color
+has to be read here."
+  (when-let ((page (and window (active-buffer window))))
+    (when (and (web-buffer-p page) (not (panel-buffer-p page)))
+      (run-thread "panel-backdrop"
+        (when (and (buffer-get (id page))
+                   (eq page (active-buffer window)))
+          (remember-page-background page)
+          (paint-panel-backdrops window)))))
+  nil)
+
+(defmethod (setf active-buffer) :after ((buffer web-buffer) (window window))
+  "The panels float on the page that just became active.
+Specialized on `web-buffer' so the status bar's `active-buffer' handler, which
+uses the unspecialized method, does not replace it."
+  (unless (panel-buffer-p buffer)
+    (paint-panel-backdrops window)
+    (refresh-panel-backdrop window)))
+
+(-> install-panel-controls (panel-buffer) t)
+(defun install-panel-controls (panel)
+  "Add the title and buttons on PANEL."
+  (ffi-buffer-evaluate-javascript-async
+   panel
+   (panel-chrome-script panel
+                        (panel-resize-callback panel :widen)
+                        (panel-resize-callback panel :narrow)
+                        (panel-close-callback panel)
+                        (theme *browser*)))
+  (when (window panel)
+    (paint-panel-backdrops (window panel))))
 
 (defmethod on-signal-load-finished :after ((buffer panel-buffer) url title)
   (declare (ignore url title))
-  (install-panel-chrome buffer))
+  (install-panel-controls buffer))
 
-(define-command toggle-panel-buffer (&optional (panel (focused-panel)))
-  "Show or hide PANEL."
-  (when panel
-    (setf (visible-p panel) (not (visible-p panel)))
-    (apply-panel-geometry panel))
-  panel)
+(defmethod (setf title) :after (value (panel panel-buffer))
+  (declare (ignore value))
+  (when (and (visible-p panel) (window panel))
+    (install-panel-controls panel)))
 
-(define-command toggle-panel-buffer-side (&optional (panel (focused-panel)))
-  "Move PANEL to the other side of the page."
-  (when panel
-    (setf (side panel) (if (eq (side panel) :left) :right :left))
-    (setf (visible-p panel) t)
-    (apply-panel-geometry panel)
-    (install-panel-chrome panel))
-  panel)
+(defmethod sample-page-background-p ((buffer panel-buffer))
+  "A panel's document is not the page behind the window."
+  nil)
+
+(defmethod ffi-buffer-delete :before ((buffer panel-buffer))
+  "Drop BUFFER's redraw handlers before its view is destroyed."
+  (drop-buffer-setf-handlers buffer)
+  (when (slot-boundp buffer 'lisp-url-callbacks)
+    (clrhash (lisp-url-callbacks buffer)))
+  (dolist (window (window-list))
+    (setf (panel-buffers window) (remove buffer (panel-buffers window))))
+  (setf (visible-p buffer) nil)
+  (when (window buffer)
+    (apply-panel-geometry buffer))
+  (buffer-delete (id buffer)))
 
 (define-command delete-panel-buffer (&optional (panel (focused-panel)))
   "Remove PANEL from its window."
   (when panel
-    (let ((window (window panel)))
-      (when window
-        (setf (panel-buffers window) (remove panel (panel-buffers window))))
-      (setf (visible-p panel) nil)
-      (apply-panel-geometry panel)
-      (ignore-errors (ffi-buffer-delete panel))
-      (buffer-delete (id panel))))
+    (ignore-errors (ffi-buffer-delete panel))
+    (buffer-delete (id panel)))
   nil)
 
 (setf *lisp-callback-buffer-hook*
