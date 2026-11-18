@@ -152,18 +152,22 @@ A `user-interface:element'.")
           "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
         '(*
           :box-sizing "border-box")
-        '(html
-          :height "100%")
-        `(body
+        `(html
           :height "100%"
+          :background-color ,(theme:background-color (theme *browser*)))
+        `(body
+          :height "calc(100% - 16px)"
+          :margin "8px"
+          :border-radius "6px"
           :overflow "hidden"
-          :background-color ,theme:background-color
+          :background-color ,theme:surface-color
+          :backdrop-filter "saturate(180%) blur(20px)"
+          :-webkit-backdrop-filter "saturate(180%) blur(20px)"
           :color ,theme:on-background-color
           :font-family ,theme:font-family
           :font-size "13px"
           :font-weight "400"
-          :line-height "16px"
-          :margin "0")
+          :line-height "16px")
         '("#root"
           :height "100%"
           :display "grid"
@@ -175,11 +179,8 @@ A `user-interface:element'.")
           :height "40px"
           :gap "8px"
           :padding "0 8px"
-          :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
-                                     theme:secondary-color+
-                                     theme:background-color)
-          :color ,theme:on-secondary-color
-          :box-shadow ,(format nil "inset 0 -1px 0 ~a" theme:background-color-))
+          :background-color "transparent"
+          :color ,theme:on-background-color)
         '("#prompt"
           :max-width "40ch"
           :overflow "hidden"
@@ -498,11 +499,14 @@ SOURCES may contain source instances or source class names."
                  prompt-buffer))
 
 (defmethod (setf height) (value (prompt-buffer prompt-buffer))
-  (setf (ffi-height prompt-buffer)
-        (case value
-          (:default (round (/ (ffi-height (window prompt-buffer)) 4)))
-          (t value)))
-  (setf (slot-value prompt-buffer 'height) value))
+  (let ((content (case value
+                   (:default (round (/ (ffi-height (window prompt-buffer)) 4)))
+                   (t value))))
+    (setf (ffi-height prompt-buffer)
+          (if (and (integerp content) (<= content 0))
+              0
+              (+ content 16)))
+    (setf (slot-value prompt-buffer 'height) value)))
 
 (export-always 'current-source)
 (defun current-source (&optional (prompt-buffer (current-prompt-buffer)))

@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the status buffer is attached.")
    (height
-    40
+    56
     :type integer
     :writer nil
     :reader height
@@ -81,26 +81,28 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
-      '(html
+      `(html
         :height "100%"
-        :overflow "hidden")
+        :overflow "hidden"
+        :background-color ,(theme:background-color (theme *browser*)))
       `(body
         :display "flex"
         :align-items "center"
-        :height "100%"
+        :height "calc(100% - 16px)"
+        :margin "8px"
+        :border-radius "6px"
         :overflow "hidden"
         :box-sizing "border-box"
-        :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
-                                  theme:secondary-color+
-                                  theme:background-color)
-        :color ,theme:on-secondary-color
+        :background-color ,theme:surface-color
+        :backdrop-filter "saturate(180%) blur(20px)"
+        :-webkit-backdrop-filter "saturate(180%) blur(20px)"
+        :color ,theme:on-background-color
         :font-family ,theme:font-family
         :font-size "13px"
         :line-height "16px"
         :white-space "nowrap"
         :user-select "none"
-        :padding 0
-        :margin 0)
+        :padding 0)
       '(*
         :box-sizing "border-box")
       '("#container"
@@ -110,7 +112,7 @@
         :min-width "0"
         :height "28px"
         :gap "12px"
-        :padding "0 8px"
+        :padding "0 8px 0 24px"
         :overflow "hidden")
       '("#controls"
         :display "flex"

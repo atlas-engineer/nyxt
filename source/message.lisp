@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the message buffer is attached.")
    (height
-    16
+    32
     :type integer
     :writer nil
     :reader height
@@ -73,22 +73,25 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('ttf')")
-      '(html
+      `(html
         :height "100%"
-        :overflow "hidden")
+        :overflow "hidden"
+        :background-color ,(theme:background-color (theme *browser*)))
       `(body
-        :height "100%"
+        :display "flex"
+        :align-items "center"
+        :height "calc(100% - 16px)"
+        :margin "8px"
         :overflow "hidden"
         :white-space "nowrap"
         :text-overflow "ellipsis"
-        :background-color ,theme:background-color-
+        :background-color "transparent"
         :color ,theme:on-background-color
         :font-family ,theme:font-family
-        :font-size "75vh"
-        :line-height "100vh"
+        :font-size "12px"
+        :line-height "16px"
         :padding 0
-        :padding-left "4px"
-        :margin 0))))
+        :padding-left "10px"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)

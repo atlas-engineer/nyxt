@@ -83,6 +83,16 @@
     (assert-string= "#ECECEC" (theme:button-color light))
     (assert-string= "#ECECEC" (theme:button-color- light))))
 
+(define-test surface-color ()
+  (assert-string= "color-mix(in srgb, #ECECEC 94%, transparent)"
+                  (theme:surface-color theme:+light-theme+))
+  (assert-string= "color-mix(in srgb, #3B4252 94%, transparent)"
+                  (theme:surface-color theme:+dark-theme+))
+  (let ((theme (make-instance 'theme:theme
+                              :background-color "white"
+                              :surface-color "#FFFFFF")))
+    (assert-string= "#FFFFFF" (theme:surface-color theme))))
+
 (define-test heading-color ()
   (assert-string= "#444444" (theme:heading-color theme:+light-theme+))
   (assert-string= "#5E81AC" (theme:heading-color theme:+dark-theme+))
