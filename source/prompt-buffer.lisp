@@ -1065,11 +1065,13 @@ A source view already built is kept when what it shows has not changed."
   ;; `update-prompt-input' then reads `#input' while it is still missing.
   (when (prompt-current-p prompt-buffer)
     (ensure-prompt-views prompt-buffer)
-    (ps-eval :buffer prompt-buffer
-      (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
-            (ps:lisp (prompt-document prompt-buffer))))
-    (ffi-buffer-set-background-color
-     prompt-buffer (panel-backdrop-color (window prompt-buffer)))))
+    (let ((color (panel-backdrop-color (window prompt-buffer))))
+      (ps-eval :buffer prompt-buffer
+        (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
+              (ps:lisp (prompt-document prompt-buffer)))
+        (setf (ps:@ document document-element style background-color)
+              (ps:lisp color)))
+      (ffi-buffer-set-background-color prompt-buffer color))))
 
 (defun prompt-render-focus (prompt-buffer)
   (when (prompt-current-p prompt-buffer)
