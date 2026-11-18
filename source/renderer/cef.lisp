@@ -291,6 +291,10 @@ This is the expanded `download-directory'."
     (cef:set-window-class "nyxt")
     (install-window-icon)
     (configure-web-extensions browser interface)
+    (setf (cef:launch-options interface)
+          (add-csv-switch (cef:launch-options interface)
+                          "enable-features"
+                          "OverlayScrollbar,OverlayScrollbarFlashWhenMouseEnter"))
     (when-let ((color (canvas-color browser)))
       (when (plusp color)
         (cef:set-default-background-color color)))
