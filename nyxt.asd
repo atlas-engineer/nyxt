@@ -142,7 +142,7 @@
                  (:file "file-manager" :depends-on ("prompt-buffer"))
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/terminal" :depends-on ("Core modes"))
-               (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
+               (:file "mode/base" :depends-on ("Core modes" "Prompter modes" "mode/terminal"))
                (:file "panel" :depends-on ("Core"))
                (:file "status" :depends-on ("Core modes"))
                (:module "Help"
