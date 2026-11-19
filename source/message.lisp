@@ -106,8 +106,9 @@
   (ffi-print-message message-buffer "Ready."))
 
 (defmethod (setf height) (value (message-buffer message-buffer))
-  (setf (ffi-height message-buffer) value)
-  (setf (slot-value message-buffer 'height) value))
+  (let ((height (max 0 value)))
+    (setf (ffi-height message-buffer) height
+          (slot-value message-buffer 'height) height)))
 
 (defclass messages-appender (log4cl-impl:appender) ())
 

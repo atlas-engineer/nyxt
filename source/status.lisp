@@ -336,8 +336,9 @@
   nil)
 
 (defmethod (setf height) (value (status-buffer status-buffer))
-  (setf (ffi-height status-buffer) value)
-  (setf (slot-value status-buffer 'height) value))
+  (let ((height (max 0 value)))
+    (setf (ffi-height status-buffer) height
+          (slot-value status-buffer 'height) height)))
 
 (export-always 'mode-status)
 (defgeneric mode-status (status mode)
@@ -562,6 +563,8 @@ override it, redefine methods such as `format-status-url',
                                                  behavior "smooth")))))))
 
 (defmethod print-status ((status-buffer status-buffer))
+  (sera:synchronized ((lisp-url-callbacks status-buffer))
+    (clrhash (lisp-url-callbacks status-buffer)))
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
 
