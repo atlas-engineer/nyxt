@@ -278,15 +278,8 @@
   :class :nasdf-system
   :depends-on (nyxt cl-webkit2)
   :pathname #p"NYXT:source;"
-  :components ((:file "renderer/gtk")))
-
-(defsystem "nyxt/gi-gtk"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (nyxt/gtk cl-gobject-introspection)
-  :pathname #p"NYXT:source;renderer;"
-  :components ((:file "gi-gtk"))
-  :in-order-to ((test-op (test-op "nyxt/gi-gtk/tests")
+  :components ((:file "renderer/gtk"))
+  :in-order-to ((test-op (test-op "nyxt/gtk/tests")
                          (test-op "nyxt/tests")
                          ;; Dumping the manual may catch errors.
                          (compile-op "nyxt/documentation")
@@ -295,10 +288,10 @@
                          (test-op "nyxt/terminal")
                          (test-op "nyxt/theme"))))
 
-(defsystem "nyxt/gi-gtk/tests"
+(defsystem "nyxt/gtk/tests"
   :defsystem-depends-on ("nasdf")
   :class :nasdf-test-system
-  :depends-on (nyxt/gi-gtk lisp-unit2)
+  :depends-on (nyxt/gtk lisp-unit2)
   :pathname #p"NYXT:tests;renderer;"
   :serial t
   :components ((:file "package")
@@ -321,14 +314,6 @@
   :defsystem-depends-on ("nasdf")
   :class :nasdf-system
   :depends-on (nyxt/gtk)
-  :build-operation "program-op"
-  :build-pathname "nyxt"
-  :entry-point "nyxt:entry-point")
-
-(defsystem "nyxt/gi-gtk-application"
-  :defsystem-depends-on ("nasdf")
-  :class :nasdf-system
-  :depends-on (nyxt/gi-gtk)
   :build-operation "program-op"
   :build-pathname "nyxt"
   :entry-point "nyxt:entry-point")

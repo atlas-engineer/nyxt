@@ -120,7 +120,7 @@ comfortable with Emacs.  Add the snippet below to Emacs' init file.
 Start the REPL by issuing =M-- M-x sly RET nyxt RET= and evaluate:
 
 #+begin_src lisp
-(asdf:load-system :nyxt/gi-gtk)
+(asdf:load-system :nyxt/gtk)
 (nyxt:start)
 #+end_src
 
@@ -138,7 +138,7 @@ It is recommended to restart the Lisp image before and after running the tests
 since some of them are stateful:
 
 #+begin_src lisp
-(asdf:test-system :nyxt/gi-gtk)
+(asdf:test-system :nyxt/gtk)
 #+end_src
 
 * Installation
