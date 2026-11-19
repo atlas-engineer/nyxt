@@ -64,22 +64,28 @@ already record it. Writes inside BODY do not update on their own."
   (let ((element-var (gensym "ELEMENT"))
         (pending-var (gensym "PENDING"))
         (item-var (gensym "ITEM")))
-    `(let ((,element-var ,element)
-           (*defer-update* t)
-           (*pending-updates* '()))
-       (unwind-protect
-            (progn ,@body)
-         (let ((,pending-var (nreverse *pending-updates*))
-               (*defer-update* nil)
-               (*pending-updates* nil))
-           (dolist (,item-var ,pending-var)
-             (when (slot-boundp ,item-var 'buffer)
-               (update ,item-var)))
-           (when (and ,element-var
-                      (slot-boundp ,element-var 'buffer)
-                      (not (member ,element-var ,pending-var)))
-             (update ,element-var)))))))
+    `(let ((,element-var ,element))
+       (if *defer-update*
+           (multiple-value-prog1
+               (progn ,@body)
+             (when ,element-var
+               (queue-update ,element-var)))
+           (let ((*defer-update* t)
+                 (*pending-updates* '()))
+             (unwind-protect
+                  (progn ,@body)
+               (let ((,pending-var (nreverse *pending-updates*))
+                     (*defer-update* nil)
+                     (*pending-updates* nil))
+                 (dolist (,item-var ,pending-var)
+                   (when (slot-boundp ,item-var 'buffer)
+                     (update ,item-var)))
+                 (when (and ,element-var
+                            (slot-boundp ,element-var 'buffer)
+                            (not (member ,element-var ,pending-var)))
+                   (update ,element-var)))))))))
 
+(export-always 'display-text)
 (defun display-text (value)
   "Return VALUE as text. Nil is the empty string."
   (cond
@@ -205,9 +211,10 @@ The body is `children', then `raw', then `text'."))
   "Connect ELEMENT's child elements to its buffer."
   (when (slot-boundp element 'buffer)
     (let ((buffer (buffer element)))
-      (dolist (child (children element))
-        (when (typep child 'ui-element)
-          (connect child buffer))))))
+      (each-child (children element)
+                  (lambda (child)
+                    (when (typep child 'ui-element)
+                      (connect child buffer)))))))
 
 (defmethod connect :after ((button button) buffer)
   (declare (ignorable buffer))
@@ -460,19 +467,23 @@ An item already drawn is kept. A connected element redraws."
                :documentation "The percentage the progress bar is
 filled up, use a number between 0 and 100.")))
 
-(defmethod to-html ((progress-bar progress-bar))
+(export-always 'valid-percentage)
+(defun valid-percentage (progress-bar)
+  "Return PROGRESS-BAR's clamped percentage in [0, 100], or 0."
   (let ((percentage (percentage progress-bar)))
-    (spinneret:with-html
-      (:div :class "progress-bar-base"
-            (:div :class "progress-bar-fill"
-                  :id (id progress-bar)
-                  :style (format nil "width: ~,1f%;"
-                                 (if (and (realp percentage)
-                                          (<= 0 percentage 100))
-                                     percentage
-                                     0))
-                  ;; empty string to force markup to make closing :div tag
-                  "")))))
+    (if (and (realp percentage) (<= 0 percentage 100))
+        percentage
+        0)))
+
+(defmethod to-html ((progress-bar progress-bar))
+  (spinneret:with-html
+    (:div :class "progress-bar-base"
+          (:div :class "progress-bar-fill"
+                :id (id progress-bar)
+                :style (format nil "width: ~,1f%;"
+                               (valid-percentage progress-bar))
+                ;; empty string to force markup to make closing :div tag
+                ""))))
 
 (defmethod (setf percentage) :after (percentage (progress-bar progress-bar))
   (declare (ignorable percentage))

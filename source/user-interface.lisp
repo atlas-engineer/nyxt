@@ -9,22 +9,25 @@
   (ffi-buffer-evaluate-javascript-async
    (user-interface:buffer paragraph)
    (ps:ps
-     (setf (ps:chain document
-                     (get-element-by-id (ps:lisp (user-interface:id paragraph)))
-                     text-content)
-           (ps:lisp (user-interface:text paragraph))))))
+     (let ((node (ps:chain document
+                           (get-element-by-id
+                            (ps:lisp (user-interface:id paragraph))))))
+       (when node
+         (setf (ps:@ node text-content)
+               (ps:lisp (user-interface:display-text
+                         (user-interface:text paragraph)))))))))
 
 (defmethod user-interface:update ((progress-bar user-interface:progress-bar))
   (ffi-buffer-evaluate-javascript-async
    (user-interface:buffer progress-bar)
    (ps:ps
-     (setf (ps:chain
-            document
-            (get-element-by-id (ps:lisp (user-interface:id progress-bar)))
-            style
-            width)
-           (ps:lisp (format nil "~,1f%"
-                            (user-interface:percentage progress-bar)))))))
+     (let ((node (ps:chain document
+                           (get-element-by-id
+                            (ps:lisp (user-interface:id progress-bar))))))
+       (when node
+         (setf (ps:chain node style width)
+               (ps:lisp (format nil "~,1f%"
+                                (user-interface:valid-percentage progress-bar)))))))))
 
 (defun replace-ui-element (element)
   "Replace ELEMENT's DOM node with its current HTML."
@@ -51,8 +54,10 @@
    (ps:ps
      (let ((row (ps:chain document
                           (query-selector
-                           (ps:lisp (format nil "[data-id=\"~a\"]"
-                                            (user-interface:id row)))))))
+                           (+ "[data-id=\""
+                              (ps:chain -c-s-s
+                                        (escape (ps:lisp (user-interface:id row))))
+                              "\"]")))))
        (when row
          (setf (ps:@ row |outerHTML|)
                (ps:lisp (spinneret:with-html-string
