@@ -218,10 +218,26 @@ Helper bundles are named after the nyxt executable."
           (setf (cef:locales-dir-path interface) locales)))))
   nil)
 
+(-> parse-srgb-color (string) (or null cl-colors-ng:rgb))
+(defun parse-srgb-color (color)
+  "Parse a CSS `color(srgb R G B ...)' string into an RGB color, or NIL."
+  (let ((trimmed (str:trim color)))
+    (when (and (str:starts-with-p "color(srgb " trimmed :ignore-case t)
+               (str:ends-with-p ")" trimmed))
+      (let* ((body (subseq trimmed (length "color(srgb ") (1- (length trimmed))))
+             (tokens (sera:tokens (first (str:split "/" body)))))
+        (when (= (length tokens) 3)
+          (let ((channels (mapcar #'uiop:safe-read-from-string tokens)))
+            (when (every #'realp channels)
+              (cl-colors-ng:rgb (alex:clamp (float (first channels) 1.0) 0.0 1.0)
+                                (alex:clamp (float (second channels) 1.0) 0.0 1.0)
+                                (alex:clamp (float (third channels) 1.0) 0.0 1.0)))))))))
+
 (-> css-color-argb (string) (unsigned-byte 32))
 (defun css-color-argb (color)
   "Return COLOR as an opaque ARGB integer, or 0 when COLOR cannot be read."
-  (let ((rgb (ignore-errors (cl-colors-ng:as-rgb color))))
+  (let ((rgb (or (ignore-errors (cl-colors-ng:as-rgb color))
+                 (parse-srgb-color color))))
     (if rgb
         (logior #xff000000
                 (ash (round (* 255 (cl-colors-ng:rgb-red rgb))) 16)
