@@ -68,7 +68,7 @@ cl-qrencode-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a2
 cl-tld, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-tld/cl-tld.asd
 cl-unicode, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-unicode/cl-unicode.asd
 cl-utilities, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-utilities/cl-utilities.asd
-cl-webkit2, git+https://github.com/atlas-engineer/cl-webkit@a3ff0e2505dc3a2eeec39625129afb6c15f5c033#ref=a3ff0e2505dc3a2eeec39625129afb6c15f5c033, cl-webkit-a3ff0e2/webkit2/cl-webkit2.asd
+cl-webkit2, git+https://github.com/atlas-engineer/cl-webkit@81621c88d5a061c760b06b941011b71308d8ff32#ref=81621c88d5a061c760b06b941011b71308d8ff32, cl-webkit-81621c8/webkit2/cl-webkit2.asd
 cl_plus_ssl, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.asd
 cl_plus_ssl.test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.test.asd
 closer-mop, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/closer-mop/closer-mop.asd
