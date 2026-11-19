@@ -5,6 +5,5 @@
 
 (define-test toggle-message-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/message:message-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/message:message-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/message:message-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/message:message-mode buffer))))

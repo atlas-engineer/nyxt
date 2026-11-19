@@ -24,14 +24,13 @@ Only used to mandate whether the mode needs a toggler command:
     (if (alex:ensure-car (slot-value class 'toggler-command-p))
         (sera:lret ((command (make-command
                               name
-                              `(lambda (&rest args
-                                        &key (buffer (or (current-prompt-buffer) (current-buffer)))
-                                          (activate t activate-supplied-p)
+                              `(lambda (buffer &rest args
+                                        &key (activate t activate-supplied-p)
                                         &allow-other-keys)
                                  ,(let ((*print-case* :downcase))
                                     (format nil "Toggle `~a'." name))
-                                 (declare (ignorable buffer activate activate-supplied-p))
-                                 (apply #'toggle-mode ',name args))
+                                 (declare (ignorable activate activate-supplied-p))
+                                 (apply #'toggle-mode ',name buffer args))
                               :global)))
           (setf (fdefinition name) command))
         (delete-command name))))
@@ -173,6 +172,7 @@ See also `enable'."))
 
 (defmethod disable :after ((mode mode) &key &allow-other-keys)
   (setf (enabled-p mode) nil)
+  (remove-setf-handlers mode)
   (hooks:run-hook (disable-hook mode) mode)
   (let ((buffer (buffer mode)))
     (hooks:run-hook (disable-mode-hook (buffer mode)) mode)
@@ -292,11 +292,11 @@ turned into <a> links to their respective description page."
         (ppcre:regex-replace-all "`[^'\\s]+'" string #'resolve-regex)
         "")))
 
-(-> find-submode (sym:mode-symbol &optional buffer) (maybe mode))
-(export-always 'find-submode)
-(defun find-submode (mode-symbol &optional (buffer (current-buffer)))
-  "Return the first submode instance of MODE-SYMBOL in BUFFER.
-As a second value, return all matching submode instances.
+(-> find-mode (buffer sym:mode-symbol) (maybe mode))
+(export-always 'find-mode)
+(defun find-mode (buffer mode-symbol)
+  "Return the first enabled mode instance of MODE-SYMBOL in BUFFER.
+As a second value, return all matching mode instances.
 Return nil if mode is not found."
   (when (modable-buffer-p buffer)
     (if-let ((class (mode-class mode-symbol)))
@@ -312,18 +312,6 @@ Return nil if mode is not found."
       ;; CCL catches the error at compile time but not all implementations do,
       ;; hence the redundant error report here.
       (error "Mode ~a does not exist" mode-symbol))))
-
-(-> current-mode ((or keyword string) &optional buffer) (maybe mode))
-(export-always 'current-mode)
-(defun current-mode (mode-designator &optional (buffer (current-buffer)))
-  "Return mode instance of MODE-DESIGNATOR in BUFFER.
-Return NIL if none.
-The \"-mode\" suffix is automatically appended to MODE-KEYWORD if missing.
-This is convenience function for interactive use.
-For production code, see `find-submode' instead."
-  (let ((mode-designator (sera:ensure-suffix (string mode-designator) "-MODE")))
-    (find-submode (resolve-user-symbol mode-designator :mode)
-                  buffer)))
 
 (defun all-mode-symbols ()
   "Return the list of mode symbols."
@@ -373,11 +361,13 @@ For production code, see `find-submode' instead."
    (buffers '())
    (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
-                           (let ((common-modes
-                                   (reduce #'intersection
-                                           (mapcar (lambda (b)
-                                                     (mapcar #'name (enabled-modes b)))
-                                                   (uiop:ensure-list (buffers source))))))
+                           (let* ((buffers (uiop:ensure-list (buffers source)))
+                                  (common-modes
+                                    (when buffers
+                                      (reduce #'intersection
+                                              (mapcar (lambda (b)
+                                                        (mapcar #'name (enabled-modes b)))
+                                                      buffers)))))
                              (set-difference (all-mode-symbols) common-modes)))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
@@ -409,9 +399,9 @@ For production code, see `find-submode' instead."
   (:documentation "Enable MODES in BUFFERS.
 ARGS are the keyword arguments for `make-instance'/`enable' on MODES."))
 
-(define-command enable-modes (&key
+(define-command enable-modes (buffer &key
                               (modes nil modes-supplied-p)
-                              (buffers (current-buffer) buffers-supplied-p))
+                              (buffers buffer buffers-supplied-p))
   "Enable MODES for BUFFERS prompting for either or both.
 MODES should be a list of mode symbols or a mode symbol.
 BUFFERS and MODES are automatically coerced into a list.
@@ -426,6 +416,7 @@ If it's a single buffer, return it directly (not as a list)."
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
+                                                 :buffer buffer
                                                  :enable-marks-p t
                                                  :actions-on-return '())))))
          (modes (or modes
@@ -455,8 +446,8 @@ If it's a single buffer, return it directly (not as a list)."
               buffers)))
   (:documentation "Disable MODES in BUFFERS."))
 
-(define-command disable-modes (&key (modes nil modes-supplied-p)
-                               (buffers (current-buffer) buffers-supplied-p))
+(define-command disable-modes (buffer &key (modes nil modes-supplied-p)
+                               (buffers buffer buffers-supplied-p))
   "Disable MODES for BUFFERS.
 MODES should be a list of mode symbols.
 BUFFERS and MODES are automatically coerced into a list.
@@ -468,6 +459,7 @@ If it's a single buffer, return it directly (not as a list)."
                         (prompt
                          :prompt "Enable mode(s) for buffer(s)"
                          :sources (make-instance 'buffer-source
+                                                 :buffer buffer
                                                  :enable-marks-p t
                                                  :actions-on-return '())))))
          (modes (or modes
@@ -479,7 +471,7 @@ If it's a single buffer, return it directly (not as a list)."
     (disable-modes* modes buffers))
   buffers)
 
-(define-command toggle-modes (&key (buffer (current-buffer)))
+(define-command toggle-modes (buffer)
   "Enable marked modes, disable unmarked modes for BUFFER."
   (let* ((modes-to-enable
            (prompt
@@ -493,16 +485,11 @@ If it's a single buffer, return it directly (not as a list)."
     (enable-modes* modes-to-enable buffer))
   buffer)
 
-;; TODO: Factor `toggle-mode' and `toggle-modes' somehow?
-;; TODO: Shall we have a function that returns the focused buffer?
-;; `focused-buffer'?  `current-buffer*'?  Rename `current-buffer' to
-;; `current-view-buffer' and add `current-buffer' for this task?
-(defun toggle-mode (mode-sym
+(defun toggle-mode (mode-sym buffer
                     &rest args
-                    &key (buffer (or (current-prompt-buffer) (current-buffer)))
-                      (activate t activate-supplied-p)
+                    &key (activate t activate-supplied-p)
                     &allow-other-keys)
-  "Enable MODE-SYM if not already enabled, disable it otherwise."
+  "Enable MODE-SYM in BUFFER if not already enabled, disable it otherwise."
   (when (modable-buffer-p buffer)
     (let ((existing-instance (find mode-sym (modes buffer) :key #'sera:class-name-of)))
       (unless activate-supplied-p
@@ -525,7 +512,7 @@ If it's a single buffer, return it directly (not as a list)."
 (defun find-buffer (mode-symbol)
   "Return first buffer matching MODE-SYMBOL."
   (find-if (lambda (b)
-             (find-submode mode-symbol b))
+             (find-mode b mode-symbol))
            (buffer-list)))
 
 (export-always 'keymap)

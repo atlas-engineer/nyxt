@@ -29,67 +29,71 @@ For a list of more languages available, see `spell-check-list-languages'.")
 (define-configuration document-buffer
   ((default-modes (cons 'spell-check-mode %slot-value%))))
 
-(defmacro with-spell-check ((variable) &body body)
-  `(enchant:with-dict (,variable (spell-check-language
-                                  (find-submode 'spell-check-mode)))
-     ,@body))
+(defmacro with-spell-check ((variable buffer) &body body)
+  (alex:with-gensyms (mode)
+    `(let ((,mode (find-mode ,buffer 'spell-check-mode)))
+       (enchant:with-dict (,variable (if ,mode
+                                         (spell-check-language ,mode)
+                                         "en_US"))
+         ,@body))))
 
-(defun spell-dict-check-p (word)
+(defun spell-dict-check-p (buffer word)
   "Spell check `word' and return if correct or not."
-  (with-spell-check (lang)
+  (with-spell-check (lang buffer)
     (enchant:dict-check lang word)))
 
-(define-command spell-check-word (&key (word nil word-supplied-p))
+(define-command spell-check-word (buffer &key (word nil word-supplied-p))
   "Spell check a word."
   (let ((word (or (and word-supplied-p word)
                   (prompt1
                    :prompt "Spell check word"
                    :sources 'prompter:raw-source))))
-    (if (spell-dict-check-p word)
+    (if (spell-dict-check-p buffer word)
         (echo "~s is spelled correctly." word)
         (echo "~s is NOT correctly spelled." word))))
 
-(define-command spell-check-highlighted-word ()
+(define-command spell-check-highlighted-word (buffer)
   "Spell check a highlighted word. If a word is incorrectly spelled,
 pull up a prompt of suggestions."
-  (let ((word (ffi-buffer-copy (current-buffer))))
+  (let ((word (ffi-buffer-copy buffer)))
     (if (str:blankp word)
         (echo "No word highlighted to spell check!")
-        (spell-check-prompt word))))
+        (spell-check-prompt buffer word))))
 
-(defun spell-check-prompt (word)
+(defun spell-check-prompt (buffer word)
   "Spell check `word', if incorrectly spelled, prompt the user with
 suggestions."
-  (if (spell-dict-check-p word)
+  (if (spell-dict-check-p buffer word)
       (echo "Word ~s spelled correctly." word)
       (progn
         (echo "Word ~s spelled incorrectly." word)
-        (spell-check-suggest-word :word word))))
+        (spell-check-suggest-word buffer :word word))))
 
-(define-command spell-check-word-at-cursor ()
+(define-command spell-check-word-at-cursor (buffer)
   "Spell check the word at the cursor."
-  (nyxt/mode/input-edit:with-input-area (contents cursor-pos)
+  (nyxt/mode/input-edit:with-input-area (buffer contents cursor-pos)
     (nyxt/mode/input-edit:with-text-buffer (text-buffer cursor contents cursor-pos)
-      (spell-check-prompt (text-buffer::word-at-cursor cursor)))))
+      (spell-check-prompt buffer (text-buffer::word-at-cursor cursor)))))
 
-(define-command spell-check-suggest-word (&key word)
+(define-command spell-check-suggest-word (buffer &key word)
   "Suggest a spelling for a given word."
   (let ((selected-word (prompt1
                         :prompt "Suggest spelling (3+ characters)"
                         :input word
-                        :sources 'enchant-source)))
+                        :sources (make-instance 'enchant-source :buffer buffer))))
     (copy-to-clipboard selected-word)
     (echo "Word saved to clipboard.")))
 
 (define-class enchant-source (prompter:source)
   ((case-sensitive-p nil)
+   (buffer nil :type (maybe buffer))
    (prompter:name "Enchant")
    (prompter:filter nil)
    (prompter:filter-preprocessor
     (lambda (preprocessed-suggestions source input)
-      (declare (ignore preprocessed-suggestions source))
+      (declare (ignore preprocessed-suggestions))
       (when (> (length input) 2)
-        (with-spell-check (lang)
+        (with-spell-check (lang (buffer source))
           (enchant:dict-suggest lang input)))))))
 
 (define-command spell-check-list-languages ()
@@ -98,9 +102,9 @@ suggestions."
         (mapcar #'first (enchant:with-broker bkr
                           (enchant:broker-list-dicts bkr)))))
 
-(defun spell-check-and-suggest (word)
+(defun spell-check-and-suggest (buffer word)
   "Only suggest if `word' is incorrect."
-  (with-spell-check (lang)
+  (with-spell-check (lang buffer)
     (let ((result (enchant:dict-check lang word)))
       (or result
           (enchant:dict-suggest lang word)))))

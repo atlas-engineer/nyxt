@@ -72,7 +72,7 @@ Accepts the path to the acted-on document and `process-mode' instance.")
              (action mode)
              (not (thread-alive-p mode)))
     (setf (path-url mode)
-          (or (path-url mode) (url (current-buffer))))
+          (or (path-url mode) (url (buffer mode))))
     (setf (thread mode)
           (run-thread "process"
             (loop with cond = (firing-condition mode)
@@ -86,9 +86,8 @@ Accepts the path to the acted-on document and `process-mode' instance.")
                          (return))
                   else
                     when condition-value
-                      do (with-current-buffer (buffer mode)
-                           (sera:synchronized (mode)
-                             (funcall* (action mode) (path-url mode) mode))))))))
+                      do (sera:synchronized (mode)
+                           (funcall* (action mode) (path-url mode) mode)))))))
 
 (defmethod call-cleanup ((mode process-mode) &key)
   (funcall* (cleanup mode) (path-url mode) mode))

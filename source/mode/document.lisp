@@ -117,7 +117,7 @@ Important pieces of functionality are:
   ((default-modes (cons 'document-mode %slot-value%))))
 
 (export-always 'active-element-tag)
-(defun active-element-tag (&optional (buffer (current-buffer)))
+(defun active-element-tag (buffer)
   "The name of the active element in BUFFER."
   (ps-eval :buffer buffer (ps:@ (nyxt/ps:active-element document) tag-name)))
 
@@ -128,57 +128,64 @@ Important pieces of functionality are:
   (or (string= tag "INPUT")
       (string= tag "TEXTAREA")))
 
-(define-command paste (&optional (buffer (current-buffer)))
+(define-command paste (buffer)
   "Paste from clipboard into active element."
   (ffi-buffer-paste buffer))
 
 (define-class ring-source (prompter:source)
   ((prompter:name "Clipboard ring")
+   (buffer :initarg :buffer :accessor buffer :initform nil)
    (ring :initarg :ring :accessor ring :initform nil)
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:constructor
     (lambda (source)
-      (containers:container->list (ring source))))
-   (prompter:actions-on-return (lambda-command paste* (ring-items)
-                                 (ffi-buffer-paste (current-buffer) (first ring-items)))))
+      (containers:container->list (ring source)))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source for previous clipboard contents.
 Only includes the strings that were pasted/copied inside Nyxt."))
 
-(define-command paste-from-clipboard-ring ()
-  "Show `*browser*' clipboard ring and paste selected entry."
+(define-command paste-from-clipboard-ring (buffer)
+  "Show `*browser*' clipboard ring and paste selected entry into BUFFER."
   (ring-insert-clipboard (clipboard-ring *browser*))
   (prompt :prompt "Paste from ring"
-          :sources (make-instance 'ring-source :ring (clipboard-ring *browser*))))
+          :sources (make-instance
+                    'ring-source
+                    :buffer buffer
+                    :ring (clipboard-ring *browser*)
+                    :actions-on-return
+                    (lambda-command paste* (ring-items)
+                      (ffi-buffer-paste buffer (first ring-items))))))
 
-(define-command copy (&optional (buffer (current-buffer)))
+(define-command copy (buffer)
   "Copy selected text to clipboard."
   (ffi-buffer-copy buffer))
 
-(define-command cut (&optional (buffer (current-buffer)))
+(define-command cut (buffer)
   "Cut the selected text in BUFFER."
   (ffi-buffer-cut buffer))
 
-(define-command undo (&optional (buffer (current-buffer)))
+(define-command undo (buffer)
   "Undo the last editing action."
   (ffi-buffer-undo buffer))
 
-(define-command redo (&optional (buffer (current-buffer)))
+(define-command redo (buffer)
   "Redo the last editing action."
   (ffi-buffer-redo buffer))
 
-(define-command select-all (&optional (buffer (current-buffer)))
+(define-command select-all (buffer)
   "Select all the text in the text field."
   (ffi-buffer-select-all buffer))
 
-(define-internal-page show-url-qrcode (&key url)
+(define-internal-page show-url-qrcode (&key (url ""))
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
 Warning: URL is a string."
-  (let* ((url (quri:render-uri (url url)))
-         (stream (flex:make-in-memory-output-stream)))
-    (cl-qrencode:encode-png-stream url stream)
+  (let* ((url (quri:render-uri (url (or url ""))))
+         (stream (when (plusp (length url))
+                   (flex:make-in-memory-output-stream))))
+    (when stream
+      (cl-qrencode:encode-png-stream url stream))
     (spinneret:with-html-string
       (:nstyle
         '(h1
@@ -197,13 +204,16 @@ Warning: URL is a string."
           :border-radius "7px"
           :image-rendering "pixelated"))
       (:h1 "QR code")
-      (:p :class "url" url)
-      (:img :src (str:concat "data:image/png;base64,"
-                             (cl-base64:usb8-array-to-base64-string
-                              (flex:get-output-stream-sequence stream)))
-            :alt url))))
+      (if stream
+          (progn
+            (:p :class "url" url)
+            (:img :src (str:concat "data:image/png;base64,"
+                                   (cl-base64:usb8-array-to-base64-string
+                                    (flex:get-output-stream-sequence stream)))
+                  :alt url))
+          (:p :class "url" "No URL to encode.")))))
 
-(define-command-global show-url-qrcode (&key (buffer (current-buffer)))
+(define-command-global show-url-qrcode (buffer)
   "Display the QR code containing the URL of BUFFER in a new page."
   (buffer-load-internal-page-focus 'show-url-qrcode :url (quri:render-uri (url buffer))))
 
@@ -243,85 +253,87 @@ The page URL is the text after the scheme colon, so its query is preserved."
     (lambda (url)
       (values (get-url-source (source-url url)) "text/plain")))
 
-(define-command-global view-source (&key (url (url (current-buffer))))
-  "View source of the URL (by default current page) in a separate buffer."
+(define-command-global view-source (buffer &key (url (url buffer)))
+  "View source of the URL (by default BUFFER's page) in a separate buffer."
   (make-buffer-focus :url (quri:make-uri :scheme "nyxt-source"
                                          :path (render-url (url url)))))
 
-(define-command scroll-to-top (&key (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll to the top of the current page."
-  (ps-eval
+(define-command scroll-to-top (buffer &key (smooth-p (smooth-scrolling buffer)))
+  "Scroll to the top of BUFFER."
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create top (- (ps:chain document document-element scroll-height))
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-to-bottom (&key (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll to the bottom of the current page."
-  (ps-eval
+(define-command scroll-to-bottom (buffer &key (smooth-p (smooth-scrolling buffer)))
+  "Scroll to the bottom of BUFFER."
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create top (ps:chain document document-element scroll-height)
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-down (&key (y-pixels (scroll-distance (current-buffer)))
-                             (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll down the current page.
+(define-command scroll-down (buffer &key (y-pixels (scroll-distance buffer))
+                             (smooth-p (smooth-scrolling buffer)))
+  "Scroll down BUFFER.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create top (ps:lisp y-pixels)
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-up (&key (y-pixels (scroll-distance (current-buffer)))
-                           (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll up the current page.
+(define-command scroll-up (buffer &key (y-pixels (scroll-distance buffer))
+                           (smooth-p (smooth-scrolling buffer)))
+  "Scroll up BUFFER.
 The amount scrolled is determined by the buffer's `scroll-distance'."
-  (ps-eval
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create top (ps:lisp (- y-pixels))
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-left (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
-                             (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll left the current page.
+(define-command scroll-left (buffer &key (x-pixels (horizontal-scroll-distance buffer))
+                             (smooth-p (smooth-scrolling buffer)))
+  "Scroll left BUFFER.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create left (ps:lisp (- x-pixels))
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-right (&key (x-pixels (horizontal-scroll-distance (current-buffer)))
-                              (smooth-p (smooth-scrolling (current-buffer))))
-  "Scroll right the current page.
+(define-command scroll-right (buffer &key (x-pixels (horizontal-scroll-distance buffer))
+                              (smooth-p (smooth-scrolling buffer)))
+  "Scroll right BUFFER.
 The amount scrolled is determined by the buffer's `horizontal-scroll-distance'."
-  (ps-eval
+  (ps-eval :buffer buffer
     (ps:chain window
               (scroll-by (ps:create left (ps:lisp x-pixels)
                                     behavior (ps:lisp (if smooth-p "smooth" "instant")))))))
 
-(define-command scroll-page-down ()
+(define-command scroll-page-down (buffer)
   "Scroll down by one page height."
-  (ps-eval (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                          (ps:@ window inner-height))))))
+  (ps-eval :buffer buffer
+    (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio buffer))
+                                     (ps:@ window inner-height))))))
 
-(define-command scroll-page-up ()
+(define-command scroll-page-up (buffer)
   "Scroll up by one page height."
-  (ps-eval (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                             (ps:@ window inner-height)))))))
+  (ps-eval :buffer buffer
+    (ps:chain window (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio buffer))
+                                        (ps:@ window inner-height)))))))
 
-(define-command zoom-page (&key (buffer (current-buffer)))
-  "Zoom in the current page."
+(define-command zoom-page (buffer)
+  "Zoom in BUFFER."
   (setf (ffi-buffer-zoom-ratio buffer)
         (+ (ffi-buffer-zoom-ratio buffer)
            (zoom-ratio-step buffer))))
 
-(define-command unzoom-page (&key (buffer (current-buffer)))
-  "Zoom out the current page."
+(define-command unzoom-page (buffer)
+  "Zoom out BUFFER."
   (setf (ffi-buffer-zoom-ratio buffer)
         (- (ffi-buffer-zoom-ratio buffer)
            (zoom-ratio-step buffer))))
 
-(define-command reset-page-zoom (&key (buffer (current-buffer)))
-  "Reset the current page zoom to 0."
+(define-command reset-page-zoom (buffer)
+  "Reset BUFFER zoom to 0."
   (setf (ffi-buffer-zoom-ratio buffer) 0.0))
 
 (define-class heading ()
@@ -391,25 +403,30 @@ heading sinks."
          collect (heading-section-text heading (first rest)))
    :limit 5))
 
-(defun get-headings (&key (buffer (current-buffer)))
-  (let ((elements (coerce (clss:ordered-select "h1, h2, h3, h4, h5, h6"
-                                               (document-model buffer))
-                          'list)))
-    (ps-labels :buffer buffer
-      ((heading-scroll-position
-        :buffer buffer (element)
-        (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (nyxt/dom:get-nyxt-id element)))
-                  (get-bounding-client-rect) y)))
-      (loop for element in elements
-            for keywords in (heading-keyword-lists elements)
-            collect (make-instance 'heading
-                                   :inner-text (plump:text element)
-                                   :element element
-                                   :buffer buffer
-                                   :keywords keywords
-                                   :scroll-position (heading-scroll-position element))))))
+(defun get-headings (&key buffer)
+  (when-let ((dom (and buffer (document-model buffer))))
+    (let ((elements (coerce (clss:ordered-select "h1, h2, h3, h4, h5, h6" dom)
+                            'list)))
+      (ps-labels :buffer buffer
+        ((heading-scroll-position
+          :buffer buffer (element)
+          (let ((id (ps:lisp (nyxt/dom:get-nyxt-id element))))
+            (if id
+                (let ((node (nyxt/ps:rqs-nyxt-id document id)))
+                  (if node
+                      (ps:@ (ps:chain node (get-bounding-client-rect)) y)
+                      0))
+                0))))
+        (loop for element in elements
+              for keywords in (heading-keyword-lists elements)
+              collect (make-instance 'heading
+                                     :inner-text (plump:text element)
+                                     :element element
+                                     :buffer buffer
+                                     :keywords keywords
+                                     :scroll-position (heading-scroll-position element)))))))
 
-(defun current-heading (&optional (buffer (current-buffer)))
+(defun current-heading (buffer)
   (when-let* ((scroll-position (document-scroll-position buffer))
               (vertical-scroll-position (second scroll-position))
               (headings (get-headings :buffer buffer)))
@@ -420,7 +437,7 @@ heading sinks."
 
 (defun scroll-page-to-heading (heading)
   (set-current-buffer (buffer heading) :focus nil)
-  (nyxt/dom:scroll-to-element (element heading)))
+  (nyxt/dom:scroll-to-element (buffer heading) (element heading)))
 
 (define-class heading-source (prompter:source)
   ((prompter:name "Headings")
@@ -450,16 +467,17 @@ heading sinks."
                       (title heading)))
     ("Keywords" ,(format nil "~:{~a~^ ~}" (keywords heading)))))
 
-(define-command jump-to-heading (&key (buffer (current-buffer)))
+(define-command jump-to-heading (buffer)
   "Jump to a particular heading, of type h1, h2, h3, h4, h5, or h6."
   (prompt :prompt "Jump to heading"
           :sources (make-instance 'heading-source :buffer buffer)))
 
-(define-command jump-to-heading-buffers ()
+(define-command jump-to-heading-buffers (buffer)
   "Jump to a heading (H1 to H6) among a set of buffers."
   (let ((buffers (prompt
                   :prompt "Select headings from buffers"
                   :sources (make-instance 'buffer-source
+                                          :buffer buffer
                                           :enable-marks-p t
                                           :actions-on-return #'identity))))
     (prompt
@@ -471,9 +489,9 @@ heading sinks."
                              :buffer buffer)))))
 
 (export-always 'print-buffer)
-(define-command print-buffer ()
-  "Print the current buffer."
-  (ps-eval (print)))
+(define-command print-buffer (buffer)
+  "Print BUFFER."
+  (ps-eval :buffer buffer (print)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -489,8 +507,8 @@ heading sinks."
   ((alt "" :documentation "Alternative text for the image.")
    (url "")))
 
-(defun frame-element-select ()
-  "Install a drag box. Drag draws it, drags inside move it, and edge drags resize it."
+(defun frame-element-select (buffer)
+  "Install a drag box in BUFFER. Drag draws it, drags inside move it, and edge drags resize it."
   (let ((overlay-style (theme:themed-css (theme *browser*)
                          `("#nyxt-overlay"
                            :position "fixed"
@@ -539,7 +557,7 @@ heading sinks."
                           :box-shadow "0 0 0 0.5px rgba(0, 0, 0, 0.16)"
                           :pointer-events "none"
                           :z-index ,(expt 2 30)))))
-    (ps-labels :async t
+    (ps-labels :buffer buffer :async t
       ((add-overlay
         (overlay-style selection-rectangle-style handle-style)
         "Add a drag box to the page."
@@ -770,9 +788,9 @@ heading sinks."
         (add-listeners)))
       (add-overlay overlay-style selection-rectangle-style handle-style))))
 
-(defun frame-element-get-selection ()
-  "Get the links inside the drag box."
-  (ps-labels
+(defun frame-element-get-selection (buffer)
+  "Get the links inside the drag box in BUFFER."
+  (ps-labels :buffer buffer
     ((get-selection
       ()
       (ps:let ((frame (ps:@ window nyxt-frame-selection)))
@@ -816,7 +834,7 @@ heading sinks."
                                     :url (cdr (assoc :src element))
                                     :alt (cdr (assoc :alt element))))))))
 
-(define-parenscript frame-element-state ()
+(define-parenscript frame-element-state (buffer)
   "Return whether the drag box is ready and whether a drag is in progress."
   (ps:let ((frame (ps:@ window nyxt-frame-selection)))
     (when frame
@@ -824,9 +842,9 @@ heading sinks."
                  :ready (ps:@ frame ready)
                  :ended (ps:@ frame ended)))))
 
-(defun frame-element-clear ()
-  "Clear the selection frame created by the user."
-  (ps-eval
+(defun frame-element-clear (buffer)
+  "Clear the selection frame created by the user in BUFFER."
+  (ps-eval :buffer buffer
     (ps:let ((rectangle (nyxt/ps:qs document "#nyxt-rectangle-selection"))
              (overlay (nyxt/ps:qs document "#nyxt-overlay")))
       (when rectangle
@@ -837,8 +855,8 @@ heading sinks."
       (ps:chain handle (remove)))
     (setf (ps:@ window nyxt-frame-selection) nil)))
 
-(defun frame-source-selection ()
-  (remove-duplicates (mapcar #'url (frame-element-get-selection))
+(defun frame-source-selection (buffer)
+  (remove-duplicates (mapcar #'url (frame-element-get-selection buffer))
                      :test #'equal))
 
 (-> frame-prompt (prompter:source window) (maybe prompt-buffer))
@@ -889,21 +907,20 @@ heading sinks."
                  (return)))
               (t
                (handler-case
-                   (with-current-buffer buffer
-                     (let* ((state (frame-element-state))
-                            (ready (and state (cdr (assoc :ready state))))
-                            (ended (or (and state (cdr (assoc :ended state))) 0))
-                            (urls (when ready
-                                    (frame-source-selection))))
-                       (when (and ready (not (equal urls last-urls)))
-                         (setf last-urls urls)
-                         (replace-frame-suggestions source urls)
-                         (prompter:refresh prompt)
-                         (prompt-render-suggestions prompt))
-                       (unless (eql ended last-ended)
-                         (setf last-ended ended)
-                         (when (plusp ended)
-                           (activate-frame-prompt prompt)))))
+                   (let* ((state (frame-element-state buffer))
+                          (ready (and state (cdr (assoc :ready state))))
+                          (ended (or (and state (cdr (assoc :ended state))) 0))
+                          (urls (when ready
+                                  (frame-source-selection buffer))))
+                     (when (and ready (not (equal urls last-urls)))
+                       (setf last-urls urls)
+                       (replace-frame-suggestions source urls)
+                       (prompter:refresh prompt)
+                       (prompt-render-suggestions prompt))
+                     (unless (eql ended last-ended)
+                       (setf last-ended ended)
+                       (when (plusp ended)
+                         (activate-frame-prompt prompt))))
                  (error ()
                    nil))))))))))
 
@@ -921,8 +938,7 @@ heading sinks."
     (lambda (source)
       (let ((buffer (buffer source))
             (window (window (buffer source))))
-        (with-current-buffer buffer
-          (frame-element-select))
+        (frame-element-select buffer)
         (when window
           (watch-frame-selection source buffer window)))
       nil))
@@ -931,7 +947,7 @@ heading sinks."
       (declare (ignore prompter))
       (setf (slot-value source 'alive-p) nil)))))
 
-(define-command select-frame-new-buffer (&key (buffer (current-buffer)))
+(define-command select-frame-new-buffer (buffer)
   "Draw a box and open its links in new buffers. Drag to draw, move, or resize."
   (prompt :prompt "Drag a box around the links to open"
           :sources (make-instance
@@ -942,7 +958,6 @@ heading sinks."
                                          (mapcar (lambda (i) (make-buffer :url (quri:uri i)))
                                                  urls)))
           :after-destructor (lambda ()
-                              (with-current-buffer buffer
-                                (frame-element-clear)))))
+                              (frame-element-clear buffer))))
 
 (pushnew 'document-mode nyxt::%default-modes)

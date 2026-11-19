@@ -32,9 +32,9 @@ See also `vi-insert-mode'."
        "q" 'unfocus-current-element
        "v" 'nyxt/mode/visual:visual-mode)))))
 
-(define-command unfocus-current-element ()
+(define-command unfocus-current-element (buffer)
   "Unfocus the currently selected HTML element."
-  (ps-eval
+  (ps-eval :buffer buffer
     (let ((el (ps:chain document active-element)))
       (when el
         (ps:chain el (blur))))))
@@ -60,7 +60,7 @@ See `vi-normal-mode'."
 
 (defmethod enable ((mode vi-normal-mode) &key)
   (with-accessors ((buffer buffer)) mode
-    (let ((vi-insert (find-submode 'vi-insert-mode buffer)))
+    (let ((vi-insert (find-mode buffer 'vi-insert-mode)))
       (setf (nyxt/mode/keyscheme:previous-keyscheme mode)
             (if vi-insert
                 (nyxt/mode/keyscheme:previous-keyscheme vi-insert)
@@ -74,22 +74,19 @@ See `vi-normal-mode'."
 (defmethod disable ((mode vi-normal-mode) &key)
   (setf (forward-input-events-p (buffer mode)) t))
 
-(define-command switch-to-vi-normal-mode
-    (&optional (mode (find-submode 'vi-insert-mode
-                                   (or (current-prompt-buffer)
-                                       (current-buffer)))))
-  "Switch to the mode remembered to be the matching VI-normal one for this MODE.
+(define-command switch-to-vi-normal-mode (buffer)
+  "Switch BUFFER from `vi-insert-mode' to its matching `vi-normal-mode'.
 See also `vi-normal-mode' and `vi-insert-mode'."
-  (when mode
+  (when-let ((mode (find-mode buffer 'vi-insert-mode)))
     (enable-modes* (list (or (and (previous-vi-normal-mode mode)
                                   (sera:class-name-of
                                    (previous-vi-normal-mode mode)))
                              'vi-normal-mode))
-                   (buffer mode))))
+                   buffer)))
 
 (defmethod enable ((mode vi-insert-mode) &key)
   (with-accessors ((buffer buffer)) mode
-    (let ((vi-normal (find-submode 'vi-normal-mode buffer)))
+    (let ((vi-normal (find-mode buffer 'vi-normal-mode)))
       (setf (nyxt/mode/keyscheme:previous-keyscheme mode)
             (if vi-normal
                 (nyxt/mode/keyscheme:previous-keyscheme vi-normal)
@@ -104,13 +101,13 @@ See also `vi-normal-mode' and `vi-insert-mode'."
 
 (defun vi-insert-on-input-fields (buffer)
   (cond
-    ((j:and (find-submode 'vi-normal-mode buffer)
+    ((j:and (find-mode buffer 'vi-normal-mode)
             (ps-eval :buffer buffer
               (and (nyxt/ps:active-element document)
                    (nyxt/ps:element-editable-p
                     (nyxt/ps:active-element document)))))
      (enable-modes* 'vi-insert-mode buffer))
-    ((j:and (find-submode 'vi-insert-mode buffer)
+    ((j:and (find-mode buffer 'vi-insert-mode)
             (j:not (ps-eval :buffer buffer
                      (and (nyxt/ps:active-element document)
                           (nyxt/ps:element-editable-p
@@ -134,5 +131,5 @@ See also `vi-normal-mode' and `vi-insert-mode'."
   (when (equal "tab" (keymaps:key-value key))
     (vi-insert-on-input-fields (buffer mode))))
 
-(defmethod nyxt/dom:focus-select-element :after ((element plump:element))
-  (vi-insert-on-input-fields (current-buffer)))
+(defmethod nyxt/dom:focus-select-element :after ((buffer buffer) (element plump:element))
+  (vi-insert-on-input-fields buffer))

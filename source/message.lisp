@@ -137,7 +137,8 @@ LOGGER is the log4cl logger to user, for instance `log:warn'."
          (unless (str:emptyp ,expanded-text)
            (,logger "~a" ,expanded-text))
          ;; Allow empty strings to clear message buffer.
-         (print-message ,expanded-text)))))
+         (when-let ((window (current-window)))
+           (print-message (plump:encode-entities ,expanded-text) window))))))
 
 (export-always 'echo)
 (defun echo (&rest args)

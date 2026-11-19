@@ -509,20 +509,25 @@ SOURCES may contain source instances or source class names."
     (setf (slot-value prompt-buffer 'height) value)))
 
 (export-always 'current-source)
-(defun current-source (&optional (prompt-buffer (current-prompt-buffer)))
-  "Current PROMPT-BUFFER `prompter:source'.
-If PROMPT-BUFFER is not provided, use `current-prompt-buffer'."
+(defun current-source (prompt-buffer)
+  "Return the current `prompter:source' in PROMPT-BUFFER."
   (prompter:current-source prompt-buffer))
 
 (export-always 'current-suggestion-value)
-(defun current-suggestion-value
-    (&optional (prompt-buffer (current-prompt-buffer)))
+(defun current-suggestion-value (prompt-buffer)
   "Return selected PROMPT-BUFFER `prompter:suggestion' `prompter:value'.
 Return `prompter:source' as second value.
 To access the suggestion instead, see `prompter:%current-suggestion'."
   (multiple-value-bind (suggestion source)
       (prompter:%current-suggestion prompt-buffer)
     (values (when suggestion (prompter:value suggestion)) source)))
+
+(defun source-prompt-buffer (source)
+  "Return the active prompt buffer containing SOURCE, or nil."
+  (loop for window in (window-list)
+        thereis (find-if (lambda (prompt)
+                           (find source (prompter:sources prompt)))
+                         (active-prompt-buffers window))))
 
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
@@ -542,13 +547,16 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
   "Hide PROMPT-BUFFER and display the next active one, if any."
   (with-slots (window) prompt-buffer
-    (alex:deletef (active-prompt-buffers window) prompt-buffer)
-    ;; The channel values are irrelevant, so is the element order:
-    (lparallel.queue:try-pop-queue (prompt-buffer-ready-channel window) :timeout 0)
-    (ffi-buffer-delete prompt-buffer)
-    (if (active-prompt-buffers window)
-        (show-prompt-buffer (first (active-prompt-buffers window)))
-        (ffi-window-set-buffer window (active-buffer window) :focus t))))
+    (let ((was-current-p (prompt-current-p prompt-buffer)))
+      (alex:deletef (active-prompt-buffers window) prompt-buffer)
+      ;; The channel values are irrelevant, so is the element order:
+      (lparallel.queue:try-pop-queue (prompt-buffer-ready-channel window) :timeout 0)
+      (ffi-buffer-delete prompt-buffer)
+      (cond
+        ((not (active-prompt-buffers window))
+         (ffi-window-set-buffer window (buffer window) :focus t))
+        (was-current-p
+         (show-prompt-buffer (first (active-prompt-buffers window))))))))
 
 (-> suggestion-and-mark-count
     (prompt-buffer list list &key (:enable-marks-p boolean) (:loading-p boolean))
@@ -594,7 +602,7 @@ The window has one prompt view. Only this prompt draws into it."
 (-> prompt-modes-text (prompt-buffer) string)
 (defun prompt-modes-text (prompt-buffer)
   "Return the mode names PROMPT-BUFFER shows beside its input."
-  (let ((window (or (window prompt-buffer) (current-window))))
+  (let ((window (window prompt-buffer)))
     (if (and window (status-buffer window))
         (str:join " "
                   (mapcar (curry #'mode-status (status-buffer window))
@@ -885,6 +893,7 @@ already strings is left alone."
   (format nil "~a (~a)"
           description
           (binding-keys (sym:resolve-symbol command :command)
+                        :buffer prompt-buffer
                         :modes (enabled-modes prompt-buffer))))
 
 (-> prompt-command-button (prompt-buffer &key (:id string) (:label string)
@@ -901,7 +910,8 @@ LABEL is the tooltip. RAW is the button body, such as an icon."
                            (nyxt/ps:lisp-eval
                             (:title id
                              :buffer prompt-buffer)
-                            (funcall (sym:resolve-symbol command :command))))))
+                            (funcall (sym:resolve-symbol command :command)
+                                     prompt-buffer)))))
 
 (-> prompt-attributes-button (prompt-buffer prompter:source) t)
 (defun prompt-attributes-button (prompt-buffer source)
@@ -912,6 +922,7 @@ LABEL is the tooltip. RAW is the button body, such as an icon."
    :alt-text (format nil "Toggle attributes display (~a)"
                      (binding-keys
                       (sym:resolve-symbol 'toggle-attributes-display :command)
+                      :buffer prompt-buffer
                       :modes (enabled-modes prompt-buffer)))
    :raw "<span class=\"attribute-delta\">Δ</span>"
    :action (ps:ps
@@ -919,6 +930,7 @@ LABEL is the tooltip. RAW is the button body, such as an icon."
               (:title "toggle-attributes"
                :buffer prompt-buffer)
               (funcall (sym:resolve-symbol :toggle-attributes-display :command)
+                       prompt-buffer
                        :source source)))))
 
 (-> prompt-source-count (prompt-buffer prompter:source) t)
@@ -1038,7 +1050,8 @@ A source view already built is kept when what it shows has not changed."
                             (:title "quit-prompt-buffer"
                              :buffer prompt-buffer)
                             (funcall (sym:resolve-symbol
-                                      :quit-prompt-buffer :command))))))
+                                      :quit-prompt-buffer :command)
+                                     prompt-buffer)))))
 
 (-> prompt-document (prompt-buffer) string)
 (defun prompt-document (prompt-buffer)
@@ -1207,8 +1220,7 @@ leave the prompt blocked on `prompter:next-ready-p'."
           (setf (input-watcher-p prompt-buffer) nil))))))
 
 (export-always 'set-prompt-buffer-input)
-(defun set-prompt-buffer-input
-    (input &optional (prompt-buffer (current-prompt-buffer)))
+(defun set-prompt-buffer-input (input prompt-buffer)
   "Set HTML INPUT in PROMPT-BUFFER.
 See `update-prompt-input' to update the changes visually."
   ;; Synchronous so the following read-back sees this value. An async write

@@ -39,20 +39,19 @@ corresponds to scrolling up.")
    (nyxt/mode/repeat:repeat-action
     (lambda (mode)
       (unless (zerop (velocity mode))
-        (with-current-buffer (buffer mode)
-          (nyxt/mode/document:scroll-down :y-pixels (velocity mode))))))))
+        (nyxt/mode/document:scroll-down (buffer mode) :y-pixels (velocity mode)))))))
 
-(define-command velocity-incf (&key (cruise-control
-                                     (find-submode 'cruise-control-mode)))
+(define-command velocity-incf (buffer)
   "Increase the velocity."
-  (incf (velocity cruise-control)))
+  (when-let ((cruise-control (find-mode buffer 'cruise-control-mode)))
+    (incf (velocity cruise-control))))
 
-(define-command velocity-decf (&key (cruise-control
-                                     (find-submode 'cruise-control-mode)))
+(define-command velocity-decf (buffer)
   "Decrease the velocity."
-  (decf (velocity cruise-control)))
+  (when-let ((cruise-control (find-mode buffer 'cruise-control-mode)))
+    (decf (velocity cruise-control))))
 
-(define-command velocity-zero (&key (cruise-control
-                                     (find-submode 'cruise-control-mode)))
+(define-command velocity-zero (buffer)
   "Zero the velocity. Scrolling will stop."
-  (setf (velocity cruise-control) 0))
+  (when-let ((cruise-control (find-mode buffer 'cruise-control-mode)))
+    (setf (velocity cruise-control) 0)))

@@ -198,11 +198,13 @@
 
 (define-test literal-search-source-is-ready-before-slower-sources ()
   (let* ((*browser* (make-instance 'browser))
+         (buffer (make-instance 'buffer))
          (search (make-instance 'prompter:source
                                  :name "URL or search query"
                                  :filter nil
                                  :filter-preprocessor #'nyxt::literal-search-suggestions
-                                 :actions-on-return #'buffer-load*))
+                                 :actions-on-return (lambda (urls)
+                                                      (buffer-load* urls buffer))))
          (history (make-instance 'prompter:source
                                  :name "History"
                                  :filter nil
@@ -232,7 +234,7 @@
              (assert-eq :search-query (kind first))
              (assert-string= "nyxt-quick" (search-query first))
              (assert-string= "https://duckduckgo.com/?q=nyxt-quick"
-                             (render-url (url first)))))
+                             (render-url (url first))))
            (assert-string= "https://example.com/nyxt-quick"
                            (prompter:value (second (prompter:suggestions composite))))
            (assert-eq nil (nyxt::literal-search-suggestions nil nil "  "))

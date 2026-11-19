@@ -354,11 +354,12 @@ idle, so it should do the job."
   (when (null browser)
     (error "There is no current *browser*. Is Nyxt started?")))
 
-(-> set-window-title (&optional window) *)
+(-> set-window-title ((maybe window)) *)
 (export-always 'set-window-title)
-(defun set-window-title (&optional (window (current-window)))
+(defun set-window-title (window)
   "Set WINDOW title."
-  (setf (ffi-window-title window) (titler window)))
+  (when window
+    (setf (ffi-window-title window) (titler window))))
 
 (-> open-urls ((maybe (cons quri:uri *))) *)
 (defun open-urls (urls)
@@ -412,8 +413,8 @@ Should be redefined by the renderer."))
 
 (define-class request-data (renderer-request-data)
   ((buffer
-    (current-buffer)
-    :type buffer
+    nil
+    :type (maybe buffer)
     :documentation "Buffer targeted by the request.")
    (url
     (quri:uri "")
@@ -557,8 +558,9 @@ The following example does a few things:
 (defun javascript-error-handler (condition)
   (echo-warning "JavaScript error: ~a" condition))
 
-(defun print-message (html-body &optional (window (current-window)))
-  (ffi-print-message (message-buffer window) html-body))
+(defun print-message (html-body window)
+  (when window
+    (ffi-print-message (message-buffer window) html-body)))
 
 (export-always 'current-window)
 (defun current-window (&optional no-rescan)
@@ -574,48 +576,39 @@ may yield the wrong result."
 
 (export-always 'set-current-buffer)
 (defmethod set-current-buffer ((buffer modable-buffer) &key (focus t))
-  "Set the active BUFFER for the active window.
+  "Set BUFFER for the current window.
 Return BUFFER."
-  (cond ((not (current-window)) (make-window buffer))
-        ((and (active-buffer-p buffer)
-              (not (eq (current-window) (window buffer))))
-         (ffi-window-set-buffer (window buffer) (get-inactive-buffer) :focus nil)
-         (ffi-window-set-buffer (current-window) buffer :focus focus))
-        ((and (not (active-buffer-p buffer))
-              (not (eq (current-window) (window buffer))))
-         (ffi-window-set-buffer (current-window) buffer :focus focus))
-        (t nil))
+  (if-let ((window (current-window)))
+    (if (eq (buffer window) buffer)
+        (when focus
+          (setf (last-access buffer) (time:now))
+          (ffi-focus-buffer buffer))
+        (ffi-window-set-buffer window buffer :focus focus))
+    (make-window buffer))
   buffer)
 
 (export-always 'current-prompt-buffer)
-(defun current-prompt-buffer ()
-  "Return the prompt buffer that keyboard input acts on.
-Inside `with-current-buffer' on a prompt, that prompt. Otherwise the prompt
-that has keyboard focus, or the most recently opened prompt when focus is on
-another view."
-  (let ((buffer %buffer))
-    (if (prompt-buffer-p buffer)
-        buffer
-        (let ((window (current-window)))
-          (when window
-            (let ((keyboard (keyboard-buffer window)))
-              (if (and (prompt-buffer-p keyboard)
-                       (find keyboard (active-prompt-buffers window)))
-                  keyboard
-                  (first (active-prompt-buffers window)))))))))
+(defun current-prompt-buffer (window)
+  "Return the prompt buffer that keyboard input acts on in WINDOW."
+  (when window
+    (let ((keyboard (keyboard-buffer window)))
+      (if (and (prompt-buffer-p keyboard)
+               (find keyboard (active-prompt-buffers window)))
+          keyboard
+          (first (active-prompt-buffers window))))))
 
 (export-always 'focused-buffer)
-(defun focused-buffer (&optional (window (current-window)))
+(defun focused-buffer (window)
   "Return the buffer in WINDOW that has keyboard focus."
   (when window
     (let ((keyboard (keyboard-buffer window)))
       (if (window-shows-buffer-p window keyboard)
           keyboard
-          (active-buffer window)))))
+          (buffer window)))))
 
 (export-always 'render-menu)
-(defun render-menu (mode-symbol &optional (buffer (current-buffer)))
-  "Render a menu for a given mode symbol."
+(defun render-menu (mode-symbol buffer)
+  "Render a menu for MODE-SYMBOL in BUFFER."
   (spinneret:with-html
     (:div :class "mode-menu"
           (:div :class "mode-menu-bar"
@@ -627,10 +620,12 @@ another view."
                                           (current-keymaps buffer)
                                           :print-style (keymaps:name (keyscheme buffer)))))
                            (:nbutton
+                             :buffer buffer
                              :class "button binding"
                              :text (if bindings (first bindings) "⏎")
-                             `(nyxt::run-async ,command))
+                             `(nyxt::dispatch-command ,command ,buffer))
                            (:nbutton
+                             :buffer buffer
                              :class "button command"
                              :text name
-                             `(nyxt::run-async ,command))))))))
+                             `(nyxt::dispatch-command ,command ,buffer))))))))

@@ -453,7 +453,7 @@ response.  The BODY is wrapped with `with-protect'."
   (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
-  (when-let ((buffer (active-buffer window)))
+  (when-let ((buffer (buffer window)))
     (when-let ((widget (gtk-object buffer)))
       (g:g-object-ref (g:pointer widget))
       (gtk:gtk-container-remove (main-buffer-container window) widget))))
@@ -730,7 +730,7 @@ with this scheme.")
   "The list of languages available for spell checking in `set-spell-check-languages'.")
 
 (define-command-global set-spell-check-languages
-    (&key (buffer (current-buffer))
+    (buffer &key
      (languages (prompt :prompt "Languages to spell check"
                         :sources (make-instance 'prompter:source
                                                 :name "Language codes"
@@ -943,10 +943,13 @@ with this scheme.")
                     (webkit:webkit-hit-test-result-image-uri hit-test-result)
                     (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
-      (nyxt::print-message (str:concat "→ " (render-url url)))
+      (when-let ((window (window buffer)))
+        (nyxt::print-message (plump:encode-entities (str:concat "→ " (render-url url)))
+                             window))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
-      (nyxt::print-message "")
+      (when-let ((window (window buffer)))
+        (nyxt::print-message "" window))
       (setf (url-at-point buffer) (quri:uri "")))))
 
 (define-ffi-method ffi-window-to-foreground ((window gtk-window))
@@ -966,7 +969,7 @@ with this scheme.")
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (when-let ((buried-buffer (gtk-object (active-buffer window))))
+  (when-let ((buried-buffer (gtk-object (buffer window))))
     ;; Just a precaution for the buffer to not be destroyed until we say so.
     (g:g-object-ref (g:pointer buried-buffer))
     (gtk:gtk-container-remove (main-buffer-container window) buried-buffer))
@@ -1050,13 +1053,13 @@ with this scheme.")
       t)))
 
 (defun process-color-chooser-request (web-view color-chooser-request)
-  (declare (ignore web-view))
   (with-protect ("Failed to process file chooser request: ~a" :condition)
-    (when (native-dialogs *browser*)
+    (when-let ((buffer (and (native-dialogs *browser*)
+                            (find web-view (buffer-list) :key #'gtk-object))))
       (gobject:g-object-ref (gobject:pointer color-chooser-request))
       (run-thread
           "color chooser"
-        (ps-labels
+        (ps-labels :buffer buffer
           ((get-rgba
             (color)
             (let ((div (ps:chain document (create-element "div"))))
@@ -1357,17 +1360,19 @@ with this scheme.")
     nil)
   (connect-signal buffer "enter-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (ffi-window-fullscreen (current-window) :user-event-p nil)
-    ;; As to account for JS's Fullscreen API.
-    (disable-message-buffer (current-window))
-    (disable-status-buffer (current-window))
+    (when-let ((window (window buffer)))
+      (ffi-window-fullscreen window :user-event-p nil)
+      ;; As to account for JS's Fullscreen API.
+      (disable-message-buffer window)
+      (disable-status-buffer window))
     nil)
   (connect-signal buffer "leave-fullscreen" nil (web-view)
     (declare (ignore web-view))
-    (ffi-window-unfullscreen (current-window) :user-event-p nil)
-    ;; Ideally, the UI state prior to fullscreen must be recovered.
-    (enable-message-buffer (current-window))
-    (enable-status-buffer (current-window))
+    (when-let ((window (window buffer)))
+      (ffi-window-unfullscreen window :user-event-p nil)
+      ;; Ideally, the UI state prior to fullscreen must be recovered.
+      (enable-message-buffer window)
+      (enable-status-buffer window))
     nil)
   buffer)
 
@@ -1680,58 +1685,57 @@ WebKit's filter language accepts a restricted regular expression."
         suggested-file-name)))
 
 (defun wrap-download (webkit-download)
-  (sera:lret ((original-url (url (current-buffer)))
-              (download (make-instance 'nyxt/mode/download:download
-                                       :url (webkit:webkit-uri-request-uri
-                                             (webkit:webkit-download-get-request webkit-download))
-                                       :gtk-object webkit-download)))
-    (setf (nyxt/mode/download::cancel-function download)
-          (lambda ()
-            (setf (nyxt/mode/download:status download) :canceled)
-            (webkit:webkit-download-cancel webkit-download)))
-    (push download (downloads *browser*))
-    (connect-signal download "received-data" nil (webkit-download data-length)
-      (declare (ignore data-length))
-      (setf (nyxt/mode/download:bytes-downloaded download)
-            (webkit:webkit-download-get-received-data-length webkit-download))
-      (setf (nyxt/mode/download:completion-percentage download)
-            (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
-    (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
-      (when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
-                  (download-dir (or (ignore-errors
-                                     (download-directory
-                                      (find (webkit:webkit-download-get-web-view webkit-download)
-                                            (buffer-list) :key #'gtk-object)))
-                                    (make-instance 'download-directory)))
-                  (download-directory (files:expand download-dir))
-                  (native-download-directory (unless (files:nil-pathname-p download-directory)
-                                               (uiop:native-namestring download-directory)))
-                  (path (str:concat native-download-directory suggested-file-name))
-                  (unique-path (download-manager::ensure-unique-file path))
-                  (file-path (format nil "file://~a" unique-path)))
-        (if (string= path unique-path)
-            (log:debug "Downloading file to ~s." unique-path)
-            (echo "Destination ~s exists, saving as ~s." path unique-path))
-        (webkit:webkit-download-set-destination webkit-download file-path)))
-    (connect-signal download "created-destination" nil (webkit-download destination)
-      (declare (ignore destination))
-      (setf (nyxt/mode/download:destination-path download)
-            (uiop:ensure-pathname
-             (quri:uri-path (quri:uri
-                             (webkit:webkit-download-destination webkit-download))))))
-    (connect-signal download "failed" nil (webkit-download error)
-      (declare (ignore error))
-      (unless (eq (nyxt/mode/download:status download) :canceled)
-        (setf (nyxt/mode/download:status download) :failed))
-      (echo "Download failed for ~s."
-            (webkit:webkit-uri-request-uri
-             (webkit:webkit-download-get-request webkit-download))))
-    (connect-signal download "finished" nil (webkit-download)
-      (declare (ignore webkit-download))
-      (unless (member (nyxt/mode/download:status download) '(:canceled :failed))
-        (setf (nyxt/mode/download:status download) :finished)
-        ;; If download was too small, it may not have been updated.
-        (setf (nyxt/mode/download:completion-percentage download) 100)))))
+  (let ((download-buffer (find (webkit:webkit-download-get-web-view webkit-download)
+                               (buffer-list) :key #'gtk-object)))
+    (sera:lret ((original-url (if download-buffer (url download-buffer) (quri:uri "")))
+                (download (make-instance 'nyxt/mode/download:download
+                                         :url (webkit:webkit-uri-request-uri
+                                               (webkit:webkit-download-get-request webkit-download))
+                                         :gtk-object webkit-download)))
+      (setf (nyxt/mode/download::cancel-function download)
+            (lambda ()
+              (setf (nyxt/mode/download:status download) :canceled)
+              (webkit:webkit-download-cancel webkit-download)))
+      (push download (downloads *browser*))
+      (connect-signal download "received-data" nil (webkit-download data-length)
+        (declare (ignore data-length))
+        (setf (nyxt/mode/download:bytes-downloaded download)
+              (webkit:webkit-download-get-received-data-length webkit-download))
+        (setf (nyxt/mode/download:completion-percentage download)
+              (* 100 (webkit:webkit-download-estimated-progress webkit-download))))
+      (connect-signal download "decide-destination" nil (webkit-download suggested-file-name)
+        (when-let* ((suggested-file-name (maybe-fix-pdfjs-filename suggested-file-name original-url))
+                    (download-dir (or (ignore-errors (download-directory download-buffer))
+                                      (make-instance 'download-directory)))
+                    (download-directory (files:expand download-dir))
+                    (native-download-directory (unless (files:nil-pathname-p download-directory)
+                                                 (uiop:native-namestring download-directory)))
+                    (path (str:concat native-download-directory suggested-file-name))
+                    (unique-path (download-manager::ensure-unique-file path))
+                    (file-path (format nil "file://~a" unique-path)))
+          (if (string= path unique-path)
+              (log:debug "Downloading file to ~s." unique-path)
+              (echo "Destination ~s exists, saving as ~s." path unique-path))
+          (webkit:webkit-download-set-destination webkit-download file-path)))
+      (connect-signal download "created-destination" nil (webkit-download destination)
+        (declare (ignore destination))
+        (setf (nyxt/mode/download:destination-path download)
+              (uiop:ensure-pathname
+               (quri:uri-path (quri:uri
+                               (webkit:webkit-download-destination webkit-download))))))
+      (connect-signal download "failed" nil (webkit-download error)
+        (declare (ignore error))
+        (unless (eq (nyxt/mode/download:status download) :canceled)
+          (setf (nyxt/mode/download:status download) :failed))
+        (echo "Download failed for ~s."
+              (webkit:webkit-uri-request-uri
+               (webkit:webkit-download-get-request webkit-download))))
+      (connect-signal download "finished" nil (webkit-download)
+        (declare (ignore webkit-download))
+        (unless (member (nyxt/mode/download:status download) '(:canceled :failed))
+          (setf (nyxt/mode/download:status download) :finished)
+          ;; If download was too small, it may not have been updated.
+          (setf (nyxt/mode/download:completion-percentage download) 100))))))
 
 (defmethod ffi-buffer-download ((buffer gtk-buffer) url)
   (webkit:webkit-web-view-download-uri (gtk-object buffer) url))

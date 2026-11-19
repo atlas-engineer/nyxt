@@ -363,19 +363,21 @@ placed first."
 Any `nyxt/mode/keyscheme:keyscheme-mode' is placed first.
 
 This leverages `mode-status' which can be specialized for individual modes."
-  (let ((buffer (active-buffer (window status))))
+  (let ((buffer (buffer (window status))))
     (spinneret:with-html
       (:nbutton
         :buffer status
+        :callback-id "status-toggle-modes"
         :text (:raw "<span class=\"mode-delta\">Δ</span>")
         :title (modes-string buffer)
-        '(nyxt:toggle-modes))
+        `(nyxt:toggle-modes (buffer (window ,status))))
       (loop for mode in (sort-modes-for-status (enabled-modes buffer))
             collect
             (let ((mode mode))
               (when-let ((formatted-mode (mode-status status mode)))
                 (:nbutton
                   :buffer status
+                  :callback-id (format nil "status-mode-~a" (name mode))
                   :text formatted-mode
                   :title (format nil "Describe ~a" mode)
                   `(describe-class :class (quote ,(name mode))))))))))
@@ -391,31 +393,35 @@ This leverages `mode-status' which can be specialized for individual modes."
   (spinneret:with-html
     (:nbutton
       :buffer status
+      :callback-id "status-backwards"
       :text (:raw (glyph-left status))
       :title "History-Backwards"
-      '(nyxt/mode/history:history-backwards))
+      `(nyxt/mode/history:history-backwards (buffer (window ,status))))
     (:nbutton
       :buffer status
+      :callback-id "status-forwards"
       :text (:raw (glyph-right status))
       :title "History-Forwards"
-      '(nyxt/mode/history:history-forwards))
+      `(nyxt/mode/history:history-forwards (buffer (window ,status))))
     (:nbutton
       :buffer status
       :id "reload"
+      :callback-id "status-reload"
       :text (:raw (glyph-reload status))
       :title "Reload"
-      '(nyxt:reload-current-buffer))
+      `(nyxt:reload-current-buffer (buffer (window ,status))))
     (:nbutton
       :buffer status
+      :callback-id "status-execute-command"
       :text (:raw (glyph-lambda status))
       :title "Execute-Command Menu"
-      '(nyxt:execute-command))))
+      `(nyxt:execute-command (buffer (window ,status))))))
 
 (export-always 'format-status-load-status)
 (defmethod format-status-load-status ((status status-buffer))
   "Render the load status to HTML string.
 By default, renders the loading mark when loading a URL."
-  (let ((buffer (active-buffer (window status))))
+  (let ((buffer (buffer (window status))))
     (spinneret:with-html
       (when (and (web-buffer-p buffer)
                  (eq (slot-value buffer 'status) :loading))
@@ -425,7 +431,7 @@ By default, renders the loading mark when loading a URL."
 (export-always 'format-status-url)
 (defmethod format-status-url ((status status-buffer))
   "Format the current URL for the STATUS buffer."
-  (let* ((buffer (active-buffer (window status)))
+  (let* ((buffer (buffer (window status)))
          (url (url buffer))
          (url-display (cond ((quri:uri-https-p url)
                              (quri:uri-host url))
@@ -433,8 +439,11 @@ By default, renders the loading mark when loading a URL."
                              (format nil "! ~a" (render-url url)))
                             (t (render-url url)))))
     (spinneret:with-html
-      (:nbutton :buffer status :text url-display :title (title buffer)
-        '(nyxt:set-url)))))
+      (:nbutton :buffer status
+                :callback-id "status-set-url"
+                :text url-display
+                :title (title buffer)
+        `(nyxt:set-url (buffer (window ,status)))))))
 
 (export-always 'format-status-tabs)
 (defun format-internal-tab-display-text (url)
@@ -459,11 +468,11 @@ or in the path under `page'."
 (defmethod format-status-tabs ((status status-buffer))
   "Render the open buffers to HTML string suitable for STATUS."
   (let* ((buffers (reverse (buffer-list)))
-         (current-buffer (active-buffer (window status))))
+         (shown-buffer (buffer (window status))))
     (spinneret:with-html
       (loop for buffer in buffers
             collect
-            (let* ((buffer buffer)
+            (let* ((buffer-id (id buffer))
                    (url (url buffer))
                    (domain (quri:uri-domain url))
                    (tab-display-text (if (internal-url-p url)
@@ -473,15 +482,18 @@ or in the path under `page'."
                                   tab-display-text
                                   (title buffer))))
               (:span
-               :class (if (eq current-buffer buffer)
+               :class (if (eq shown-buffer buffer)
                           "selected-tab tab"
                           "tab")
                :title tab-label
                :onclick (ps:ps
                           (unless (ps:chain event target (closest ".tab-close"))
                             (nyxt/ps:lisp-eval
-                             (:title "select-tab" :buffer status)
-                             (set-current-buffer buffer))))
+                             (:id (format nil "select-tab-~d" buffer-id)
+                              :title "select-tab"
+                              :buffer status)
+                             (when-let ((target (buffer-get buffer-id)))
+                               (set-current-buffer target)))))
                (:span :class "tab-label" tab-label)
                (:button
                 :class "tab-close"
@@ -490,8 +502,11 @@ or in the path under `page'."
                 :onclick (ps:ps
                            (ps:chain event (stop-propagation))
                            (nyxt/ps:lisp-eval
-                            (:title "close-tab" :buffer status)
-                            (delete-buffer :buffers buffer))))))))))
+                            (:id (format nil "close-tab-~d" buffer-id)
+                             :title "close-tab"
+                             :buffer status)
+                            (when-let ((target (buffer-get buffer-id)))
+                              (delete-buffer :buffers target)))))))))))
 
 (defmethod update-status-modes ((status status-buffer))
   "Update ONLY the modes to avoid redrawing the whole status buffer."
@@ -534,7 +549,7 @@ or in the path under `page'."
 To override all that is displayed on STATUS, redefine this method. To partially
 override it, redefine methods such as `format-status-url',
 `format-status-tabs', or `format-status-new-buffer'."
-  (let* ((buffer (active-buffer (window status))))
+  (let* ((buffer (buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
             (:div :id "controls"
@@ -573,10 +588,10 @@ override it, redefine methods such as `format-status-url',
 See `define-setf-handler'."
   (with-slots (window) status-buffer
     (define-setf-handler modable-buffer modes status-buffer
-      (lambda (buffer) (when (eq buffer (active-buffer window))
+      (lambda (buffer) (when (eq buffer (buffer window))
                          (print-status status-buffer))))
     (define-setf-handler mode enabled-p status-buffer
-      (lambda (mode) (when (eq (buffer mode) (active-buffer window))
+      (lambda (mode) (when (eq (buffer mode) (buffer window))
                        (print-status status-buffer))))
     (define-setf-handler document-buffer url status-buffer
       (lambda (_) (declare (ignore _))
@@ -584,14 +599,14 @@ See `define-setf-handler'."
     (define-setf-handler document-buffer title status-buffer
       (lambda (_) (declare (ignore _))
         (update-status-tabs status-buffer)))
-    (define-setf-handler window active-buffer status-buffer
+    (define-setf-handler window buffer status-buffer
       (lambda (_) (declare (ignore _))
         (update-status-url status-buffer)
         (update-status-modes status-buffer)
         (update-status-tabs status-buffer)
         (show-selected-tab status-buffer)))
     (define-setf-handler network-buffer status status-buffer
-      (lambda (buffer) (when (eq buffer (active-buffer window))
+      (lambda (buffer) (when (eq buffer (buffer window))
                          (print-status status-buffer))))
     (define-setf-handler browser buffers status-buffer
       (lambda (_) (declare (ignore _))

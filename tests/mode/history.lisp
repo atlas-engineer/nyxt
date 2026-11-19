@@ -5,9 +5,8 @@
 
 (define-test toggle-history-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/history:history-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/history:history-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/history:history-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/history:history-mode buffer))))
 
 (define-test history-blocklist-and-record ()
   (let* ((*browser* (make-instance 'browser
@@ -15,23 +14,22 @@
                                    (make-instance 'history-file
                                                   :profile (make-instance 'files:virtual-profile))))
          (buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (enable-modes* 'nyxt/mode/history:history-mode buffer)
-      (let ((mode (find-submode 'nyxt/mode/history:history-mode buffer)))
-        (setf (nyxt/mode/history:history-blocklist mode)
-              '("https://blocked.example"))
-        (assert-true (nyxt/mode/history:blocked-p
-                      (quri:uri "https://blocked.example/x") mode))
-        (assert-false (nyxt/mode/history:blocked-p
-                       (quri:uri "https://ok.example") mode))
-        (assert-equality #'quri:uri=
-                         (quri:uri "https://ok.example")
-                         (nyxt/mode/history::add-url-to-history
-                          (quri:uri "https://ok.example") mode :title "OK"))
-        (assert-false (nyxt/mode/history::add-url-to-history
-                       (quri:uri "https://blocked.example/x") mode :title "No"))
-        (assert-eq 1 (length (history-vector *browser*)))
-        (assert-string= "OK" (title (aref (history-vector *browser*) 0)))))))
+    (enable-modes* 'nyxt/mode/history:history-mode buffer)
+    (let ((mode (find-mode buffer 'nyxt/mode/history:history-mode)))
+      (setf (nyxt/mode/history:history-blocklist mode)
+            '("https://blocked.example"))
+      (assert-true (nyxt/mode/history:blocked-p
+                    (quri:uri "https://blocked.example/x") mode))
+      (assert-false (nyxt/mode/history:blocked-p
+                     (quri:uri "https://ok.example") mode))
+      (assert-equality #'quri:uri=
+                       (quri:uri "https://ok.example")
+                       (nyxt/mode/history::add-url-to-history
+                        (quri:uri "https://ok.example") mode :title "OK"))
+      (assert-false (nyxt/mode/history::add-url-to-history
+                     (quri:uri "https://blocked.example/x") mode :title "No"))
+      (assert-eq 1 (length (history-vector *browser*)))
+      (assert-string= "OK" (title (aref (history-vector *browser*) 0))))))
 
 (defun history-binding (keyscheme keyspec)
   (let ((mode (make-instance 'nyxt/mode/history:history-mode

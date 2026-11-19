@@ -367,31 +367,6 @@ To discover the default value of a slot or all slots of a class, use the
                                              ,value))))))))
 
 
-(defparameter %buffer nil)              ; TODO: Make a monad?
-
-(export-always 'current-buffer)
-(defun current-buffer (&optional window)
-  "Get the active buffer for WINDOW, or the active window otherwise."
-  (or %buffer
-      (if-let ((w (or window (current-window))))
-        (active-buffer w)
-        (when *browser*
-          (log:debug "No active window, picking last active buffer.")
-          (last-active-buffer)))))
-
-(export-always 'with-current-buffer)
-(defmacro with-current-buffer (buffer &body body)
-  "Execute BODY in a context in which `current-buffer' returns BUFFER."
-  ;; We `unwind-protect' to restore the right buffer when nesting this macro.
-  `(let ((old-%buffer %buffer))
-     (if (buffer-p ,buffer)
-         (unwind-protect
-              (let ((%buffer ,buffer))
-                ,@body)
-           (setf %buffer old-%buffer))
-         ;; TODO: Raise error instead?
-         (log:warn "Expected buffer, got ~a" ,buffer))))
-
 ;; TODO: Disallow canceling the prompt? Allow changing order of YES and NO so
 ;; that one makes a conscious effort to choose a YES?
 ;; TODO: Add an "always (yes|no)" answers/clauses and do something with those?

@@ -37,7 +37,9 @@ code, and `paste-authenticator-code' inserts it into the focused field."
 (pushnew 'authenticator-mode nyxt::%default-modes)
 
 (defmethod authenticators-file ((buffer buffer))
-  (authenticators-file (find-submode 'authenticator-mode buffer)))
+  (if-let ((mode (find-mode buffer 'authenticator-mode)))
+    (authenticators-file mode)
+    (make-instance 'authenticators-file)))
 
 (define-class authenticators-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"authenticators")
@@ -334,8 +336,8 @@ Signals `authenticator-error' when the URI, its type, or its secret is unusable.
                          :counter counter))))))
 
 (export-always 'persist-authenticator)
-(-> persist-authenticator (authenticator-entry &optional buffer) t)
-(defun persist-authenticator (entry &optional (buffer (current-buffer)))
+(-> persist-authenticator (authenticator-entry buffer) t)
+(defun persist-authenticator (entry buffer)
   "Store ENTRY in BUFFER's `authenticators-file'.
 An entry with the same label, compared case-insensitively, is replaced."
   (files:with-file-content (authenticators (authenticators-file buffer))
@@ -346,8 +348,8 @@ An entry with the same label, compared case-insensitively, is replaced."
                         :key #'label
                         :test #'string-equal)))))
 
-(-> delete-authenticators (list &optional buffer) t)
-(defun delete-authenticators (entries &optional (buffer (current-buffer)))
+(-> delete-authenticators (list buffer) t)
+(defun delete-authenticators (entries buffer)
   "Remove ENTRIES from BUFFER's `authenticators-file', matched by label."
   (files:with-file-content (authenticators (authenticators-file buffer))
     (setf authenticators
@@ -361,14 +363,14 @@ An entry with the same label, compared case-insensitively, is replaced."
   "Return the authenticators saved for BUFFER."
   (files:content (authenticators-file buffer)))
 
-(-> use-code (authenticator-entry) string)
-(defun use-code (entry)
+(-> use-code (authenticator-entry buffer) string)
+(defun use-code (entry buffer)
   "Return ENTRY's current code.
 Advance and save `counter' when ENTRY is HOTP."
   (let ((code (one-time-code entry)))
     (when (eq (otp-type entry) :hotp)
       (incf (counter entry))
-      (persist-authenticator entry))
+      (persist-authenticator entry buffer))
     code))
 
 (-> code-text (authenticator-entry) string)
@@ -399,33 +401,33 @@ Advance and save `counter' when ENTRY is HOTP."
     ("Account" ,(account entry) (:width 2))
     ("Detail" ,(authenticator-detail entry) (:width 1))))
 
-(defvar *authenticator-copy-action*
+(defun make-authenticator-copy-action (buffer)
   (lambda-command copy-authenticator-code* (entries)
     "Copy the code to the clipboard."
     (when-let ((entry (first entries)))
-      (echo "Copied authenticator code ~a." (copy-to-clipboard (use-code entry))))))
+      (echo "Copied authenticator code ~a." (copy-to-clipboard (use-code entry buffer))))))
 
-(defvar *authenticator-paste-action*
+(defun make-authenticator-paste-action (buffer)
   (lambda-command paste-authenticator-code* (entries)
     "Paste the code into the focused field."
     (when-let ((entry (first entries)))
-      (let ((code (use-code entry)))
-        (ffi-buffer-paste (current-buffer) code)
+      (let ((code (use-code entry buffer)))
+        (ffi-buffer-paste buffer code)
         (echo "Pasted authenticator code ~a." code)))))
 
-(defvar *authenticator-delete-action*
+(defun make-authenticator-delete-action (buffer)
   (lambda-command delete-authenticators* (entries)
     "Delete the selected authenticators."
     (when entries
-      (delete-authenticators entries)
+      (delete-authenticators entries buffer)
       (echo "Deleted ~a authenticator~:p." (length entries)))))
 
 (define-class authenticator-source (prompter:source)
   ((prompter:name "Authenticators")
+   (buffer nil :type (maybe buffer))
    (prompter:constructor
-    (files:content (authenticators-file (current-buffer))))
-   (prompter:actions-on-return
-    (list *authenticator-copy-action* *authenticator-paste-action*)))
+    (lambda (source)
+      (files:content (authenticators-file (buffer source))))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source listing saved authenticators and their current codes."))
@@ -460,51 +462,54 @@ Signals `authenticator-error' when SECRET is not valid Base32."
                      :period 30
                      :counter 0))))
 
-(define-command add-authenticator (&optional (buffer (current-buffer)))
+(define-command add-authenticator (buffer)
   "Save a Base32 secret or otpauth:// URI in `authenticators-file'."
-  (with-current-buffer buffer
-    (let ((input (prompt1 :prompt "Authenticator secret or otpauth:// URI"
-                          :sources 'prompter:raw-source
-                          :invisible-input-p t)))
-      (when (and input (not (str:emptyp input)))
-        (let ((entry (handler-case
-                         (if (otpauth-uri-p input)
-                             (authenticator-from-otpauth input)
-                             (authenticator-from-secret input buffer))
-                       (authenticator-error (condition)
-                         (echo-warning "~a" condition)
-                         nil))))
-          (when entry
-            (persist-authenticator entry buffer)
-            (echo "Saved authenticator ~a." (label entry))))))))
+  (let ((input (prompt1 :prompt "Authenticator secret or otpauth:// URI"
+                        :sources 'prompter:raw-source
+                        :invisible-input-p t)))
+    (when (and input (not (str:emptyp input)))
+      (let ((entry (handler-case
+                       (if (otpauth-uri-p input)
+                           (authenticator-from-otpauth input)
+                           (authenticator-from-secret input buffer))
+                     (authenticator-error (condition)
+                       (echo-warning "~a" condition)
+                       nil))))
+        (when entry
+          (persist-authenticator entry buffer)
+          (echo "Saved authenticator ~a." (label entry)))))))
 
-(define-command copy-authenticator-code (&optional (buffer (current-buffer)))
+(define-command copy-authenticator-code (buffer)
   "Copy an authenticator code to the clipboard. M-return pastes it into the focused field."
-  (with-current-buffer buffer
-    (if (authenticator-entries buffer)
-        (prompt :prompt "Copy authenticator code"
-                :sources 'authenticator-source)
-        (echo-warning "No authenticators saved."))))
+  (if (authenticator-entries buffer)
+      (prompt :prompt "Copy authenticator code"
+              :sources (make-instance
+                        'authenticator-source
+                        :buffer buffer
+                        :actions-on-return
+                        (list (make-authenticator-copy-action buffer)
+                              (make-authenticator-paste-action buffer))))
+      (echo-warning "No authenticators saved.")))
 
-(define-command paste-authenticator-code (&optional (buffer (current-buffer)))
+(define-command paste-authenticator-code (buffer)
   "Paste an authenticator code into the focused field. M-return copies it to the clipboard."
-  (with-current-buffer buffer
-    (if (authenticator-entries buffer)
-        (prompt :prompt "Paste authenticator code"
-                :sources (make-instance
-                          'authenticator-source
-                          :actions-on-return
-                          (list *authenticator-paste-action*
-                                *authenticator-copy-action*)))
-        (echo-warning "No authenticators saved."))))
+  (if (authenticator-entries buffer)
+      (prompt :prompt "Paste authenticator code"
+              :sources (make-instance
+                        'authenticator-source
+                        :buffer buffer
+                        :actions-on-return
+                        (list (make-authenticator-paste-action buffer)
+                              (make-authenticator-copy-action buffer))))
+      (echo-warning "No authenticators saved.")))
 
-(define-command delete-authenticator (&optional (buffer (current-buffer)))
+(define-command delete-authenticator (buffer)
   "Delete saved authenticators from `authenticators-file'."
-  (with-current-buffer buffer
-    (if (authenticator-entries buffer)
-        (prompt :prompt "Delete authenticator(s)"
-                :sources (make-instance
-                          'authenticator-source
-                          :enable-marks-p t
-                          :actions-on-return *authenticator-delete-action*))
-        (echo-warning "No authenticators saved."))))
+  (if (authenticator-entries buffer)
+      (prompt :prompt "Delete authenticator(s)"
+              :sources (make-instance
+                        'authenticator-source
+                        :buffer buffer
+                        :enable-marks-p t
+                        :actions-on-return (make-authenticator-delete-action buffer)))
+      (echo-warning "No authenticators saved.")))

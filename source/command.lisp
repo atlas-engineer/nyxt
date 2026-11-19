@@ -147,8 +147,8 @@ see HyperSpec '3.4.2 Generic Function Lambda Lists'."
 
 Example:
 
-\(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
-  \"Play video in the currently open buffer.\"
+\(define-command play-video-in-current-page (buffer)
+  \"Play video in BUFFER.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
   (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
     `(progn
@@ -297,26 +297,47 @@ context of a mode are listed."
          (symbol-package mode-symbol)))
    *command-list*))
 
+(defvar *lisp-request-url* nil
+  "The `lisp' request URL while its callback runs.
+A callback can read query arguments that the page appended.")
+
+(defun command-required-argument (command)
+  "Return COMMAND's first required argument symbol, or nil."
+  (when (typep command 'generic-function)
+    (first (closer-mop:generic-function-argument-precedence-order command))))
+
+(defun command-arguments (command buffer)
+  "Return the argument list to invoke COMMAND from BUFFER, and whether it can run."
+  (let ((argument (command-required-argument command)))
+    (cond
+      ((null argument)
+       (values nil t))
+      ((string-equal argument "WINDOW")
+       (if-let ((window (and buffer (window buffer))))
+         (values (list window) t)
+         (values nil nil)))
+      (buffer
+       (values (list buffer) t))
+      (t
+       (values nil nil)))))
+
 (defun run-command (command &optional args)
-  ;; Bind current buffer for the duration of the command.  This
-  ;; way, if the user switches buffer after running a command
-  ;; but before command termination, `current-buffer' will
-  ;; return the buffer from which the command was invoked.
-  (with-current-buffer (current-buffer)
-    (handler-case (apply #'funcall command args)
-      (prompt-buffer-canceled ()
-        (log:debug "Prompt buffer interrupted")
-        nil))))
+  (handler-case (apply #'funcall command args)
+    (prompt-buffer-canceled ()
+      (log:debug "Prompt buffer interrupted")
+      nil)))
 
 (defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.
 This is blocking, see `run-async' for an asynchronous way to run commands."
-  (let ((channel (make-channel 1)))
+  (let ((channel (make-channel 1))
+        (request-url *lisp-request-url*))
     (run-thread "run command"
       ;; TODO: This `handler-case' overlaps with `with-protect' from `run-thread'.  Factor them!
-      (handler-case (lparallel.queue:push-queue (cons t (run-command command args)) channel)
-        (condition (c)
-          (lparallel.queue:push-queue (cons nil c) channel))))
+      (let ((*lisp-request-url* request-url))
+        (handler-case (lparallel.queue:push-queue (cons t (run-command command args)) channel)
+          (condition (c)
+            (lparallel.queue:push-queue (cons nil c) channel)))))
     (destructuring-bind (success . value) (lparallel.queue:pop-queue channel)
       (if success
           value
@@ -326,8 +347,10 @@ This is blocking, see `run-async' for an asynchronous way to run commands."
   "Run COMMAND over ARGS asynchronously.
 See `run' for a way to run commands in a synchronous fashion and return the
 result."
-  (run-thread "run-async command"
-    (run-command command args)))
+  (let ((request-url *lisp-request-url*))
+    (run-thread "run-async command"
+      (let ((*lisp-request-url* request-url))
+        (run-command command args)))))
 
 (define-command nothing ()                 ; TODO: Replace with ESCAPE special command that allows dispatched to cancel current key stack.
   "A command that does nothing.

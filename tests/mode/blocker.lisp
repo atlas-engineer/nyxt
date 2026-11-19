@@ -5,9 +5,8 @@
 
 (define-test toggle-blocker-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/blocker:blocker-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/blocker:blocker-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/blocker:blocker-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/blocker:blocker-mode buffer))))
 
 (define-test blocked-host-match ()
   (let ((table (nyxt/mode/blocker:blocked-host-table

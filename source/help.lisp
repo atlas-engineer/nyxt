@@ -269,11 +269,11 @@ to the next."
                       (:td :class "control"
                            (:nradio
                             :name "keyscheme"
-                            :checked (cond ((find "nyxt/mode/vi" (default-modes (current-buffer))
+                            :checked (cond ((find "nyxt/mode/vi" (default-modes buffer)
                                                   :key #'uiop:symbol-package-name
                                                   :test #'string-equal)
                                             'vi)
-                                           ((find "nyxt/mode/emacs" (default-modes (current-buffer))
+                                           ((find "nyxt/mode/emacs" (default-modes buffer)
                                                   :key #'uiop:symbol-package-name
                                                   :test #'string-equal)
                                             'emacs)
@@ -333,7 +333,7 @@ to the next."
                            (:nradio
                             :name "darken"
                             :checked (if (find 'nyxt/mode/style:dark-mode
-                                               (default-modes (current-buffer)))
+                                               (default-modes buffer))
                                          'dark
                                          'auto)
                             :buffer buffer
@@ -374,12 +374,12 @@ to the next."
                             :text "Set default modes"
                             :title "Choose the modes a new buffer starts with."
                             :buffer buffer
-                            '(nyxt::configure-slot 'default-modes 'buffer
+                            `(nyxt::configure-slot 'default-modes 'buffer
                               :sources (make-instance
                                         'mode-source
-                                        :marks (default-modes (current-buffer)))
+                                        :marks (default-modes ,buffer))
                               :postprocess (lambda (modes)
-                                             `(quote ,modes))
+                                             `(quote ,(uiop:ensure-list modes)))
                               :type 'cons))))))))))
 
 (defun tls-help (buffer url)
@@ -561,9 +561,9 @@ The value is saved to clipboard."
                                       (nyxt/ps:lisp-eval
                                        (:title "Set URL"
                                         :buffer buffer)
-                                       (set-url)))
+                                       (set-url buffer)))
                            "Set URL"
-                           (:span :class "binding" (binding-keys 'set-url)))
+                           (:span :class "binding" (binding-keys 'set-url :buffer buffer)))
                   (:button :class "execute-command"
                            :type "button"
                            :title "Run a command by name."
@@ -571,9 +571,9 @@ The value is saved to clipboard."
                                       (nyxt/ps:lisp-eval
                                        (:title "Execute command"
                                         :buffer buffer)
-                                       (execute-command)))
+                                       (execute-command buffer)))
                            "Execute command"
-                           (:span :class "binding" (binding-keys 'execute-command)))))
+                           (:span :class "binding" (binding-keys 'execute-command :buffer buffer)))))
       (:ul :class "list"
            (page-row "Bookmarks"
                      "Saved pages"
@@ -636,7 +636,7 @@ The value is saved to clipboard."
     (:h1 "Nyxt Manual")
     (:ntoc
       (tutorial-content)
-      (manual-content))))
+      (manual-content buffer))))
 
 (define-internal-page-command-global tutorial ()
     (buffer "*Tutorial*" 'nyxt/mode/help:help-mode)

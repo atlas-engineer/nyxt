@@ -70,9 +70,9 @@ A page loaded in the panel does not replace it."
         (ffi-remove-panel-buffer (window panel) panel)))
   panel)
 
-(-> focused-panel (&optional window) (maybe panel-buffer))
-(defun focused-panel (&optional (window (current-window)))
-  "Return the panel with keyboard focus, or the one most recently added."
+(-> focused-panel ((maybe window)) (maybe panel-buffer))
+(defun focused-panel (window)
+  "Return the panel in WINDOW with keyboard focus, or the one most recently added."
   (when window
     (let ((keyboard (keyboard-buffer window)))
       (if (and (panel-buffer-p keyboard)
@@ -96,9 +96,8 @@ A page loaded in the panel does not replace it."
   "Define a `panel-buffer' subclass NAME and the commands that open it.
 INITARGS are passed to `make-instance'. `:side' is set by the command.
 The first string in BODY documents the class.
-The commands are `add-NAME-left' and `add-NAME-right'. Each takes an optional
-WINDOW, which defaults to `current-window'. BODY runs with PANEL bound to the
-new panel and WINDOW bound to that argument.
+The commands are `add-NAME-left' and `add-NAME-right'. Each takes WINDOW.
+BODY runs with PANEL bound to the new panel and WINDOW bound to that argument.
 
 Example:
 
@@ -162,10 +161,10 @@ Example:
                  ,@declarations
                  ,@forms
                  ,panel-var))
-             (define-command-global ,left (&optional (,window-var (current-window)))
+             (define-command-global ,left (,window-var)
                ,(command-documentation :left)
                (,helper ,window-var :left))
-             (define-command-global ,right (&optional (,window-var (current-window)))
+             (define-command-global ,right (,window-var)
                ,(command-documentation :right)
                (,helper ,window-var :right))))))))
 
@@ -195,32 +194,35 @@ Example:
     (width-step mode)
     32))
 
-(define-command widen-panel (&optional (panel (focused-panel)))
+(define-command widen-panel (panel)
   "Widen PANEL by one step."
-  (when panel
+  (when (panel-buffer-p panel)
     (incf (width panel) (panel-width-step panel))))
 
-(define-command narrow-panel (&optional (panel (focused-panel)))
+(define-command narrow-panel (panel)
   "Narrow PANEL by one step."
-  (when panel
+  (when (panel-buffer-p panel)
     (decf (width panel) (panel-width-step panel))))
 
 (-> panel-resize-callback (panel-buffer (member :widen :narrow)) string)
 (defun panel-resize-callback (panel direction)
   "Return a live `lisp' URL that resizes PANEL in DIRECTION."
-  (quri:render-uri
-   (lisp-url :buffer panel
-             :title (if (eq direction :widen) "widen-panel" "narrow-panel")
-             :callback (lambda ()
-                         (if (eq direction :widen)
-                             (widen-panel panel)
-                             (narrow-panel panel))))))
+  (let ((name (if (eq direction :widen) "widen-panel" "narrow-panel")))
+    (quri:render-uri
+     (lisp-url :id name
+               :buffer panel
+               :title name
+               :callback (lambda ()
+                           (if (eq direction :widen)
+                               (widen-panel panel)
+                               (narrow-panel panel)))))))
 
 (-> panel-close-callback (panel-buffer) string)
 (defun panel-close-callback (panel)
   "Return a live `lisp' URL that closes PANEL."
   (quri:render-uri
-   (lisp-url :buffer panel
+   (lisp-url :id "close-panel"
+             :buffer panel
              :title "close-panel"
              :callback (lambda ()
                          (delete-panel-buffer panel)))))
@@ -361,7 +363,7 @@ Example:
   "Return the color behind WINDOW's page, or the theme background.
 The color is the one stored when the page loaded. A page that has not
 been read yet uses the theme."
-  (let ((page (and window (active-buffer window))))
+  (let ((page (and window (buffer window))))
     (or (and page
              (web-buffer-p page)
              (not (panel-buffer-p page))
@@ -405,7 +407,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
   "Panels and bars follow the page they float on."
   (declare (ignore color))
   (dolist (window (window-list))
-    (when (eq buffer (active-buffer window))
+    (when (eq buffer (buffer window))
       (paint-panel-backdrops window))))
 
 (-> refresh-panel-backdrop (window) t)
@@ -413,15 +415,15 @@ The status bar, message bar, and prompt are not in the main buffer table, so
   "Read the active page's background again.
 Switching to a page that is already open does not load it again, so the color
 stored at load time may be stale."
-  (when-let ((page (and window (active-buffer window))))
+  (when-let ((page (and window (buffer window))))
     (when (and (web-buffer-p page) (not (panel-buffer-p page)))
       (run-thread "page-background"
         (update-page-background page))))
   nil)
 
-(defmethod (setf active-buffer) :after ((buffer web-buffer) (window window))
+(defmethod (setf buffer) :after ((buffer web-buffer) (window window))
   "The panels float on the page that just became active.
-Specialized on `web-buffer' so the status bar's `active-buffer' handler, which
+Specialized on `web-buffer' so the status bar's `buffer' handler, which
 uses the unspecialized method, does not replace it."
   (unless (panel-buffer-p buffer)
     (paint-panel-backdrops window)
@@ -461,15 +463,9 @@ uses the unspecialized method, does not replace it."
     (apply-panel-geometry buffer))
   (buffer-delete (id buffer)))
 
-(define-command delete-panel-buffer (&optional (panel (focused-panel)))
+(define-command delete-panel-buffer (panel)
   "Remove PANEL from its window."
-  (when panel
+  (when (panel-buffer-p panel)
     (ignore-errors (ffi-buffer-delete panel))
     (buffer-delete (id panel)))
   nil)
-
-(setf *lisp-callback-buffer-hook*
-      (lambda (buffer)
-        (when (panel-buffer-p buffer)
-          (let ((window (window buffer)))
-            (and window (active-buffer window))))))

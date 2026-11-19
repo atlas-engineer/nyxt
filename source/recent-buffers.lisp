@@ -28,9 +28,8 @@
      (lambda-command reopen-dead-buffer-focus (buffer-list)
        "Reopen BUFFER and switch to it."
        (mapc #'reopen-dead-buffer buffer-list)
-       (set-current-buffer
-        (or (first (prompter:marks (current-source)))
-            (current-suggestion-value (current-prompt-buffer)))))
+       (when-let ((buffer (first buffer-list)))
+         (set-current-buffer buffer)))
      (lambda-mapped-command reopen-dead-buffer)))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)))
 

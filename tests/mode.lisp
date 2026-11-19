@@ -13,11 +13,10 @@
   (let ((*browser* (make-instance 'browser))
         (buffer (make-instance 'modable-buffer))
         (arg-value (random 300)))
-    (with-current-buffer buffer
-      (setf (url (current-buffer)) (quri:uri "test"))
-      (assert-true arg-value
-                   (nyxt/mode/repeat:repeat-interval
-                    (first (modes (first (enable-modes* 'nyxt/mode/repeat:repeat-mode
-                                                        buffer
-                                                        :repeat-interval arg-value
-                                                        :repeat-action (constantly nil))))))))))
+    (setf (url buffer) (quri:uri "test"))
+    (assert-true arg-value
+                 (nyxt/mode/repeat:repeat-interval
+                  (first (modes (first (enable-modes* 'nyxt/mode/repeat:repeat-mode
+                                                      buffer
+                                                      :repeat-interval arg-value
+                                                      :repeat-action (constantly nil)))))))))

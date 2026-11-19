@@ -33,11 +33,11 @@
 (define-configuration context-buffer
   ((default-modes (cons 'history-mode %slot-value%))))
 
-(define-command history-backwards (&key (buffer (current-buffer)))
+(define-command history-backwards (buffer)
   "Navigate backwards."
   (ffi-buffer-navigate-backwards buffer))
 
-(define-command history-forwards (&key (buffer (current-buffer)))
+(define-command history-forwards (buffer)
   "Navigate forwards."
   (ffi-buffer-navigate-forwards buffer))
 

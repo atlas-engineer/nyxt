@@ -82,7 +82,7 @@ The list element keeps a row it has already built."
                   (user-interface:html-class element) "empty"
                   (user-interface:text element) "No buffers."))))))
 
-(defmethod customize-instance :after ((mode buffer-listing-mode) &key)
+(defmethod enable ((mode buffer-listing-mode) &key)
   "Keep MODE's list in step with the buffers.
 The handlers are the ones `status-buffer' uses for its tabs."
   (setf (user-interface:template (listing mode))
@@ -109,7 +109,7 @@ The handlers are the ones `status-buffer' uses for its tabs."
   (when (or (str:emptyp (title listing-buffer))
             (string= (title listing-buffer) (render-url (url listing-buffer))))
     (setf (title listing-buffer) "*Buffers*"))
-  (let ((listing (listing (find-submode 'buffer-listing-mode listing-buffer))))
+  (let ((listing (listing (find-mode listing-buffer 'buffer-listing-mode))))
     (user-interface:connect listing listing-buffer)
     (spinneret:with-html-string
       (:nstyle

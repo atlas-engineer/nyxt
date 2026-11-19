@@ -5,9 +5,8 @@
 
 (define-test toggle-hint-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/hint:hint-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/hint:hint-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/hint:hint-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/hint:hint-mode buffer))))
 
 (define-test hint-strings-are-prefix-free ()
   ;; Vimium's alphabet hints for three links and the alphabet "ab".

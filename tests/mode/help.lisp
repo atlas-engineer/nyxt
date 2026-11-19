@@ -5,6 +5,5 @@
 
 (define-test toggle-help-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/help:help-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/help:help-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/help:help-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/help:help-mode buffer))))

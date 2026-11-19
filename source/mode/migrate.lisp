@@ -701,15 +701,14 @@ Nested folder names are stored as tags."
       (uiop:delete-directory-tree directory :validate t :if-does-not-exist :ignore)))
   t)
 
-(-> import-bookmarks-file () t)
-(defun import-bookmarks-file ()
-  (let ((buffer (current-buffer)))
-    (unless (find-submode 'nyxt/mode/bookmark:bookmark-mode buffer)
-      (enable-modes* 'nyxt/mode/bookmark:bookmark-mode buffer))
-    (nyxt/mode/bookmark:bookmarks-file buffer)))
+(-> import-bookmarks-file (buffer) t)
+(defun import-bookmarks-file (buffer)
+  (unless (find-mode buffer 'nyxt/mode/bookmark:bookmark-mode)
+    (enable-modes* 'nyxt/mode/bookmark:bookmark-mode buffer))
+  (nyxt/mode/bookmark:bookmarks-file buffer))
 
-(-> import-firefox-profile (browser-profile) t)
-(defun import-firefox-profile (profile)
+(-> import-firefox-profile (browser-profile buffer) t)
+(defun import-firefox-profile (profile buffer)
   (let ((source (profile-path profile))
         (app (firefox-app-directory (profile-path profile))))
     (call-with-temp-directory
@@ -727,7 +726,7 @@ Nested folder names are stored as tags."
                      (handler-case
                          (import-firefox-bookmarks
                           places
-                          (import-bookmarks-file)
+                          (import-bookmarks-file buffer)
                           :default-urls (default-firefox-bookmark-urls app))
                        (sqlite:sqlite-error (condition)
                          (echo-warning "Could not read Firefox bookmarks: ~a" condition)
@@ -735,8 +734,8 @@ Nested folder names are stored as tags."
              (echo-warning "This Firefox profile has no places.sqlite."))))))
   t)
 
-(-> import-chrome-profile (browser-profile) t)
-(defun import-chrome-profile (profile)
+(-> import-chrome-profile (browser-profile buffer) t)
+(defun import-chrome-profile (profile buffer)
   (let ((source (profile-path profile)))
     (call-with-temp-directory
      (lambda (directory)
@@ -752,21 +751,21 @@ Nested folder names are stored as tags."
              (echo-warning "This Chrome profile has no History database."))
          (if (uiop:file-exists-p bookmarks)
              (echo "Imported ~a bookmarks from Chrome."
-                   (handler-case (import-chrome-bookmarks bookmarks (import-bookmarks-file))
+                   (handler-case (import-chrome-bookmarks bookmarks (import-bookmarks-file buffer))
                      (error (condition)
                        (echo-warning "Could not read Chrome bookmarks: ~a" condition)
                        0)))
              (echo-warning "This Chrome profile has no Bookmarks file."))))))
   t)
 
-(define-command-global import-from-firefox ()
+(define-command-global import-from-firefox (buffer)
   "Import history and bookmarks from Firefox."
   (if-let ((profile (selected-firefox-profile)))
-    (import-firefox-profile profile)
+    (import-firefox-profile profile buffer)
     (echo-warning "No Firefox profile found.")))
 
-(define-command-global import-from-chrome ()
+(define-command-global import-from-chrome (buffer)
   "Import history and bookmarks from Chrome."
   (if-let ((profile (selected-chrome-profile)))
-    (import-chrome-profile profile)
+    (import-chrome-profile profile buffer)
     (echo-warning "No Chrome profile found.")))

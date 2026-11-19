@@ -208,7 +208,8 @@ Take the file name as the first argument and accept two keyword arguments:
   (:documentation "Prompt source for file(s) on the disk.")
   (:metaclass user-class))
 
-(define-class open-file-source (file-source) ()
+(define-class open-file-source (file-source)
+  ((buffer nil :type (maybe buffer)))
   (:metaclass user-class))
 
 (defun supported-media-or-directory
@@ -247,12 +248,14 @@ If FILES are not provided, prompt for them."
             (let ((file (first files)))
               (funcall (open-file-function source)
                        file
+                       :buffer (buffer source)
                        :new-buffer-p (open-file-in-new-buffer-p source)
                        :supported-p (supported-media-or-directory file source)))
             ;; Open the rest of the files in new buffers unconditionally.
             (dolist (file (rest files))
               (funcall (open-file-function source)
                        file
+                       :buffer (buffer source)
                        :new-buffer-p t
                        :supported-p (supported-media-or-directory file source))))
           (lambda-command delete-file* (files)
@@ -279,7 +282,7 @@ If FILES are not provided, prompt for them."
                      (mapcar #'uiop:native-namestring files)))))))))
 
 (export-always 'default-open-file-function)
-(defun default-open-file-function (filename &key supported-p new-buffer-p)
+(defun default-open-file-function (filename &key buffer supported-p new-buffer-p)
   "Open FILENAME in Nyxt if supported, or externally otherwise.
 FILENAME is the full path of the file (or directory).
 
@@ -294,9 +297,9 @@ Can be used as a `open-file-function'."
       (cond
         (supported-p
          (let ((file-url (quri:make-uri-file :path filename)))
-           (if new-buffer-p
+           (if (or new-buffer-p (not buffer))
                (make-buffer-focus :url file-url)
-               (ffi-buffer-load (current-buffer) file-url))))
+               (ffi-buffer-load buffer file-url))))
         (*open-program*
          (let ((process (uiop:launch-program
                          (list *open-program*
@@ -316,12 +319,12 @@ Can be used as a `open-file-function'."
     (error (c) (log:error "Opening ~a: ~a~&" filename c))))
 
 (define-command-global open-file
-    (&key (default-directory
-           (if (quri:uri-file-p (url (current-buffer)))
-               (uiop:pathname-directory-pathname
-                (quri:url-decode
-                 (quri:uri-path (url (current-buffer)))))
-               *default-pathname-defaults*)))
+    (buffer &key (default-directory
+                  (if (quri:uri-file-p (url buffer))
+                      (uiop:pathname-directory-pathname
+                       (quri:url-decode
+                        (quri:uri-path (url buffer))))
+                      *default-pathname-defaults*)))
   "Open a file from the filesystem.
 
 The user is prompted with the prompt buffer, files are browsable with
@@ -339,9 +342,9 @@ it. Every type in `supported-media-types' will be opened directly in Nyxt."
   (prompt :prompt "Open file"
           :extra-modes 'file-manager-mode
           :input (uiop:native-namestring default-directory)
-          :sources 'open-file-source))
+          :sources (make-instance 'open-file-source :buffer buffer)))
 
-(define-command-global download-open-file ()
+(define-command-global download-open-file (buffer)
   "Open file in Nyxt or externally."
-  (open-file :default-directory
-             (files:expand (download-directory (current-buffer)))))
+  (open-file buffer :default-directory
+             (files:expand (download-directory buffer))))

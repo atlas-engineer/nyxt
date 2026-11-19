@@ -6,20 +6,19 @@
 (defun error-in-new-window (title condition-string backtrace)
   (sera:lret* ((window (window-make *browser*))
                (error-buffer (make-instance 'document-buffer)))
-    (with-current-buffer error-buffer
-      (html-set
-       (spinneret:with-html-string
-         (:nstyle
-          (style (current-buffer))
-          (notice-css theme:primary-color
-                      theme:on-background-color
-                      theme:monospace-font-family))
-         (:h1 title)
-         (:h2 "Condition")
-         (:pre :class "log" condition-string)
-         (:h2 "Backtrace")
-         (:pre :class "log" backtrace))
-       error-buffer))
+    (html-set
+     (spinneret:with-html-string
+       (:nstyle
+        (style error-buffer)
+        (notice-css theme:primary-color
+                    theme:on-background-color
+                    theme:monospace-font-family))
+       (:h1 title)
+       (:h2 "Condition")
+       (:pre :class "log" condition-string)
+       (:h2 "Backtrace")
+       (:pre :class "log" backtrace))
+     error-buffer)
     (ffi-window-set-buffer window error-buffer)))
 
 (-> load-lisp

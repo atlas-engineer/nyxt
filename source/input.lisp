@@ -3,17 +3,17 @@
 
 (in-package :nyxt)
 
-(-> binding-keys (sym:function-symbol &key (:modes list)) *)
+(-> binding-keys (sym:function-symbol &key (:buffer (maybe buffer)) (:modes list)) *)
 (defun binding-keys
-    (fn &key (modes (if (current-buffer)
-                        (enabled-modes (current-buffer))
+    (fn &key buffer
+             (modes (if buffer
+                        (enabled-modes buffer)
                         (mapcar #'make-instance (default-modes nil)))))
   ;; Do not instantiate `input-buffer' here. On CEF that creates a browser
   ;; view, and suggestion rendering calls this on a thread with no current
   ;; buffer. Creating and destroying that view takes the prompt's web view
   ;; with it.
-  (let ((buffer (current-buffer))
-        (keymaps (delete nil (mapcar #'keymap modes))))
+  (let ((keymaps (delete nil (mapcar #'keymap modes))))
     (or (first (keymaps:pretty-binding-keys
                 fn keymaps
                 :print-style (keymaps:name (if buffer
@@ -22,9 +22,8 @@
         "unbound")))
 
 (export-always 'current-keymaps)
-(defun current-keymaps
-    (&optional (buffer (or (focused-buffer) (current-buffer))))
-  "Return the list of `keymap' for the current buffer, ordered by priority.
+(defun current-keymaps (buffer)
+  "Return the list of `keymap' for BUFFER, ordered by priority.
 If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
   (let ((keymaps
           (when (input-buffer-p buffer)
@@ -33,15 +32,15 @@ If non-empty, return the result of BUFFER's `current-keymaps-hook' instead."
         (hooks:run-hook (current-keymaps-hook buffer) keymaps buffer)
         keymaps)))
 
-(defun all-keymaps (&optional (window (current-window)))
+(defun all-keymaps (window)
   "Return all keymaps for WINDOW, including the buffer keymaps and the
 prompt buffer keymaps."
-  (when-let ((buffer (active-buffer window)))
+  (when-let ((buffer (and window (buffer window))))
     (delete nil
             (mapcar #'keymap
                     (append (enabled-modes buffer)
-                            (ignore-errors (enabled-modes
-                                            (current-prompt-buffer))))))))
+                            (when-let ((prompt (current-prompt-buffer window)))
+                              (enabled-modes prompt)))))))
 
 (-> pointer-event-p (keymaps:key) boolean)
 (defun pointer-event-p (key)
@@ -62,12 +61,15 @@ prompt buffer keymaps."
         (format nil "~s [~a]" no-code-specs (keymaps:keys->keyspecs keys))
         (format nil "~s" no-code-specs))))
 
-(-> dispatch-command ((or sym:function-symbol function)) *)
+(-> dispatch-command ((or sym:function-symbol function) &optional (maybe buffer)) *)
 (export-always 'dispatch-command)
-(defun dispatch-command (function)
-  "Run FUNCTION asynchronously."
+(defun dispatch-command (function &optional buffer)
+  "Run FUNCTION asynchronously on BUFFER."
   (echo-dismiss)
-  (run-async function))
+  (let ((fn (if (symbolp function) (symbol-function function) function)))
+    (multiple-value-bind (args runnable-p) (command-arguments fn buffer)
+      (when runnable-p
+        (run-async fn args)))))
 
 (export-always 'dispatch-input-event)
 (defun dispatch-input-event (event buffer)
@@ -112,18 +114,22 @@ Return nil to forward to renderer or non-nil otherwise."
            (log:debug "Prefix binding ~a." (keyspecs key-stack translated-key))
            t)
           ((typep bound-function '(and (not null) (or symbol command)))
-           (let ((command
-                   (typecase bound-function
-                     (symbol (symbol-function
-                              (resolve-user-symbol bound-function :command)))
-                     (command bound-function))))
+           (let* ((command
+                    (typecase bound-function
+                      (symbol (symbol-function
+                               (resolve-user-symbol bound-function :command)))
+                      (command bound-function)))
+                  (matching-mode (find matching-keymap (enabled-modes buffer)
+                                       :key #'keymap))
+                  (target-buffer (if matching-mode
+                                     (buffer matching-mode)
+                                     buffer)))
              (log:debug "Found key binding ~a to ~a."
                         (keyspecs key-stack translated-key) bound-function)
-             (setf (last-key buffer) (first key-stack))
+             (setf (last-key buffer) (first key-stack)
+                   key-stack nil)
              (run-thread "run-command"
-               (with-current-buffer buffer
-                 (unwind-protect (funcall (command-dispatcher *browser*) command)
-                   (setf key-stack nil))))
+               (funcall (command-dispatcher *browser*) command target-buffer))
              t))
           (t
            (log:debug "Fallback forward key ~s." (keyspecs key-stack))

@@ -114,7 +114,7 @@ The most useful functions are:
   "Assign tag classes (e.g., `input-element') to the nodes in the `plump:parse'-d input."
   (name-dom-elements (plump:parse input)))
 
-(define-parenscript get-document-body-json ()
+(define-parenscript get-document-body-json (buf)
   (defun process-element (element)
     (let ((object (ps:create :name (ps:@ element node-name)))
           (attributes (ps:chain element attributes)))
@@ -236,12 +236,25 @@ Full copy means recursively descending to the children of the NODE too."))
   (:documentation "Get the recursive parents of the NODE.
 The closest parent goes first, the furthest one goes last."))
 
+(defvar *dom-buffers* (tg:make-weak-hash-table :test 'eq :weakness :key)
+  "Weak map from parsed `plump:root' nodes to the `buffer' they came from.")
+
+(defun dom-buffer (node)
+  "Return the `buffer' associated with NODE's root document, or NIL."
+  (let ((root (if (plump:root-p node)
+                  node
+                  (alex:lastcar (parents node)))))
+    (when root
+      (gethash root *dom-buffers*))))
+
 (defmethod url :around ((element plump:element))
   (when-let* ((result (call-next-method))
               (url (url result)))
     (if (valid-url-p url)
         url
-        (quri:merge-uris url (url (current-buffer))))))
+        (if-let ((buf (dom-buffer element)))
+          (quri:merge-uris url (url buf))
+          url))))
 
 (defmethod url ((element plump:element))
   (when (plump:has-attribute element "href")
@@ -307,12 +320,12 @@ The closest parent goes first, the furthest one goes last."))
   (plump:attribute element "nyxt-identifier"))
 
 (export-always 'click-element)
-(define-parenscript click-element (element)
+(define-parenscript click-element (buf element)
   "Click the ELEMENT (Lisp object) on the page with JS."
   (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element))) (click)))
 
 (export-always 'focus-select-element)
-(define-parenscript focus-select-element (element)
+(define-parenscript focus-select-element (buf element)
   "Focus the element matching ELEMENT on the page."
   (let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
@@ -322,7 +335,7 @@ The closest parent goes first, the furthest one goes last."))
       (ps:chain element (select)))))
 
 (export-always 'check-element)
-(define-parenscript check-element (element &key (value t))
+(define-parenscript check-element (buf element &key (value t))
   "Toggle (to VALUE) the checkbox/radio button matching ELEMENT on the page."
   (let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
@@ -330,7 +343,7 @@ The closest parent goes first, the furthest one goes last."))
     (ps:chain element (set-attribute "checked" (ps:lisp value)))))
 
 (export-always 'toggle-details-element)
-(define-parenscript toggle-details-element (element)
+(define-parenscript toggle-details-element (buf element)
   "Open/close the <details> element matching ELEMENT on the page."
   (ps:let ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))))
     (unless (nyxt/ps:element-in-view-port-p element)
@@ -340,7 +353,7 @@ The closest parent goes first, the furthest one goes last."))
         (ps:chain element (set-attribute "open" t)))))
 
 (export-always 'select-option-element)
-(define-parenscript select-option-element (element parent)
+(define-parenscript select-option-element (buf element parent)
   "Select one of the <option> elements (ELEMENT) in PARENT <select>."
   (ps:let* ((element (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element))))
             (parent-select (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id parent)))))
@@ -351,13 +364,13 @@ The closest parent goes first, the furthest one goes last."))
         (setf (ps:@ parent-select value) (ps:@ element value)))))
 
 (export-always 'scroll-to-element)
-(define-parenscript scroll-to-element (element)
+(define-parenscript scroll-to-element (buf element)
   "Scroll the element matching ELEMENT on the page into view."
   (ps:chain (nyxt/ps:rqs-nyxt-id document (ps:lisp (get-nyxt-id element)))
             (scroll-into-view)))
 
 (export-always 'set-caret-on-start)
-(define-parenscript set-caret-on-start (element)
+(define-parenscript set-caret-on-start (buf element)
   "Set the cursor at the start of input element matching ELEMENT."
   (let ((el (nyxt/ps:qs-nyxt-id document (ps:lisp (get-nyxt-id element))))
         (range (ps:chain document (create-range)))

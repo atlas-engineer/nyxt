@@ -792,7 +792,12 @@ Generic functions, macros, and unknown types return NIL."
                (list (pretty-keyspec (first pair) print-style)
                      (keymap-section-title (or (keymaps:name (second pair)) "")
                                            print-style)))
-             (nth-value 1 (keymaps:binding-keys symbol (all-keymaps))))
+             (nth-value 1
+                        (keymaps:binding-keys
+                         symbol
+                         (if-let ((window (window buffer)))
+                           (all-keymaps window)
+                           (current-keymaps buffer)))))
      :key (lambda (row)
             (format nil "~a ~a" (second row) (first row)))
      :predicate #'string-lessp)))
@@ -828,7 +833,7 @@ Generic functions, macros, and unknown types return NIL."
                                             (remove-method
                                              (closer-mop:method-generic-function method)
                                              method)
-                                            (reload-current-buffer)))
+                                            (reload-current-buffer buffer)))
                            "Remove"))
             (dolist (paragraph (documentation-paragraphs (documentation method t)))
               (:p :class "summary"
@@ -1427,7 +1432,7 @@ Any other style keeps the keyspec."
 
 ;; Buffers can't be passed as argument since Nyxt URLs don't handle unreadable
 ;; objects.
-(define-internal-page describe-bindings (&key (buffer-id (id (current-buffer))))
+(define-internal-page describe-bindings (&key buffer-id)
     (:title "*Help-bindings*" :page-mode 'nyxt/mode/help:help-mode)
   "Show a list of all available keybindings for buffer corresponding to BUFFER-ID."
   (if-let ((buffer (buffer-get buffer-id)))
@@ -1568,11 +1573,12 @@ Any other style keeps the keyspec."
       (:h1 "Bindings")
       (:p (format nil "Buffer with ID ~a does not exist." buffer-id)))))
 
-(define-command-global describe-bindings (&key (buffer (current-buffer)))
-  "Show a list of all available keybindings in the current buffer."
+(define-command-global describe-bindings (buffer)
+  "Show a list of all available keybindings in BUFFER."
   (buffer-load-internal-page-focus 'describe-bindings :buffer-id (id buffer)))
 
-(defun describe-key-dispatch (command)
+(defun describe-key-dispatch (command &optional buffer)
+  (declare (ignore buffer))
   ;; TODO: Show when something is NOT bound!
   (unwind-protect (describe-command :command (typecase command
                                                (symbol command)
