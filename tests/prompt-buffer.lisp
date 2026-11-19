@@ -242,6 +242,27 @@
                               nil nil "https://nyxt.atlas.engineer")))
       (prompter:destroy prompt))))
 
+(define-test prompt-row-selection-targets-exact-source-instance ()
+  (let* ((*browser* (make-instance 'browser))
+         (first-source (make-instance 'prompter:source
+                                      :name "First"
+                                      :filter nil
+                                      :constructor '("alpha")))
+         (second-source (make-instance 'prompter:source
+                                       :name "Second"
+                                       :filter nil
+                                       :constructor '("beta")))
+         (prompt (make-instance 'prompt-buffer
+                                :sources (list first-source second-source))))
+    (unwind-protect
+         (progn
+           (assert-true (bordeaux-threads:with-timeout (5)
+                          (prompter:all-ready-p prompt)))
+           (assert-true (nyxt::select-prompt-source-suggestion prompt second-source 0))
+           (assert-string= "beta" (current-suggestion-value prompt))
+           (assert-false (nyxt::select-prompt-source-suggestion prompt second-source 9)))
+      (prompter:destroy prompt))))
+
 (define-test nested-batch-updates-each-element-once ()
   (let* ((buffer (make-instance 'buffer))
          (outer (make-instance 'user-interface:element :text "a"))
