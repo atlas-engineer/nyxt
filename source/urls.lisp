@@ -348,7 +348,8 @@ is resolved against the page that contains it."
 (-> internal-page-name ((or string quri:uri)) t)
 (defun internal-page-name (url)
   "Return the symbol naming the internal page at URL, or NIL."
-  (when-let* ((%url (quri:uri url))
+  (when-let* ((%url (handler-case (quri:uri url)
+                      (quri:uri-error () nil)))
               (_ (string= "nyxt" (quri:uri-scheme %url))))
     (let* ((raw-path (quri:uri-path %url))
            (path (and raw-path (string-trim '(#\/) raw-path)))
