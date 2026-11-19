@@ -255,7 +255,7 @@ the renderer thread, use `defmethod' instead."
                :blue (alex:clamp (coerce (third channels) 'double-float) 0.0d0 1.0d0)
                :alpha (alex:clamp (coerce alpha 'double-float) 0.0d0 1.0d0)))))))))
 
-(-> css-color->gdk-rgba (string) (or null gdk:gdk-rgba))
+(-> css-color->gdk-rgba (t) (or null gdk:gdk-rgba))
 (defun css-color->gdk-rgba (color)
   "Return COLOR as a `gdk:gdk-rgba', or NIL when COLOR cannot be parsed."
   (when (and (stringp color) (plusp (length color)))
@@ -545,11 +545,17 @@ response.  The BODY is wrapped with `with-protect'."
       (webkit:webkit-policy-decision-use decision))
   t)
 
+(defun gint (value)
+  "Clamp VALUE to the signed 32-bit range GTK uses for sizes."
+  (alex:clamp (if (integerp value) value 0)
+              (- (ash 1 31))
+              (1- (ash 1 31))))
+
 (defun set-container-bar-height (container height)
   (when container
     (cond
-      ((plusp height)
-       (setf (gtk:gtk-widget-height-request container) height)
+      ((and (integerp height) (plusp height))
+       (setf (gtk:gtk-widget-height-request container) (gint height))
        (gtk:gtk-widget-show-all container))
       (t
        (setf (gtk:gtk-widget-height-request container) 0)
@@ -824,10 +830,12 @@ Return nil when key must be discarded, e.g. for modifiers."
             ;; keyval in this case.
             ;; Even if space in printable, C-space is not so we return the
             ;; keyval in this case.
-            (_ (if (or (char<= character #\space)
-                       (char= character #\Del))
+            (_ (if (and (characterp character)
+                        (or (char<= character #\space)
+                            (char= character #\Del)))
                    keyval
-                   (string character))))))
+                   (when (characterp character)
+                     (string character)))))))
     (if (< 1 (length result))
         (str:replace-all "_" "" (string-downcase result))
         result)))
@@ -1067,6 +1075,17 @@ with this scheme.")
         "ee_TG" "en_KY" "en_VC" "ff_GN" "fr_RW" "ig_NG" "ln_CD" "nl_AW")
   "The list of languages available for spell checking in `set-spell-check-languages'.")
 
+(defun foreign-string-list (strings)
+  "Return a null-terminated C string array of the strings in STRINGS.
+Return a null pointer when STRINGS contains no strings. The caller frees a
+non-null pointer."
+  (let ((strings (remove-if-not #'stringp strings)))
+    (if strings
+        (cffi:foreign-alloc :string
+                            :initial-contents strings
+                            :null-terminated-p t)
+        (cffi:null-pointer))))
+
 (define-command-global set-spell-check-languages
     (buffer &key
      (languages (prompt :prompt "Languages to spell check"
@@ -1074,13 +1093,13 @@ with this scheme.")
                                                 :name "Language codes"
                                                 :enable-marks-p t
                                                 :constructor *spell-check-languages*))))
-  (let ((pointer (cffi:foreign-alloc :string
-                                     :initial-contents languages
-                                     :null-terminated-p t)))
-    (webkit:webkit-web-context-set-spell-checking-languages
-     (webkit:webkit-web-view-web-context (gtk-object buffer))
-     pointer)
-    (cffi:foreign-free pointer)))
+  (let ((pointer (foreign-string-list languages)))
+    (unwind-protect
+         (webkit:webkit-web-context-set-spell-checking-languages
+          (webkit:webkit-web-view-web-context (gtk-object buffer))
+          pointer)
+      (unless (cffi:null-pointer-p pointer)
+        (cffi:foreign-free pointer)))))
 
 (define-ffi-method ffi-register-custom-scheme ((scheme gtk-scheme))
   (let ((contexts (if (web-context scheme)
@@ -1249,7 +1268,8 @@ with this scheme.")
             (nyxt::open-urls (list target-url)))))
        ((null (valid-scheme-p (quri:uri-scheme (url request-data))))
         (setf (provisional-load-p buffer) nil)
-        (log:warn "Unsupported URI scheme: ~s." (quri:uri-scheme (url request-data))))
+        (log:warn "Unsupported URI scheme: ~s." (quri:uri-scheme (url request-data)))
+        (webkit:webkit-policy-decision-ignore response-policy-decision))
        ((not (known-type-p request-data))
         (log:debug "Initiate download of ~s." (render-url (url request-data)))
         (setf (provisional-load-p buffer) nil)
@@ -1371,7 +1391,7 @@ with this scheme.")
           (when parent
             (gtk:gtk-container-remove parent widget))
           (gtk:gtk-box-pack-start target widget :expand nil :fill t)))
-      (setf (gtk:gtk-widget-width-request widget) (max 0 width)
+      (setf (gtk:gtk-widget-width-request widget) (gint (max 0 (or width 0)))
             (gtk:gtk-widget-height-request widget) -1)
       (gtk:gtk-widget-show target)
       (gtk:gtk-widget-show widget)))
@@ -1455,7 +1475,7 @@ with this scheme.")
     0))
 (define-ffi-method (setf ffi-height) ((height integer) (buffer gtk-buffer))
   (when-let ((widget (gtk-object buffer)))
-    (setf (gtk:gtk-widget-height-request widget) height))
+    (setf (gtk:gtk-widget-height-request widget) (gint height)))
   height)
 (define-ffi-method ffi-width ((buffer gtk-buffer))
   (if-let ((bounds (get-bounds buffer)))
@@ -1463,7 +1483,7 @@ with this scheme.")
     0))
 (define-ffi-method (setf ffi-width) ((width integer) (buffer gtk-buffer))
   (when-let ((widget (gtk-object buffer)))
-    (setf (gtk:gtk-widget-width-request widget) width))
+    (setf (gtk:gtk-widget-width-request widget) (gint width)))
   width)
 
 (define-ffi-method ffi-height ((window gtk-window))
@@ -1473,7 +1493,7 @@ with this scheme.")
 (define-ffi-method (setf ffi-height) ((height integer) (window gtk-window))
   (when-let ((win (slot-value window 'gtk-object)))
     (let ((width (or (gtk:gtk-window-get-size win) 1600)))
-      (gtk:gtk-window-resize win width (max 1 height))))
+      (gtk:gtk-window-resize win (gint width) (max 1 (gint height)))))
   height)
 (define-ffi-method ffi-width ((window gtk-window))
   (if-let ((win (slot-value window 'gtk-object)))
@@ -1482,7 +1502,7 @@ with this scheme.")
 (define-ffi-method (setf ffi-width) ((width integer) (window gtk-window))
   (when-let ((win (slot-value window 'gtk-object)))
     (let ((height (or (nth-value 1 (gtk:gtk-window-get-size win)) 1200)))
-      (gtk:gtk-window-resize win (max 1 width) height)))
+      (gtk:gtk-window-resize win (max 1 (gint width)) (gint height))))
   width)
 
 (defun process-file-chooser-request (web-view file-chooser-request)
@@ -1886,15 +1906,23 @@ with this scheme.")
     (webkit:webkit-web-view-reload view))
   buffer)
 
+(defun webkit-html-uri (url)
+  "Return URL as the string WebKit's alternate-HTML load expects."
+  (let ((text (typecase url
+                (quri:uri (quri:render-uri url))
+                (string url)
+                (t ""))))
+    (if (uiop:emptyp text) "about:blank" text)))
+
 (define-ffi-method ffi-buffer-load-alternate-html ((buffer gtk-buffer)
                                                    html-content
                                                    content-url
                                                    url)
   (when-let ((view (gtk-object buffer)))
     (webkit:webkit-web-view-load-alternate-html view
-                                                html-content
-                                                (quri:render-uri (url content-url))
-                                                (if (uiop:emptyp url) "about:blank" url))))
+                                                (if (stringp html-content) html-content "")
+                                                (webkit-html-uri content-url)
+                                                (webkit-html-uri url))))
 
 (define-ffi-method ffi-buffer-set-background-color ((buffer prompt-buffer) color)
   (let ((rgba (css-color->gdk-rgba color))
@@ -2232,12 +2260,15 @@ WebKit's filter language accepts a restricted regular expression."
 (sera:-> maybe-fix-pdfjs-filename (string quri:uri)
          (values string &optional))
 (defun maybe-fix-pdfjs-filename (suggested-file-name uri)
-  (let ((pathname (pathname (quri:uri-path uri))))
+  (let* ((path (and (quri:uri-p uri) (quri:uri-path uri)))
+         (type (and (stringp path) (ignore-errors (pathname-type path)))))
     (if (and (string= suggested-file-name "document.pdf")
-             (string= (pathname-type pathname) "pdf"))
-        (uiop:native-namestring
-         (make-pathname :name (pathname-name pathname)
-                        :type "pdf"))
+             (string-equal type "pdf"))
+        (or (ignore-errors
+             (uiop:native-namestring
+              (make-pathname :name (pathname-name path)
+                             :type "pdf")))
+            suggested-file-name)
         suggested-file-name)))
 
 (defun wrap-download (webkit-download)
@@ -2303,9 +2334,11 @@ WebKit's filter language accepts a restricted regular expression."
       (webkit:webkit-settings-user-agent settings))))
 
 (define-ffi-method (setf ffi-buffer-user-agent) (value (buffer gtk-buffer))
-  (when-let ((view (gtk-object buffer)))
-    (when-let ((settings (webkit:webkit-web-view-get-settings view)))
-      (setf (webkit:webkit-settings-user-agent settings) value))))
+  (when (stringp value)
+    (when-let ((view (gtk-object buffer)))
+      (when-let ((settings (webkit:webkit-web-view-get-settings view)))
+        (setf (webkit:webkit-settings-user-agent settings) value))))
+  value)
 
 (define-ffi-method ffi-buffer-zoom-ratio ((buffer gtk-buffer))
   (if-let ((view (gtk-object buffer)))
@@ -2415,27 +2448,29 @@ Valid values are determined by the `cookie-policy' type."
 (defmethod (setf ffi-buffer-cookie-policy) (value (cookie-manager webkit:webkit-cookie-manager))
   "Set the cookie policy to VALUE.
 Valid values are determined by the `cookie-policy' type."
-  (webkit:webkit-cookie-manager-set-accept-policy
-   cookie-manager
-   (match value
-     (:accept :webkit-cookie-policy-accept-always)
-     (:never :webkit-cookie-policy-accept-never)
-     (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
+  (when-let ((policy (match value
+                       (:accept :webkit-cookie-policy-accept-always)
+                       (:never :webkit-cookie-policy-accept-never)
+                       (:no-third-party :webkit-cookie-policy-accept-no-third-party))))
+    (webkit:webkit-cookie-manager-set-accept-policy cookie-manager policy))
+  value)
 
 (defmethod ffi-preferred-languages ((buffer gtk-buffer))
   "Not supported by WebKitGTK.
 Only the setf method is."
   nil)
+
 (define-ffi-method (setf ffi-preferred-languages) (language-list (buffer gtk-buffer))
   "LANGUAGE-LIST is a list of strings like '(\"en_US\" \"fr_FR\")."
   (when-let ((view (gtk-object buffer)))
-    (let ((langs (cffi:foreign-alloc :string
-                                     :initial-contents language-list
-                                     :null-terminated-p t)))
-      (webkit:webkit-web-context-set-preferred-languages
-       (webkit:webkit-web-view-web-context view)
-       langs)
-      (cffi:foreign-free langs))))
+    (let ((langs (foreign-string-list language-list)))
+      (unwind-protect
+           (webkit:webkit-web-context-set-preferred-languages
+            (webkit:webkit-web-view-web-context view)
+            langs)
+        (unless (cffi:null-pointer-p langs)
+          (cffi:foreign-free langs)))))
+  language-list)
 
 (define-ffi-method ffi-focused-p ((buffer gtk-buffer))
   (when-let ((view (gtk-object buffer)))
