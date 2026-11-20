@@ -21,8 +21,8 @@
 #
 # CEF_ROOT may point at an unpacked CEF binary distribution (the directory
 # that contains include/, Release/, and cmake/). When unset, this downloads
-# the newest CEF 150 macOS build. Linux is pinned to 150.0.22, which has no
-# macOS archive; 150.0.21 is the matching macOS release.
+# the CEF 150 build from the atlas-engineer/cef release. The arm64 archive
+# is published on that release when the macOS build is uploaded.
 
 set -eu
 
@@ -37,11 +37,9 @@ cd "$root"
 case $(uname -m) in
     arm64)
         cef_platform=macosarm64
-        CEF_SHA1="${CEF_SHA1:-4057b6558bc83c93eb955b6983e00ef6361a0ffc}"
         ;;
     x86_64)
         cef_platform=macosx64
-        CEF_SHA1="${CEF_SHA1:-6a76dc19c34b7858ba409dc2fa017cb9a2dcd27b}"
         ;;
     *)
         printf '%s\n' "Unsupported architecture $(uname -m)." >&2
@@ -49,7 +47,8 @@ case $(uname -m) in
         ;;
 esac
 
-CEF_VERSION="${CEF_VERSION:-150.0.21+ga61e9a5+chromium-150.0.7871.255}"
+CEF_VERSION="${CEF_VERSION:-150.0.22+gc1a097e+chromium-150.0.7871.256}"
+CEF_SHA1="${CEF_SHA1:-}"
 jobs=$(sysctl -n hw.ncpu 2>/dev/null || echo 2)
 export CMAKE_BUILD_PARALLEL_LEVEL="$jobs"
 
@@ -60,8 +59,14 @@ if [ -z "${CEF_ROOT:-}" ]; then
     name="cef_binary_${CEF_VERSION}_${cef_platform}_minimal"
     archive="$work/${name}.tar.bz2"
     if [ ! -f "$archive" ]; then
+        tag=$(printf '%s' "$CEF_VERSION" | sed 's/+/%2B/g')
+        file=$(printf '%s' "${name}.tar.bz2" | sed 's/+/%2B/g')
         curl -fL --retry 3 -o "$archive" \
-            "https://cef-builds.spotifycdn.com/${name}.tar.bz2"
+            "https://github.com/atlas-engineer/cef/releases/download/${tag}/${file}"
+    fi
+    if [ -z "$CEF_SHA1" ]; then
+        printf '%s\n' "CEF_SHA1 is not set for ${name}." >&2
+        exit 1
     fi
     echo "$CEF_SHA1  $archive" | shasum -a 1 -c -
     tar -xjf "$archive" -C "$work"
