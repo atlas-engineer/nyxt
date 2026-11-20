@@ -626,13 +626,15 @@ view before those threads run, and a call into the missing view has no method."
                           (when-let ((window (window buffer)))
                             (if (assoc-value data :fullscreen)
                                 (progn
-                                  (ffi-window-fullscreen window :user-event-p nil)
                                   (disable-message-buffer window)
-                                  (disable-status-buffer window))
+                                  (disable-status-buffer window)
+                                  (disable-panel-buffers window)
+                                  (ffi-window-fullscreen window))
                                 (progn
-                                  (ffi-window-unfullscreen window :user-event-p nil)
+                                  (ffi-window-unfullscreen window)
                                   (enable-message-buffer window)
-                                  (enable-status-buffer window)))))))
+                                  (enable-status-buffer window)
+                                  (enable-panel-buffers window)))))))
     (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
       (cef:add-listener buffer :context-menu
                         (lambda (buffer data)
@@ -1209,7 +1211,11 @@ returns to the message loop."
   (cef:fullscreen window))
 
 (defmethod ffi-window-unfullscreen ((window cef-window) &key &allow-other-keys)
-  (cef:unfullscreen window))
+  (cef:unfullscreen window)
+  (when-let ((buffer (buffer window)))
+    (ps-eval :async t :buffer buffer
+      (when (ps:@ document fullscreen-element)
+        (ps:chain document (exit-fullscreen))))))
 
 (defmethod ffi-window-maximize ((window cef-window) &key &allow-other-keys)
   (cef:maximize window))
@@ -1286,7 +1292,17 @@ Return nil when key must be discarded, e.g. for modifiers."
                                  :modifiers (input-modifier-translator sender modifiers)
                                  :status :pressed)))
         (when key-string
-          (dispatch-key-press sender event (key)))))))
+          (or (dispatch-key-press sender event (key))
+              (progn
+                (when (and (null modifiers)
+                           (string= key-string "escape")
+                           (window sender)
+                           (nyxt::fullscreen-p (window sender)))
+                  (run-buffer-thread "exit-fullscreen" sender
+                    (ps-eval :async t :buffer sender
+                      (when (ps:@ document fullscreen-element)
+                        (ps:chain document (exit-fullscreen))))))
+                nil)))))))
 
 (defmethod on-signal-button-press-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))

@@ -62,15 +62,19 @@ When WINDOW is the last one, quit Nyxt."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
-    (setf (slot-value window 'fullscreen-p) t)
-    (when user-event-p (call-next-method)))
+    (let ((was-fullscreen-p (fullscreen-p window)))
+      (when (or user-event-p (not was-fullscreen-p))
+        (setf (fullscreen-p window) t))
+      (when user-event-p (call-next-method))))
   (:documentation "Set fullscreen WINDOW state on.
 USER-EVENT-P helps to distinguish events requested by the user or
 renderer (e.g. fullscreen a video stream)."))
 (define-ffi-generic ffi-window-unfullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
-    (setf (slot-value window 'fullscreen-p) nil)
-    (when user-event-p (call-next-method)))
+    (let ((was-fullscreen-p (fullscreen-p window)))
+      (when (or user-event-p was-fullscreen-p)
+        (setf (fullscreen-p window) nil))
+      (when user-event-p (call-next-method))))
   (:documentation "Set fullscreen WINDOW state off.
 See `ffi-window-fullscreen'."))
 

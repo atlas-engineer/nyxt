@@ -420,7 +420,8 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-panel-containers (window)
   "Inset and round WINDOW's visible side panels."
   (when window
-    (let ((left-seen nil)
+    (let ((fullscreen-p (fullscreen-p window))
+          (left-seen nil)
           (right-seen nil)
           (color (panel-backdrop-color window)))
       (dolist (panel (panel-buffers window))
@@ -430,12 +431,17 @@ The status bar, message bar, and prompt are not in the main buffer table, so
           (let ((first-on-side-p (ecase (side panel)
                                    (:left (prog1 (not left-seen) (setf left-seen t)))
                                    (:right (prog1 (not right-seen) (setf right-seen t))))))
-            (ffi-buffer-set-insets panel
-                                   :top 12
-                                   :left (if first-on-side-p 8 0)
-                                   :bottom 8
-                                   :right 8)
-            (ffi-buffer-set-corner-radius panel 6)
+            (if fullscreen-p
+                (progn
+                  (ffi-buffer-set-corner-radius panel 0)
+                  (ffi-buffer-set-insets panel :top 0 :left 0 :bottom 0 :right 0))
+                (progn
+                  (ffi-buffer-set-insets panel
+                                         :top 12
+                                         :left (if first-on-side-p 8 0)
+                                         :bottom 8
+                                         :right 8)
+                  (ffi-buffer-set-corner-radius panel 6)))
             (when color
               (ffi-buffer-set-background-color panel color)))))))
   nil)
@@ -444,8 +450,13 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-status-container (window)
   "Inset and round WINDOW's status bar."
   (when-let ((status (and window (status-buffer window))))
-    (ffi-buffer-set-insets status :top 8 :left 8 :bottom 8 :right 8)
-    (ffi-buffer-set-corner-radius status 6)
+    (if (fullscreen-p window)
+        (progn
+          (ffi-buffer-set-corner-radius status 0)
+          (ffi-buffer-set-insets status :top 0 :left 0 :bottom 0 :right 0))
+        (progn
+          (ffi-buffer-set-insets status :top 8 :left 8 :bottom 8 :right 8)
+          (ffi-buffer-set-corner-radius status 6)))
     (when-let ((color (panel-backdrop-color window)))
       (ffi-buffer-set-background-color status color)))
   nil)
@@ -454,8 +465,13 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-prompt-container (window)
   "Inset and round WINDOW's active prompt."
   (when-let ((prompt (first (and window (active-prompt-buffers window)))))
-    (ffi-buffer-set-insets prompt :top 8 :left 8 :bottom 8 :right 8)
-    (ffi-buffer-set-corner-radius prompt 6)
+    (if (fullscreen-p window)
+        (progn
+          (ffi-buffer-set-corner-radius prompt 0)
+          (ffi-buffer-set-insets prompt :top 0 :left 0 :bottom 0 :right 0))
+        (progn
+          (ffi-buffer-set-insets prompt :top 8 :left 8 :bottom 8 :right 8)
+          (ffi-buffer-set-corner-radius prompt 6)))
     (when-let ((color (panel-backdrop-color window)))
       (ffi-buffer-set-background-color prompt color)))
   nil)
@@ -464,7 +480,8 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-page-container (window)
   "Inset WINDOW's page, panels, status bar, and prompt so the page background shows around them.
 The top inset of the page and panels is 12px and the other edges are 8px.
-A side that already has an adjacent panel is not inset again."
+A side that already has an adjacent panel is not inset again.
+When WINDOW is fullscreen, insets and corner rounding are disabled."
   (when window
     (apply-panel-containers window)
     (apply-status-container window)
@@ -473,16 +490,51 @@ A side that already has an adjacent panel is not inset again."
       (when (and (web-buffer-p page)
                  (not (panel-buffer-p page))
                  (not (dead-buffer-p page)))
-        (multiple-value-bind (left right) (page-adjacent-sides window)
-          (ffi-buffer-set-insets page
-                                 :top 12
-                                 :left (if left 0 8)
-                                 :bottom 8
-                                 :right (if right 0 8)))
-        (ffi-buffer-set-corner-radius page 6)
+        (if (fullscreen-p window)
+            (progn
+              (ffi-buffer-set-corner-radius page 0)
+              (ffi-buffer-set-insets page :top 0 :left 0 :bottom 0 :right 0))
+            (progn
+              (multiple-value-bind (left right) (page-adjacent-sides window)
+                (ffi-buffer-set-insets page
+                                       :top 12
+                                       :left (if left 0 8)
+                                       :bottom 8
+                                       :right (if right 0 8)))
+              (ffi-buffer-set-corner-radius page 6)))
         (when-let ((color (panel-backdrop-color window)))
           (ffi-buffer-set-background-color page color)))))
   nil)
+
+(export-always 'enable-panel-buffers)
+(-> enable-panel-buffers (window) t)
+(defun enable-panel-buffers (window)
+  "Show WINDOW's visible side panels."
+  (when window
+    (dolist (panel (panel-buffers window))
+      (when (and (panel-buffer-p panel)
+                 (visible-p panel)
+                 (not (dead-buffer-p panel)))
+        (ffi-add-panel-buffer window panel (side panel) (width panel))))
+    (apply-page-container window))
+  nil)
+
+(export-always 'disable-panel-buffers)
+(-> disable-panel-buffers (window) t)
+(defun disable-panel-buffers (window)
+  "Hide WINDOW's side panels without clearing their `visible-p' state."
+  (when window
+    (dolist (panel (panel-buffers window))
+      (when (and (panel-buffer-p panel)
+                 (visible-p panel)
+                 (not (dead-buffer-p panel)))
+        (ffi-remove-panel-buffer window panel))))
+  nil)
+
+(defmethod (setf fullscreen-p) :after (value (window window))
+  "Update container insets and corner rounding when WINDOW's fullscreen state changes."
+  (declare (ignore value))
+  (apply-page-container window))
 
 (defmethod (setf visible-p) :after (value (panel panel-buffer))
   "The page margin follows the panels beside it."
