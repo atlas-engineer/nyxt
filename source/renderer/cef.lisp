@@ -1174,6 +1174,7 @@ returns to the message loop."
     (ffi-print-message (message-buffer window) "Ready."))
   (when focus (ffi-focus-buffer buffer))
   (setf (current-view window) buffer)
+  (nyxt::apply-page-container window)
   buffer)
 
 (defmethod ffi-height ((window cef-window))

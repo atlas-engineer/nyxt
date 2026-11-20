@@ -403,12 +403,58 @@ The status bar, message bar, and prompt are not in the main buffer table, so
           (apply-panel-backdrop buffer color)))))
   nil)
 
+(-> page-adjacent-sides (window) (values boolean boolean &optional))
+(defun page-adjacent-sides (window)
+  "Return whether WINDOW has a visible panel on the left and on the right."
+  (let ((left nil)
+        (right nil))
+    (dolist (panel (panel-buffers window))
+      (when (and (panel-buffer-p panel) (visible-p panel))
+        (case (side panel)
+          (:left (setf left t))
+          (:right (setf right t)))))
+    (values left right)))
+
+(-> apply-page-container (window) t)
+(defun apply-page-container (window)
+  "Inset WINDOW's page so the page background shows around it.
+The top inset is 12px and the other edges are 8px, matching a panel. A side
+that already has a panel is not inset again. The page scrolls inside the inset."
+  (when-let* ((package (find-package :cef))
+              (setter (find-symbol "SET-INSETS" package))
+              (page (and window (buffer window))))
+    (when (and (fboundp setter)
+               (web-buffer-p page)
+               (not (panel-buffer-p page))
+               (not (dead-buffer-p page)))
+      (multiple-value-bind (left right) (page-adjacent-sides window)
+        (funcall setter page :top 12 :left (if left 0 8) :bottom 8 :right (if right 0 8)))
+      (when-let ((round (find-symbol "SET-CORNER-RADIUS" package)))
+        (when (fboundp round)
+          (funcall round page 6)))
+      (when-let ((color (panel-backdrop-color window)))
+        (ffi-buffer-set-background-color page color))))
+  nil)
+
+(defmethod (setf visible-p) :after (value (panel panel-buffer))
+  "The page margin follows the panels beside it."
+  (declare (ignore value))
+  (when (window panel)
+    (apply-page-container (window panel))))
+
+(defmethod (setf side) :after (value (panel panel-buffer))
+  "The page margin follows the side the panel moves to."
+  (declare (ignore value))
+  (when (window panel)
+    (apply-page-container (window panel))))
+
 (defmethod (setf background-color) :after (color (buffer web-buffer))
   "Panels and bars follow the page they float on."
   (declare (ignore color))
   (dolist (window (window-list))
     (when (eq buffer (buffer window))
-      (paint-panel-backdrops window))))
+      (paint-panel-backdrops window)
+      (apply-page-container window))))
 
 (-> refresh-panel-backdrop (window) t)
 (defun refresh-panel-backdrop (window)
@@ -427,7 +473,8 @@ Specialized on `web-buffer' so the status bar's `buffer' handler, which
 uses the unspecialized method, does not replace it."
   (unless (panel-buffer-p buffer)
     (paint-panel-backdrops window)
-    (refresh-panel-backdrop window)))
+    (refresh-panel-backdrop window)
+    (apply-page-container window)))
 
 (-> install-panel-controls (panel-buffer) t)
 (defun install-panel-controls (panel)
@@ -440,7 +487,8 @@ uses the unspecialized method, does not replace it."
                         (panel-close-callback panel)
                         (theme *browser*)))
   (when (window panel)
-    (paint-panel-backdrops (window panel))))
+    (paint-panel-backdrops (window panel))
+    (apply-page-container (window panel))))
 
 (defmethod on-signal-load-finished :after ((buffer panel-buffer) url title)
   (declare (ignore url title))
