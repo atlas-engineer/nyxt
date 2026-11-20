@@ -809,7 +809,13 @@ response.  The BODY is wrapped with `with-protect'."
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
 (define-ffi-method ffi-window-unfullscreen ((window gtk-window) &key &allow-other-keys)
-  (gtk:gtk-window-unfullscreen (gtk-object window)))
+  (gtk:gtk-window-unfullscreen (gtk-object window))
+  (when-let ((buffer (and (page-fullscreen-p window) (buffer window))))
+    (ffi-buffer-evaluate-javascript-async
+     buffer
+     (ps:ps
+       (when (ps:@ document fullscreen-element)
+         (ps:chain document (exit-fullscreen)))))))
 
 (define-ffi-method ffi-window-maximize ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-maximize (gtk-object window)))
@@ -1860,18 +1866,12 @@ non-null pointer."
         (connect-signal buffer "enter-fullscreen" nil (web-view)
           (declare (ignore web-view))
           (when-let ((window (window buffer)))
-            (disable-message-buffer window)
-            (disable-status-buffer window)
-            (disable-panel-buffers window)
-            (ffi-window-fullscreen window :user-event-p nil))
+            (enter-page-fullscreen window :user-event-p nil))
           nil)
         (connect-signal buffer "leave-fullscreen" nil (web-view)
           (declare (ignore web-view))
           (when-let ((window (window buffer)))
-            (ffi-window-unfullscreen window :user-event-p nil)
-            (enable-message-buffer window)
-            (enable-status-buffer window)
-            (enable-panel-buffers window))
+            (leave-page-fullscreen window :user-event-p nil))
           nil)))
   buffer)
 

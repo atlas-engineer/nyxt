@@ -74,7 +74,9 @@ renderer (e.g. fullscreen a video stream)."))
     (let ((was-fullscreen-p (fullscreen-p window)))
       (when (or user-event-p was-fullscreen-p)
         (setf (fullscreen-p window) nil))
-      (when user-event-p (call-next-method))))
+      (when user-event-p
+        (setf (fullscreen-before-page-p window) nil)
+        (call-next-method))))
   (:documentation "Set fullscreen WINDOW state off.
 See `ffi-window-fullscreen'."))
 

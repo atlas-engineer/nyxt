@@ -625,16 +625,8 @@ view before those threads run, and a call into the missing view has no method."
                         (run-thread "fullscreen"
                           (when-let ((window (window buffer)))
                             (if (assoc-value data :fullscreen)
-                                (progn
-                                  (disable-message-buffer window)
-                                  (disable-status-buffer window)
-                                  (disable-panel-buffers window)
-                                  (ffi-window-fullscreen window))
-                                (progn
-                                  (ffi-window-unfullscreen window)
-                                  (enable-message-buffer window)
-                                  (enable-status-buffer window)
-                                  (enable-panel-buffers window)))))))
+                                (enter-page-fullscreen window)
+                                (leave-page-fullscreen window))))))
     (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
       (cef:add-listener buffer :context-menu
                         (lambda (buffer data)
@@ -1212,7 +1204,7 @@ returns to the message loop."
 
 (defmethod ffi-window-unfullscreen ((window cef-window) &key &allow-other-keys)
   (cef:unfullscreen window)
-  (when-let ((buffer (buffer window)))
+  (when-let ((buffer (and (page-fullscreen-p window) (buffer window))))
     (ps-eval :async t :buffer buffer
       (when (ps:@ document fullscreen-element)
         (ps:chain document (exit-fullscreen))))))
@@ -1297,7 +1289,7 @@ Return nil when key must be discarded, e.g. for modifiers."
                 (when (and (null modifiers)
                            (string= key-string "escape")
                            (window sender)
-                           (nyxt::fullscreen-p (window sender)))
+                           (page-fullscreen-p (window sender)))
                   (run-buffer-thread "exit-fullscreen" sender
                     (ps-eval :async t :buffer sender
                       (when (ps:@ document fullscreen-element)

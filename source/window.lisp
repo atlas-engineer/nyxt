@@ -43,6 +43,15 @@ The channel is popped when a prompt buffer is hidden.")
     :export nil
     :type boolean
     :documentation "Whether the window is displayed in fullscreen.")
+   (page-fullscreen-p
+    nil
+    :type boolean
+    :documentation "Whether the active page is displaying an element in fullscreen.")
+   (fullscreen-before-page-p
+    nil
+    :export nil
+    :type boolean
+    :documentation "Whether the window was already fullscreen when the page entered fullscreen.")
    (maximized-p
     nil
     :export nil

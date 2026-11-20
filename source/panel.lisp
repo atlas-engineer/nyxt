@@ -420,7 +420,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-panel-containers (window)
   "Inset and round WINDOW's visible side panels."
   (when window
-    (let ((fullscreen-p (fullscreen-p window))
+    (let ((page-fullscreen-p (page-fullscreen-p window))
           (left-seen nil)
           (right-seen nil)
           (color (panel-backdrop-color window)))
@@ -431,7 +431,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
           (let ((first-on-side-p (ecase (side panel)
                                    (:left (prog1 (not left-seen) (setf left-seen t)))
                                    (:right (prog1 (not right-seen) (setf right-seen t))))))
-            (if fullscreen-p
+            (if page-fullscreen-p
                 (progn
                   (ffi-buffer-set-corner-radius panel 0)
                   (ffi-buffer-set-insets panel :top 0 :left 0 :bottom 0 :right 0))
@@ -450,7 +450,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-status-container (window)
   "Inset and round WINDOW's status bar."
   (when-let ((status (and window (status-buffer window))))
-    (if (fullscreen-p window)
+    (if (page-fullscreen-p window)
         (progn
           (ffi-buffer-set-corner-radius status 0)
           (ffi-buffer-set-insets status :top 0 :left 0 :bottom 0 :right 0))
@@ -465,7 +465,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
 (defun apply-prompt-container (window)
   "Inset and round WINDOW's active prompt."
   (when-let ((prompt (first (and window (active-prompt-buffers window)))))
-    (if (fullscreen-p window)
+    (if (page-fullscreen-p window)
         (progn
           (ffi-buffer-set-corner-radius prompt 0)
           (ffi-buffer-set-insets prompt :top 0 :left 0 :bottom 0 :right 0))
@@ -481,7 +481,7 @@ The status bar, message bar, and prompt are not in the main buffer table, so
   "Inset WINDOW's page, panels, status bar, and prompt so the page background shows around them.
 The top inset of the page and panels is 12px and the other edges are 8px.
 A side that already has an adjacent panel is not inset again.
-When WINDOW is fullscreen, insets and corner rounding are disabled."
+When the active page in WINDOW is fullscreen, insets and corner rounding are disabled."
   (when window
     (apply-panel-containers window)
     (apply-status-container window)
@@ -490,7 +490,7 @@ When WINDOW is fullscreen, insets and corner rounding are disabled."
       (when (and (web-buffer-p page)
                  (not (panel-buffer-p page))
                  (not (dead-buffer-p page)))
-        (if (fullscreen-p window)
+        (if (page-fullscreen-p window)
             (progn
               (ffi-buffer-set-corner-radius page 0)
               (ffi-buffer-set-insets page :top 0 :left 0 :bottom 0 :right 0))
@@ -531,10 +531,54 @@ When WINDOW is fullscreen, insets and corner rounding are disabled."
         (ffi-remove-panel-buffer window panel))))
   nil)
 
-(defmethod (setf fullscreen-p) :after (value (window window))
-  "Update container insets and corner rounding when WINDOW's fullscreen state changes."
+(export-always 'enter-page-fullscreen)
+(-> enter-page-fullscreen (window &key (:user-event-p boolean)) t)
+(defun enter-page-fullscreen (window &key (user-event-p t))
+  "Hide WINDOW's chrome, remove container rounding, and fullscreen WINDOW for page content."
+  (when (and window (not (page-fullscreen-p window)))
+    (setf (fullscreen-before-page-p window) (fullscreen-p window)
+          (page-fullscreen-p window) t)
+    (disable-message-buffer window)
+    (disable-status-buffer window)
+    (disable-panel-buffers window)
+    (ffi-window-fullscreen window :user-event-p user-event-p))
+  nil)
+
+(export-always 'leave-page-fullscreen)
+(-> leave-page-fullscreen (window &key (:user-event-p boolean) (:unfullscreen-window-p boolean)) t)
+(defun leave-page-fullscreen (window &key (user-event-p t) (unfullscreen-window-p t))
+  "Restore WINDOW's chrome and container rounding after page content leaves fullscreen."
+  (when (and window (page-fullscreen-p window))
+    (let ((keep-fullscreen-p (fullscreen-before-page-p window)))
+      (setf (fullscreen-before-page-p window) nil
+            (page-fullscreen-p window) nil)
+      (when (and unfullscreen-window-p (not keep-fullscreen-p))
+        (ffi-window-unfullscreen window :user-event-p user-event-p))
+      (enable-message-buffer window)
+      (enable-status-buffer window)
+      (enable-panel-buffers window)))
+  nil)
+
+(defmethod (setf page-fullscreen-p) :after (value (window window))
+  "Update container insets and corner rounding when page fullscreen state changes."
   (declare (ignore value))
   (apply-page-container window))
+
+(defmethod ffi-window-unfullscreen :after ((window window) &key (user-event-p t) &allow-other-keys)
+  (when (and user-event-p (page-fullscreen-p window))
+    (leave-page-fullscreen window :unfullscreen-window-p nil)))
+
+(defmethod (setf buffer) :before ((buffer buffer) (window window))
+  (when (and (page-fullscreen-p window)
+             (not (panel-buffer-p buffer))
+             (not (eq buffer (buffer window))))
+    (when-let ((previous (buffer window)))
+      (ffi-buffer-evaluate-javascript-async
+       previous
+       (ps:ps
+         (when (ps:@ document fullscreen-element)
+           (ps:chain document (exit-fullscreen))))))
+    (leave-page-fullscreen window)))
 
 (defmethod (setf visible-p) :after (value (panel panel-buffer))
   "The page margin follows the panels beside it."
