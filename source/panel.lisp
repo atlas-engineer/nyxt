@@ -67,7 +67,8 @@ A page loaded in the panel does not replace it."
   (when (window panel)
     (if (visible-p panel)
         (ffi-add-panel-buffer (window panel) panel (side panel) (width panel))
-        (ffi-remove-panel-buffer (window panel) panel)))
+        (ffi-remove-panel-buffer (window panel) panel))
+    (apply-page-container (window panel)))
   panel)
 
 (-> focused-panel ((maybe window)) (maybe panel-buffer))
@@ -235,17 +236,17 @@ Example:
       :background-color ,theme:background-color
       :height "100%")
     `(body
+      :box-sizing "border-box"
       :background-color ,theme:surface-color
       :backdrop-filter "saturate(180%) blur(20px)"
       :-webkit-backdrop-filter "saturate(180%) blur(20px)"
-      :margin "12px" "8px" "8px"
-      :min-height "calc(100vh - 24px)"
-      :border-radius "6px")
+      :margin "0"
+      :min-height "100vh")
     `("#nyxt-panel-header"
       :position "fixed"
-      :top "16px"
-      :left "8px"
-      :right "8px"
+      :top "4px"
+      :left "0"
+      :right "0"
       :z-index "6"
       :box-sizing "border-box"
       :display "flex"
@@ -415,25 +416,72 @@ The status bar, message bar, and prompt are not in the main buffer table, so
           (:right (setf right t)))))
     (values left right)))
 
+(-> apply-panel-containers (window) t)
+(defun apply-panel-containers (window)
+  "Inset and round WINDOW's visible side panels."
+  (when window
+    (let ((left-seen nil)
+          (right-seen nil)
+          (color (panel-backdrop-color window)))
+      (dolist (panel (panel-buffers window))
+        (when (and (panel-buffer-p panel)
+                   (visible-p panel)
+                   (not (dead-buffer-p panel)))
+          (let ((first-on-side-p (ecase (side panel)
+                                   (:left (prog1 (not left-seen) (setf left-seen t)))
+                                   (:right (prog1 (not right-seen) (setf right-seen t))))))
+            (ffi-buffer-set-insets panel
+                                   :top 12
+                                   :left (if first-on-side-p 8 0)
+                                   :bottom 8
+                                   :right 8)
+            (ffi-buffer-set-corner-radius panel 6)
+            (when color
+              (ffi-buffer-set-background-color panel color)))))))
+  nil)
+
+(-> apply-status-container (window) t)
+(defun apply-status-container (window)
+  "Inset and round WINDOW's status bar."
+  (when-let ((status (and window (status-buffer window))))
+    (ffi-buffer-set-insets status :top 8 :left 8 :bottom 8 :right 8)
+    (ffi-buffer-set-corner-radius status 6)
+    (when-let ((color (panel-backdrop-color window)))
+      (ffi-buffer-set-background-color status color)))
+  nil)
+
+(-> apply-prompt-container (window) t)
+(defun apply-prompt-container (window)
+  "Inset and round WINDOW's active prompt."
+  (when-let ((prompt (first (and window (active-prompt-buffers window)))))
+    (ffi-buffer-set-insets prompt :top 8 :left 8 :bottom 8 :right 8)
+    (ffi-buffer-set-corner-radius prompt 6)
+    (when-let ((color (panel-backdrop-color window)))
+      (ffi-buffer-set-background-color prompt color)))
+  nil)
+
 (-> apply-page-container (window) t)
 (defun apply-page-container (window)
-  "Inset WINDOW's page so the page background shows around it.
-The top inset is 12px and the other edges are 8px, matching a panel. A side
-that already has a panel is not inset again. The page scrolls inside the inset."
-  (when-let* ((package (find-package :cef))
-              (setter (find-symbol "SET-INSETS" package))
-              (page (and window (buffer window))))
-    (when (and (fboundp setter)
-               (web-buffer-p page)
-               (not (panel-buffer-p page))
-               (not (dead-buffer-p page)))
-      (multiple-value-bind (left right) (page-adjacent-sides window)
-        (funcall setter page :top 12 :left (if left 0 8) :bottom 8 :right (if right 0 8)))
-      (when-let ((round (find-symbol "SET-CORNER-RADIUS" package)))
-        (when (fboundp round)
-          (funcall round page 6)))
-      (when-let ((color (panel-backdrop-color window)))
-        (ffi-buffer-set-background-color page color))))
+  "Inset WINDOW's page, panels, status bar, and prompt so the page background shows around them.
+The top inset of the page and panels is 12px and the other edges are 8px.
+A side that already has an adjacent panel is not inset again."
+  (when window
+    (apply-panel-containers window)
+    (apply-status-container window)
+    (apply-prompt-container window)
+    (when-let ((page (buffer window)))
+      (when (and (web-buffer-p page)
+                 (not (panel-buffer-p page))
+                 (not (dead-buffer-p page)))
+        (multiple-value-bind (left right) (page-adjacent-sides window)
+          (ffi-buffer-set-insets page
+                                 :top 12
+                                 :left (if left 0 8)
+                                 :bottom 8
+                                 :right (if right 0 8)))
+        (ffi-buffer-set-corner-radius page 6)
+        (when-let ((color (panel-backdrop-color window)))
+          (ffi-buffer-set-background-color page color)))))
   nil)
 
 (defmethod (setf visible-p) :after (value (panel panel-buffer))

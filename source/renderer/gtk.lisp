@@ -551,6 +551,13 @@ response.  The BODY is wrapped with `with-protect'."
               (- (ash 1 31))
               (1- (ash 1 31))))
 
+(defun set-widget-margins (widget top left bottom right)
+  (when widget
+    (setf (gtk:gtk-widget-margin-top widget) (gint (max 0 (or top 0)))
+          (gtk:gtk-widget-margin-start widget) (gint (max 0 (or left 0)))
+          (gtk:gtk-widget-margin-bottom widget) (gint (max 0 (or bottom 0)))
+          (gtk:gtk-widget-margin-end widget) (gint (max 0 (or right 0))))))
+
 (defun set-container-bar-height (container height)
   (when container
     (cond
@@ -744,6 +751,10 @@ response.  The BODY is wrapped with `with-protect'."
           (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
         nil)
       (gtk:gtk-widget-show-all gtk-object)
+      (when-let ((rgba (canvas-color *browser*)))
+        (gtk:gtk-widget-override-background-color gtk-object :normal rgba))
+      (set-widget-margins (gtk-object status-buffer) 8 8 8 8)
+      (set-widget-margins prompt-buffer-view 8 8 8 8)
       (set-container-bar-height message-container (height message-buffer))
       (set-container-bar-height status-container (height status-buffer))
       (set-container-bar-height prompt-buffer-container 0)
@@ -1391,7 +1402,10 @@ non-null pointer."
           (when parent
             (gtk:gtk-container-remove parent widget))
           (gtk:gtk-box-pack-start target widget :expand nil :fill t)))
-      (setf (gtk:gtk-widget-width-request widget) (gint (max 0 (or width 0)))
+      (setf (gtk:gtk-widget-width-request widget)
+            (gint (max 0 (- (or width 0)
+                            (gtk:gtk-widget-margin-start widget)
+                            (gtk:gtk-widget-margin-end widget))))
             (gtk:gtk-widget-height-request widget) -1)
       (gtk:gtk-widget-show target)
       (gtk:gtk-widget-show widget)))
@@ -1420,6 +1434,7 @@ non-null pointer."
     (nyxt::print-status (status-buffer window))
     (ffi-print-message (message-buffer window) "Ready."))
   (when focus (ffi-focus-buffer buffer))
+  (nyxt::apply-page-container window)
   buffer)
 
 (define-ffi-method ffi-height ((buffer prompt-buffer))
@@ -1929,14 +1944,45 @@ non-null pointer."
         (view (or (gtk-object buffer)
                   (and (window buffer)
                        (slot-value (window buffer) 'prompt-buffer-view)))))
-    (when (and rgba view)
-      (webkit:webkit-web-view-set-background-color view rgba))))
+    (when rgba
+      (when view
+        (webkit:webkit-web-view-set-background-color view rgba))
+      (when-let ((window-widget (and (window buffer) (gtk-object (window buffer)))))
+        (gtk:gtk-widget-override-background-color window-widget :normal rgba)))))
 
 (define-ffi-method ffi-buffer-set-background-color ((buffer gtk-buffer) color)
   (let ((rgba (css-color->gdk-rgba color))
         (view (gtk-object buffer)))
-    (when (and rgba view)
-      (webkit:webkit-web-view-set-background-color view rgba))))
+    (when rgba
+      (when view
+        (webkit:webkit-web-view-set-background-color view rgba))
+      (when-let ((window (window buffer)))
+        (when (and (gtk-object window)
+                   (or (auxiliary-buffer-p buffer)
+                       (panel-buffer-p buffer)
+                       (eq buffer (buffer window))))
+          (gtk:gtk-widget-override-background-color (gtk-object window) :normal rgba))))))
+
+(define-ffi-method ffi-buffer-set-insets ((buffer prompt-buffer)
+                                          &key (top 0) (left 0) (bottom 0) (right 0))
+  (set-widget-margins (or (gtk-object buffer)
+                          (and (window buffer)
+                               (slot-value (window buffer) 'prompt-buffer-view)))
+                      top left bottom right))
+
+(define-ffi-method ffi-buffer-set-insets ((buffer gtk-buffer)
+                                          &key (top 0) (left 0) (bottom 0) (right 0))
+  (let ((widget (gtk-object buffer)))
+    (set-widget-margins widget top left bottom right)
+    (when (and widget (panel-buffer-p buffer) (visible-p buffer))
+      (setf (gtk:gtk-widget-width-request widget)
+            (gint (max 0 (- (nyxt::width buffer)
+                            (max 0 (or left 0))
+                            (max 0 (or right 0)))))))))
+
+(define-ffi-method ffi-buffer-set-corner-radius ((buffer gtk-buffer) radius)
+  (declare (ignore radius))
+  nil)
 
 (defun wait-for-committed-load (buffer &optional (timeout 5.0))
   (unless (renderer-thread-p nyxt::*renderer*)

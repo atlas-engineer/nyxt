@@ -227,6 +227,20 @@ See `scheme'."))
   (:documentation "Set the color BUFFER shows before its document paints.
 COLOR is a CSS color."))
 
+(define-ffi-generic ffi-buffer-set-insets (buffer &key top left bottom right)
+  (:method ((buffer t) &key (top 0) (left 0) (bottom 0) (right 0))
+    (declare (ignore top left bottom right))
+    nil)
+  (:documentation "Shrink BUFFER's web view by TOP, LEFT, BOTTOM, and RIGHT pixels.
+The margin around the web view shows BUFFER's background color."))
+
+(define-ffi-generic ffi-buffer-set-corner-radius (buffer radius)
+  (:method ((buffer t) radius)
+    (declare (ignore radius))
+    nil)
+  (:documentation "Round BUFFER's web view corners by RADIUS pixels.
+RADIUS 0 restores square corners."))
+
 (define-ffi-generic ffi-buffer-add-user-style (buffer style)
   (:documentation "Apply the CSS style to BUFFER."))
 (define-ffi-generic ffi-buffer-remove-user-style (buffer style)

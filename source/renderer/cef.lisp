@@ -712,6 +712,24 @@ view before those threads run, and a call into the missing view has no method."
                         (prompt-buffer-view (window buffer)))))
     (ffi-buffer-set-background-color view color)))
 
+(defmethod ffi-buffer-set-insets ((view cef:view) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when (plusp (cef:id view))
+    (cef:set-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-insets ((buffer prompt-buffer) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-corner-radius ((view cef:view) radius)
+  (when (plusp (cef:id view))
+    (cef:set-corner-radius view radius)))
+
+(defmethod ffi-buffer-set-corner-radius ((buffer prompt-buffer) radius)
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-corner-radius view radius)))
+
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
   (declare (ignore world-name))
@@ -992,6 +1010,8 @@ Creating that browser is the slow part of opening a prompt."
                                  :isolated-context-p t
                                  :url "about:blank")))
         (cef:set-bar-height view 0)
+        (cef:set-insets view :top 8 :left 8 :bottom 8 :right 8)
+        (cef:set-corner-radius view 6)
         (setf (prompt-buffer-view window) view))))
 
 (-> ensure-prompt-view-listeners (cef-window) cef:view)
@@ -1094,6 +1114,8 @@ Each bar is a fixed height."
     (unless (find prompt-view (cef:views window))
       (cef:add-view-at window prompt-view 1))
     (cef:add-view window status-buffer)
+    (cef:set-insets status-buffer :top 8 :left 8 :bottom 8 :right 8)
+    (cef:set-corner-radius status-buffer 6)
     (cef:add-view window message-buffer)
     (warm-prompt-view window)))
 

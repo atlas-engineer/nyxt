@@ -156,9 +156,8 @@ A `user-interface:element'.")
           :height "100%"
           :background-color "transparent")
         `(body
-          :height "calc(100% - 16px)"
-          :margin "8px"
-          :border-radius "6px"
+          :height "100%"
+          :margin 0
           :overflow "hidden"
           :background-color ,theme:surface-color
           :backdrop-filter "saturate(180%) blur(20px)"
@@ -1088,6 +1087,8 @@ A source view already built is kept when what it shows has not changed."
               (ps:lisp (prompt-document prompt-buffer)))
         (setf (ps:@ document document-element style background-color)
               (ps:lisp color)))
+      (ffi-buffer-set-insets prompt-buffer :top 8 :left 8 :bottom 8 :right 8)
+      (ffi-buffer-set-corner-radius prompt-buffer 6)
       (ffi-buffer-set-background-color prompt-buffer color))))
 
 (defun prompt-render-focus (prompt-buffer)

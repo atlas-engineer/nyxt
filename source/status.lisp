@@ -88,9 +88,8 @@
       `(body
         :display "flex"
         :align-items "center"
-        :height "calc(100% - 16px)"
-        :margin "8px"
-        :border-radius "6px"
+        :height "100%"
+        :margin 0
         :overflow "hidden"
         :box-sizing "border-box"
         :background-color ,theme:surface-color
