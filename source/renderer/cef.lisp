@@ -218,12 +218,43 @@ Helper bundles are named after the nyxt executable."
           (setf (cef:locales-dir-path interface) locales)))))
   nil)
 
+(-> parse-srgb-color (string) (or null cl-colors-ng:rgb))
+(defun parse-srgb-color (color)
+  "Parse a CSS `color(srgb R G B ...)' string into an RGB color, or NIL."
+  (let ((trimmed (str:trim color)))
+    (when (and (str:starts-with-p "color(srgb " trimmed :ignore-case t)
+               (str:ends-with-p ")" trimmed))
+      (let* ((body (subseq trimmed (length "color(srgb ") (1- (length trimmed))))
+             (tokens (sera:tokens (first (str:split "/" body)))))
+        (when (= (length tokens) 3)
+          (let ((channels (mapcar (lambda (token)
+                                    (ignore-errors (uiop:safe-read-from-string token)))
+                                  tokens)))
+            (when (every #'realp channels)
+              (cl-colors-ng:rgb (alex:clamp (float (first channels) 1.0) 0.0 1.0)
+                                (alex:clamp (float (second channels) 1.0) 0.0 1.0)
+                                (alex:clamp (float (third channels) 1.0) 0.0 1.0)))))))))
+
 (-> css-color-argb (string) (unsigned-byte 32))
 (defun css-color-argb (color)
   "Return COLOR as an opaque ARGB integer, or 0 when COLOR cannot be read."
-  (let ((rgb (ignore-errors (cl-colors-ng:as-rgb color))))
+  (let ((rgb (or (ignore-errors (cl-colors-ng:as-rgb color))
+                 (parse-srgb-color color))))
     (if rgb
         (logior #xff000000
+                (ash (round (* 255 (cl-colors-ng:rgb-red rgb))) 16)
+                (ash (round (* 255 (cl-colors-ng:rgb-green rgb))) 8)
+                (round (* 255 (cl-colors-ng:rgb-blue rgb))))
+        0)))
+
+(-> css-color-argb-alpha (string real) (unsigned-byte 32))
+(defun css-color-argb-alpha (color alpha)
+  "Return COLOR with ALPHA in [0, 1] as an ARGB integer, or 0 when unreadable."
+  (let ((rgb (or (ignore-errors (cl-colors-ng:as-rgb color))
+                 (parse-srgb-color color)))
+        (a (round (* 255 (alex:clamp (float alpha 1.0) 0.0 1.0)))))
+    (if (and rgb (plusp a))
+        (logior (ash a 24)
                 (ash (round (* 255 (cl-colors-ng:rgb-red rgb))) 16)
                 (ash (round (* 255 (cl-colors-ng:rgb-green rgb))) 8)
                 (round (* 255 (cl-colors-ng:rgb-blue rgb))))
@@ -609,14 +640,8 @@ view before those threads run, and a call into the missing view has no method."
                         (run-thread "fullscreen"
                           (when-let ((window (window buffer)))
                             (if (assoc-value data :fullscreen)
-                                (progn
-                                  (ffi-window-fullscreen window :user-event-p nil)
-                                  (disable-message-buffer window)
-                                  (disable-status-buffer window))
-                                (progn
-                                  (ffi-window-unfullscreen window :user-event-p nil)
-                                  (enable-message-buffer window)
-                                  (enable-status-buffer window)))))))
+                                (enter-page-fullscreen window)
+                                (leave-page-fullscreen window))))))
     (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
       (cef:add-listener buffer :context-menu
                         (lambda (buffer data)
@@ -637,7 +662,10 @@ view before those threads run, and a call into the missing view has no method."
                       (not (url-empty-p (url buffer))))
                  (render-url (url buffer))
                  "about:blank")))
-    (cef:ensure-view buffer :url url :background-color (canvas-color buffer)))
+    (cef:ensure-view buffer :url url :background-color (canvas-color buffer))
+    (when (or (auxiliary-buffer-p buffer)
+              (panel-buffer-p buffer))
+      (cef:set-background-color buffer 0)))
   (unless (listeners-p buffer)
     (initialize-listeners buffer)
     (initialize-window-open-handler buffer)
@@ -687,14 +715,54 @@ view before those threads run, and a call into the missing view has no method."
        (cef:set-zoom-factor contents value)))))
 
 (defmethod ffi-buffer-set-background-color ((view cef:view) color)
-  (let ((argb (css-color-argb color)))
-    (when (and (plusp argb) (plusp (cef:id view)))
-      (cef:set-background-color view argb))))
+  (when (plusp (cef:id view))
+    (if (and (stringp color)
+             (string-equal (str:trim color) "transparent"))
+        (cef:set-background-color view 0)
+        (let ((argb (css-color-argb color)))
+          (when (plusp argb)
+            (cef:set-background-color view argb))))))
 
 (defmethod ffi-buffer-set-background-color ((buffer prompt-buffer) color)
   (when-let ((view (and (window buffer)
                         (prompt-buffer-view (window buffer)))))
     (ffi-buffer-set-background-color view color)))
+
+(defmethod ffi-buffer-set-insets ((view cef:view) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when (plusp (cef:id view))
+    (cef:set-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-insets ((buffer prompt-buffer) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-corner-radius ((view cef:view) radius)
+  (when (plusp (cef:id view))
+    (cef:set-corner-radius view radius)))
+
+(defmethod ffi-buffer-set-corner-radius ((buffer prompt-buffer) radius)
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-corner-radius view radius)))
+
+(defmethod ffi-buffer-set-background-blur ((view cef:view) radius)
+  (when (plusp (cef:id view))
+    (cef:set-background-blur view radius)))
+
+(defmethod ffi-buffer-set-background-blur ((buffer prompt-buffer) radius)
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-background-blur view radius)))
+
+(defmethod ffi-buffer-set-safe-area-insets ((view cef:view) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when (plusp (cef:id view))
+    (cef:set-safe-area-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-safe-area-insets ((buffer prompt-buffer) &key (top 0) (left 0) (bottom 0) (right 0))
+  (when-let ((view (and (window buffer)
+                        (prompt-buffer-view (window buffer)))))
+    (ffi-buffer-set-safe-area-insets view :top top :left left :bottom bottom :right right)))
 
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
@@ -757,18 +825,16 @@ view before those threads run, and a call into the missing view has no method."
   (cef:go-forward (cef:web-contents buffer)))
 
 (defun update-window-buffer-bounds (window delta)
-  "Recalculate the bounds of WINDOW's buffer to compensate for changes in the
-height of the status/prompt/message buffer."
+  "Recalculate the bounds of WINDOW's buffer to match WINDOW."
+  (declare (ignore delta))
   (when (buffer window)
-    (let ((window-bounds (cef:get-bounds window)))
+    (let ((window-bounds (cef:get-content-bounds window)))
       (cef:set-bounds (buffer window)
                       :x 0
                       :y 0
                       :width (assoc-value window-bounds :width)
-                      :height (- (assoc-value window-bounds :height)
-                                 (+ delta
-                                    (ffi-height (status-buffer window))
-                                    (ffi-height (message-buffer window))))))))
+                      :height (assoc-value window-bounds :height)))
+    (nyxt::apply-page-container window)))
 
 (defmethod ffi-height ((buffer cef-buffer))
   (assoc-value (cef:get-bounds buffer) :height))
@@ -778,7 +844,10 @@ height of the status/prompt/message buffer."
   (if (auxiliary-buffer-p buffer)
       ;; A preferred height of 0 is an empty size, which the box layout
       ;; ignores, so the bar stays on screen. `set-bar-height' hides it.
-      (cef:set-bar-height buffer height)
+      (progn
+        (cef:set-bar-height buffer height)
+        (when (window buffer)
+          (nyxt::apply-page-container (window buffer))))
       (let ((bounds (cef:get-bounds buffer)))
         (cef:set-bounds buffer
                         :x (assoc-value bounds :x)
@@ -816,7 +885,8 @@ height of the status/prompt/message buffer."
                      (not (find view (cef:views window))))
             (cef:add-view-at window view 1)
             (nyxt::prompt-render-skeleton prompt-buffer)
-            (nyxt::prompt-render-focus prompt-buffer)))))))
+            (nyxt::prompt-render-focus prompt-buffer))
+          (nyxt::apply-page-container window))))))
 
 (defmethod ffi-focus-buffer ((buffer prompt-buffer))
   (if-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
@@ -975,7 +1045,11 @@ Creating that browser is the slow part of opening a prompt."
                                  :alloy-p t
                                  :isolated-context-p t
                                  :url "about:blank")))
+        (cef:set-background-color view 0)
         (cef:set-bar-height view 0)
+        (cef:set-insets view :top 8 :left 8 :bottom 0 :right 8)
+        (cef:set-corner-radius view 6)
+        (cef:set-background-blur view 20)
         (setf (prompt-buffer-view window) view))))
 
 (-> ensure-prompt-view-listeners (cef-window) cef:view)
@@ -1077,8 +1151,16 @@ Each bar is a fixed height."
       (cef:set-bar-height prompt-view 0))
     (unless (find prompt-view (cef:views window))
       (cef:add-view-at window prompt-view 1))
+    (cef:set-background-color status-buffer 0)
     (cef:add-view window status-buffer)
+    (cef:set-insets status-buffer :top 12 :left 12 :bottom 5 :right 12)
+    (cef:set-corner-radius status-buffer 6)
+    (cef:set-background-blur status-buffer 20)
+    (cef:set-background-color message-buffer 0)
     (cef:add-view window message-buffer)
+    (cef:set-insets message-buffer :top 0 :left 12 :bottom 0 :right 12)
+    (cef:set-corner-radius message-buffer 0)
+    (cef:set-background-blur message-buffer 0)
     (warm-prompt-view window)))
 
 (-> defer-window-delete (cef-window) *)
@@ -1133,7 +1215,7 @@ returns to the message loop."
   (cef:set-title window title))
 
 (defmethod ffi-add-panel-buffer ((window cef-window) (buffer cef-buffer) side width)
-  (cef:set-side-width buffer (or width 0) :side side)
+  (cef:set-side-width buffer width :side side)
   (cef:add-content-view window buffer :side side)
   buffer)
 
@@ -1148,9 +1230,12 @@ returns to the message loop."
 (defmethod ffi-window-set-buffer ((window cef-window)
                                   (buffer cef-buffer)
                                   &key (focus t))
-  (when (current-view window)
+  (when (and (current-view window)
+             (not (eq (current-view window) buffer)))
     (cef:remove-view window (current-view window) :kill-view-p nil))
-  (cef:add-content-view window buffer :side :page)
+  (unless (and (eq (current-view window) buffer)
+               (find buffer (cef:views window)))
+    (cef:add-content-view window buffer :side :page))
   (unless (panel-views-p window)
     (place-panel-views window)
     (setf (panel-views-p window) t)
@@ -1158,19 +1243,52 @@ returns to the message loop."
     (ffi-print-message (message-buffer window) "Ready."))
   (when focus (ffi-focus-buffer buffer))
   (setf (current-view window) buffer)
+  (nyxt::apply-page-container window)
   buffer)
 
+(defmethod ffi-window-set-viewport-frame ((window cef-window)
+                                          &key (enabled-p t)
+                                               (top 12)
+                                               (left 12)
+                                               (bottom 0)
+                                               (right 12)
+                                               (corner-radius 6)
+                                               (blur-radius 26)
+                                               (tint-color "#FFFFFF")
+                                               (tint-alpha 0.82)
+                                               (border-color "#000000")
+                                               (border-alpha 0.0))
+  (when (plusp (cef:id window))
+    (cef:set-viewport-frame window
+                            :enabled-p enabled-p
+                            :top top
+                            :left left
+                            :bottom bottom
+                            :right right
+                            :corner-radius corner-radius
+                            :blur-radius blur-radius
+                            :tint-color (if (stringp tint-color)
+                                            (css-color-argb-alpha tint-color (or tint-alpha 0.0))
+                                            (or tint-color 0))
+                            :border-color (if (stringp border-color)
+                                              (css-color-argb-alpha border-color (or border-alpha 0.0))
+                                              (or border-color 0)))))
+
 (defmethod ffi-height ((window cef-window))
-  (assoc-value (cef:get-bounds window) :height))
+  (assoc-value (cef:get-content-bounds window) :height))
 
 (defmethod ffi-width ((window cef-window))
-  (assoc-value (cef:get-bounds window) :width))
+  (assoc-value (cef:get-content-bounds window) :width))
 
 (defmethod ffi-window-fullscreen ((window cef-window) &key &allow-other-keys)
   (cef:fullscreen window))
 
 (defmethod ffi-window-unfullscreen ((window cef-window) &key &allow-other-keys)
-  (cef:unfullscreen window))
+  (cef:unfullscreen window)
+  (when-let ((buffer (and (page-fullscreen-p window) (buffer window))))
+    (ps-eval :async t :buffer buffer
+      (when (ps:@ document fullscreen-element)
+        (ps:chain document (exit-fullscreen))))))
 
 (defmethod ffi-window-maximize ((window cef-window) &key &allow-other-keys)
   (cef:maximize window))
@@ -1247,7 +1365,17 @@ Return nil when key must be discarded, e.g. for modifiers."
                                  :modifiers (input-modifier-translator sender modifiers)
                                  :status :pressed)))
         (when key-string
-          (dispatch-key-press sender event (key)))))))
+          (or (dispatch-key-press sender event (key))
+              (progn
+                (when (and (null modifiers)
+                           (string= key-string "escape")
+                           (window sender)
+                           (page-fullscreen-p (window sender)))
+                  (run-buffer-thread "exit-fullscreen" sender
+                    (ps-eval :async t :buffer sender
+                      (when (ps:@ document fullscreen-element)
+                        (ps:chain document (exit-fullscreen))))))
+                nil)))))))
 
 (defmethod on-signal-button-press-event ((sender cef-buffer) event)
   (let ((key-string (format nil "button~a" (assoc-value event :button)))

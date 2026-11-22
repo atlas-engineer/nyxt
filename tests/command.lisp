@@ -149,7 +149,7 @@
       (assert-true runnable-p))
     (multiple-value-bind (args runnable-p)
         (nyxt::command-arguments
-         #'nyxt/mode/buffer-listing:add-buffer-listing-panel-right
+         #'nyxt/mode/buffer-listing:add-buffer-listing-panel-left
          buffer)
       (assert-equal (list window) args)
       (assert-true runnable-p))

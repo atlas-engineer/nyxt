@@ -62,15 +62,21 @@ When WINDOW is the last one, quit Nyxt."))
 
 (define-ffi-generic ffi-window-fullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
-    (setf (slot-value window 'fullscreen-p) t)
-    (when user-event-p (call-next-method)))
+    (let ((was-fullscreen-p (fullscreen-p window)))
+      (when (or user-event-p (not was-fullscreen-p))
+        (setf (fullscreen-p window) t))
+      (when user-event-p (call-next-method))))
   (:documentation "Set fullscreen WINDOW state on.
 USER-EVENT-P helps to distinguish events requested by the user or
 renderer (e.g. fullscreen a video stream)."))
 (define-ffi-generic ffi-window-unfullscreen (window &key &allow-other-keys)
   (:method :around ((window window) &key (user-event-p t) &allow-other-keys)
-    (setf (slot-value window 'fullscreen-p) nil)
-    (when user-event-p (call-next-method)))
+    (let ((was-fullscreen-p (fullscreen-p window)))
+      (when (or user-event-p was-fullscreen-p)
+        (setf (fullscreen-p window) nil))
+      (when user-event-p
+        (setf (fullscreen-before-page-p window) nil)
+        (call-next-method))))
   (:documentation "Set fullscreen WINDOW state off.
 See `ffi-window-fullscreen'."))
 
@@ -226,6 +232,46 @@ See `scheme'."))
 (define-ffi-generic ffi-buffer-set-background-color (buffer color)
   (:documentation "Set the color BUFFER shows before its document paints.
 COLOR is a CSS color."))
+
+(define-ffi-generic ffi-buffer-set-insets (buffer &key top left bottom right)
+  (:method ((buffer t) &key (top 0) (left 0) (bottom 0) (right 0))
+    (declare (ignore top left bottom right))
+    nil)
+  (:documentation "Shrink BUFFER's web view by TOP, LEFT, BOTTOM, and RIGHT pixels.
+The margin around the web view shows BUFFER's background color."))
+
+(define-ffi-generic ffi-buffer-set-corner-radius (buffer radius)
+  (:method ((buffer t) radius)
+    (declare (ignore radius))
+    nil)
+  (:documentation "Round BUFFER's web view corners by RADIUS pixels.
+RADIUS 0 restores square corners."))
+
+(define-ffi-generic ffi-buffer-set-background-blur (buffer radius)
+  (:method ((buffer t) radius)
+    (declare (ignore radius))
+    nil)
+  (:documentation "Blur the compositor backdrop behind BUFFER by RADIUS pixels.
+RADIUS 0 disables backdrop blur."))
+
+(define-ffi-generic ffi-buffer-set-safe-area-insets (buffer &key top left bottom right)
+  (:method ((buffer t) &key (top 0) (left 0) (bottom 0) (right 0))
+    (declare (ignore top left bottom right))
+    nil)
+  (:documentation "Push BUFFER's viewport layout inward by TOP, LEFT, BOTTOM, and RIGHT pixels."))
+
+(define-ffi-generic ffi-window-set-viewport-frame (window
+                                                   &key enabled-p top left bottom right
+                                                   corner-radius blur-radius
+                                                   tint-color tint-alpha
+                                                   border-color border-alpha)
+  (:method ((window t)
+            &key enabled-p top left bottom right corner-radius blur-radius
+            tint-color tint-alpha border-color border-alpha)
+    (declare (ignore enabled-p top left bottom right corner-radius blur-radius
+                     tint-color tint-alpha border-color border-alpha))
+    nil)
+  (:documentation "Configure WINDOW's frosted ambient frame and rounded page viewport cutout."))
 
 (define-ffi-generic ffi-buffer-add-user-style (buffer style)
   (:documentation "Apply the CSS style to BUFFER."))

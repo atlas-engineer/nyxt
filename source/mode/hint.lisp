@@ -306,11 +306,36 @@ collected here."
                                 (ps:@ hit parent-node host)
                                 (ps:@ hit parent-node))))
          (eq hit element)))
-     (defun nyxt-hint-classify (element right-align-p)
+     (defun nyxt-hint-viewport ()
+       (let ((host (nyxt/ps:qs-id document "nyxt-hints")))
+         (if host
+             (let ((rect (ps:chain host (get-bounding-client-rect))))
+               (if (and (> (ps:@ rect width) 0) (> (ps:@ rect height) 0))
+                   (ps:create :left (ps:@ rect left)
+                              :top (ps:@ rect top)
+                              :right (ps:@ rect right)
+                              :bottom (ps:@ rect bottom)
+                              :width (ps:@ rect width)
+                              :height (ps:@ rect height))
+                   (ps:create :left 0
+                              :top 0
+                              :right (ps:@ window inner-width)
+                              :bottom (ps:@ window inner-height)
+                              :width (ps:@ window inner-width)
+                              :height (ps:@ window inner-height))))
+             (ps:create :left 0
+                        :top 0
+                        :right (ps:@ window inner-width)
+                        :bottom (ps:@ window inner-height)
+                        :width (ps:@ window inner-width)
+                        :height (ps:@ window inner-height)))))
+     (defun nyxt-hint-classify (element right-align-p viewport)
        "Return an anchor, an off-screen marker, or nil.
 An anchor is in the viewport and not covered. Anything else with a box is
 off-screen: below the fold, clipped by a scroller, or covered. Its badge is
 drawn later and stays hidden until the element is actually visible."
+       (when (= (ps:@ element id) "nyxt-hints")
+         (return-from nyxt-hint-classify nil))
        (let ((computed (ps:chain window (get-computed-style element))))
          (when (or (= (ps:getprop computed "visibility") "hidden")
                    (= (ps:@ computed display) "none")
@@ -319,19 +344,23 @@ drawn later and stays hidden until the element is actually visible."
                         (= (ps:chain (or (ps:@ element type) "") (to-lower-case)) "hidden")))
            (return-from nyxt-hint-classify nil))
          (let ((rects (ps:chain element (get-client-rects)))
+               (vp-left (ps:@ viewport left))
+               (vp-top (ps:@ viewport top))
+               (vp-right (ps:@ viewport right))
+               (vp-bottom (ps:@ viewport bottom))
                (offscreen-p nil))
            (loop for rect-index from 0 below (ps:@ rects length)
                  for raw = (aref rects rect-index)
-                 for left = (ps:chain *math (max (ps:@ raw left) 0))
-                 for top = (ps:chain *math (max (ps:@ raw top) 0))
-                 for right = (ps:chain *math (min (ps:@ raw right) (ps:@ window inner-width)))
-                 for bottom = (ps:chain *math (min (ps:@ raw bottom) (ps:@ window inner-height)))
+                 for left = (ps:chain *math (max (ps:@ raw left) vp-left))
+                 for top = (ps:chain *math (max (ps:@ raw top) vp-top))
+                 for right = (ps:chain *math (min (ps:@ raw right) vp-right))
+                 for bottom = (ps:chain *math (min (ps:@ raw bottom) vp-bottom))
                  do (when (and (>= (ps:@ raw width) 3)
                                (>= (ps:@ raw height) 3))
                       (if (and (>= (- right left) 3)
                                (>= (- bottom top) 3)
-                               (< top (- (ps:@ window inner-height) 4))
-                               (< left (- (ps:@ window inner-width) 4))
+                               (< top (- vp-bottom 4))
+                               (< left (- vp-right 4))
                                (or (nyxt-hint-hits-p element (+ left 0.1) (+ top 0.1))
                                    (nyxt-hint-hits-p element (- right 0.1) (+ top 0.1))
                                    (nyxt-hint-hits-p element (+ left 0.1) (- bottom 0.1))
@@ -340,50 +369,54 @@ drawn later and stays hidden until the element is actually visible."
                                                      (/ (+ left right) 2)
                                                      (/ (+ top bottom) 2))))
                           (return-from nyxt-hint-classify
-                            (ps:create :left (if right-align-p right left)
-                                       :top top))
+                            (ps:create :left (- (if right-align-p right left) vp-left)
+                                       :top (- top vp-top)))
                           ;; Not on screen, or on screen but covered or clipped.
                           ;; Keep it for the background pass.
                           (setf offscreen-p t))))
            (when offscreen-p
              (return-from nyxt-hint-classify (ps:create :offscreen t))))))
-     (defun nyxt-hint-visible-anchor (element right-align-p)
-       (let ((found (nyxt-hint-classify element right-align-p)))
+     (defun nyxt-hint-visible-anchor (element right-align-p viewport)
+       (let ((found (nyxt-hint-classify element right-align-p viewport)))
          (when (and found (not (ps:@ found offscreen)))
            found)))
-     (defun nyxt-hint-place (anchor hint right-align-p)
+     (defun nyxt-hint-place (anchor hint right-align-p viewport)
        (let* ((estimated (+ (* (length hint) 10) 8))
+              (width (ps:@ viewport width))
+              (height (ps:@ viewport height))
               (left (ps:@ anchor left))
               (top (ps:chain *math (min (ps:chain *math (max (ps:@ anchor top) 0))
-                                        (- (ps:@ window inner-height) 18)))))
+                                        (ps:chain *math (max 0 (- height 18)))))))
          (if right-align-p
              (progn
                (when (< (- left estimated) 2)
                  (setf left (+ estimated 2)))
-               (when (> left (- (ps:@ window inner-width) 2))
-                 (setf left (- (ps:@ window inner-width) 2))))
-             (when (> (+ left estimated) (- (ps:@ window inner-width) 2))
-               (setf left (ps:chain *math (max 2 (- (ps:@ window inner-width) estimated 2))))))
+               (when (> left (- width 2))
+                 (setf left (- width 2))))
+             (when (> (+ left estimated) (- width 2))
+               (setf left (ps:chain *math (max 2 (- width estimated 2))))))
          (ps:create :left left :top top)))
      (defun nyxt-hint-layout ()
        "Move each badge to its element's current viewport position.
 Scrolls inside the page and the page itself both change that position."
        (let ((host (nyxt/ps:qs-id document "nyxt-hints")))
          (when (and host (ps:@ host shadow-root))
-           (ps:dolist (badge (nyxt/ps:qsa (ps:@ host shadow-root) ".nyxt-hint"))
-             (let ((element (ps:@ badge nyxt-element)))
-               (if (or (not element) (not (ps:@ element is-connected)))
-                   (setf (ps:@ badge style display) "none")
-                   (let ((anchor (nyxt-hint-visible-anchor
-                                  element (ps:@ badge nyxt-right-align))))
-                     (if anchor
-                         (let ((place (nyxt-hint-place anchor
-                                                       (ps:@ badge nyxt-hint)
-                                                       (ps:@ badge nyxt-right-align))))
-                           (setf (ps:@ badge style display) ""
-                                 (ps:@ badge style top) (+ (ps:@ place top) "px")
-                                 (ps:@ badge style left) (+ (ps:@ place left) "px")))
-                         (setf (ps:@ badge style display) "none")))))))))
+           (let ((viewport (nyxt-hint-viewport)))
+             (ps:dolist (badge (nyxt/ps:qsa (ps:@ host shadow-root) ".nyxt-hint"))
+               (let ((element (ps:@ badge nyxt-element)))
+                 (if (or (not element) (not (ps:@ element is-connected)))
+                     (setf (ps:@ badge style display) "none")
+                     (let ((anchor (nyxt-hint-visible-anchor
+                                    element (ps:@ badge nyxt-right-align) viewport)))
+                       (if anchor
+                           (let ((place (nyxt-hint-place anchor
+                                                         (ps:@ badge nyxt-hint)
+                                                         (ps:@ badge nyxt-right-align)
+                                                         viewport)))
+                             (setf (ps:@ badge style display) ""
+                                   (ps:@ badge style top) (+ (ps:@ place top) "px")
+                                   (ps:@ badge style left) (+ (ps:@ place left) "px")))
+                           (setf (ps:@ badge style display) "none"))))))))))
      ;; The overlay is position:fixed in the top layer, so the compositor scrolls
      ;; the page without moving the badges. The scroll event arrives after that
      ;; frame is painted; this schedules one layout for the next frame. Badges
@@ -454,19 +487,45 @@ Scrolls inside the page and the page itself both change that position."
             (shadow (ps:chain hints-parent (attach-shadow (ps:create mode "open"))))
             (style (ps:new (|CSSStyleSheet|))))
        (when old
+         (when (ps:@ old nyxt-resize-observer)
+           (ps:chain old nyxt-resize-observer (disconnect)))
+         (when (ps:@ old hide-popover)
+           (ps:chain old (hide-popover)))
          (ps:chain old (remove)))
        (setf (ps:@ window nyxt-hint-right-align) right-align-p
              (ps:@ window nyxt-hint-show-scope) show-scope-p
              (ps:@ window nyxt-hint-pending) (array)
-             (ps:@ window nyxt-hint-draw-pending) nyxt-hint-draw-pending)
-       (ps:dolist (element (nyxt/ps:rqsa document selector))
-         (let ((found (nyxt-hint-classify element right-align-p)))
-           (cond
-             ((not found))
-             ((ps:@ found offscreen)
-              (ps:chain offscreen-elements (push element)))
-             (t
-              (ps:chain visible (push (ps:create :element element :anchor found)))))))
+             (ps:@ window nyxt-hint-draw-pending) nyxt-hint-draw-pending
+             (ps:@ window nyxt-hint-layout) nyxt-hint-layout)
+       (ps:chain style (replace-sync css))
+       (setf (ps:chain shadow adopted-style-sheets) (array style))
+       (setf (ps:@ hints-parent id) "nyxt-hints")
+       (ps:chain hints-parent style (set-property "position" "fixed" "important"))
+       (ps:chain hints-parent style (set-property "inset" "0" "important"))
+       (ps:chain hints-parent style (set-property "width" "100%" "important"))
+       (ps:chain hints-parent style (set-property "height" "100%" "important"))
+       (ps:chain hints-parent style (set-property "margin" "0" "important"))
+       (ps:chain hints-parent style (set-property "padding" "0" "important"))
+       (ps:chain hints-parent style (set-property "border" "none" "important"))
+       (ps:chain hints-parent style (set-property "background" "transparent" "important"))
+       (ps:chain hints-parent style (set-property "overflow" "visible" "important"))
+       (ps:chain hints-parent style (set-property "pointer-events" "none" "important"))
+       (ps:chain hints-parent style (set-property "z-index" "2147483647" "important"))
+       ;; A child of body keeps hint coordinates aligned when the page is zoomed.
+       (ps:chain document body (append-child hints-parent))
+       ;; The top layer keeps the badges above page stacking contexts.
+       (when (ps:@ hints-parent show-popover)
+         (setf (ps:@ hints-parent popover) "manual")
+         (ps:chain hints-parent (show-popover)))
+       (let ((viewport (nyxt-hint-viewport)))
+         (ps:dolist (element (nyxt/ps:rqsa document selector))
+           (let ((found (nyxt-hint-classify element right-align-p viewport)))
+             (cond
+               ((not found))
+               ((ps:@ found offscreen)
+                (ps:chain offscreen-elements (push element)))
+               (t
+                (ps:chain visible (push (ps:create :element element :anchor found))))))))
        (let ((hint-strings (nyxt-hint-strings
                             (+ (length visible) (length offscreen-elements))
                             alphabet))
@@ -488,29 +547,15 @@ Scrolls inside the page and the page itself both change that position."
                and do (ps:chain element (set-attribute "nyxt-hint" hint))
                and do (ps:chain pending (push (ps:create :element element :hint hint))))
          (setf (ps:@ window nyxt-hint-pending) pending)
-         (ps:chain style (replace-sync css))
-         (setf (ps:chain shadow adopted-style-sheets) (array style))
-         (setf (ps:@ hints-parent id) "nyxt-hints")
-         (ps:chain hints-parent style (set-property "position" "fixed" "important"))
-         (ps:chain hints-parent style (set-property "inset" "0" "important"))
-         (ps:chain hints-parent style (set-property "width" "100%" "important"))
-         (ps:chain hints-parent style (set-property "height" "100%" "important"))
-         (ps:chain hints-parent style (set-property "margin" "0" "important"))
-         (ps:chain hints-parent style (set-property "padding" "0" "important"))
-         (ps:chain hints-parent style (set-property "border" "none" "important"))
-         (ps:chain hints-parent style (set-property "background" "transparent" "important"))
-         (ps:chain hints-parent style (set-property "overflow" "visible" "important"))
-         (ps:chain hints-parent style (set-property "pointer-events" "none" "important"))
-         (ps:chain hints-parent style (set-property "z-index" "2147483647" "important"))
-         ;; A child of body keeps hint coordinates aligned when the page is zoomed.
-         (ps:chain document body (append-child hints-parent))
-         ;; The top layer keeps the badges above page stacking contexts.
-         (when (ps:@ hints-parent show-popover)
-           (setf (ps:@ hints-parent popover) "manual")
-           (ps:chain hints-parent (show-popover)))
          ;; The overlay is fixed to the viewport, so a scroll would leave the
          ;; badges behind their links. Follow the elements instead.
          (setf (ps:@ window nyxt-hint-scroll-handler) nyxt-hint-on-scroll)
+         (when (ps:@ window |ResizeObserver|)
+           (let ((observer (ps:new (|ResizeObserver|
+                                    (lambda ()
+                                      (nyxt-hint-layout))))))
+             (ps:chain observer (observe hints-parent))
+             (setf (ps:@ hints-parent nyxt-resize-observer) observer)))
          (unless (ps:@ window nyxt-hint-scroll-bound)
            (setf (ps:@ window nyxt-hint-scroll-bound) t)
            (ps:chain window (add-event-listener "scroll"
@@ -695,6 +740,8 @@ those elements to the prompt."
   (setf (ps:@ window nyxt-hint-pending) (array))
   (ps:let ((hints-parent (nyxt/ps:qs-id document "nyxt-hints")))
     (when hints-parent
+      (when (ps:@ hints-parent nyxt-resize-observer)
+        (ps:chain hints-parent nyxt-resize-observer (disconnect)))
       (when (ps:@ hints-parent hide-popover)
         (ps:chain hints-parent (hide-popover)))
       (ps:chain hints-parent (remove))))

@@ -274,14 +274,17 @@ the renderer thread, use `defmethod' instead."
 (defun canvas-color (buffer)
   "Return the color shown before BUFFER's document paints.
 A web buffer with `nyxt/mode/style:dark-mode' uses #222222, which is the color
-that mode paints. Every other buffer uses the theme background."
-  (when (and *browser* (theme *browser*))
-    (css-color->gdk-rgba
-     (if (and (web-buffer-p buffer)
-              (find "DARK-MODE" (default-modes buffer)
-                    :key #'symbol-name :test #'string=))
-         "#222222"
-         (theme:background-color (theme *browser*))))))
+that mode paints. Overlay buffers start transparent; every other buffer uses the theme background."
+  (if (or (auxiliary-buffer-p buffer)
+          (panel-buffer-p buffer))
+      (gdk:make-gdk-rgba :red 0.0d0 :green 0.0d0 :blue 0.0d0 :alpha 0.0d0)
+      (when (and *browser* (theme *browser*))
+        (css-color->gdk-rgba
+         (if (and (web-buffer-p buffer)
+                  (find "DARK-MODE" (default-modes buffer)
+                        :key #'symbol-name :test #'string=))
+             "#222222"
+             (theme:background-color (theme *browser*)))))))
 
 (defun pixbuf-from-octets (octets)
   "Decode PNG OCTETS into a `gdk-pixbuf:gdk-pixbuf', or NIL."
@@ -553,6 +556,13 @@ response.  The BODY is wrapped with `with-protect'."
               (- (ash 1 31))
               (1- (ash 1 31))))
 
+(defun set-widget-margins (widget top left bottom right)
+  (when widget
+    (setf (gtk:gtk-widget-margin-top widget) (gint (max 0 (or top 0)))
+          (gtk:gtk-widget-margin-start widget) (gint (max 0 (or left 0)))
+          (gtk:gtk-widget-margin-bottom widget) (gint (max 0 (or bottom 0)))
+          (gtk:gtk-widget-margin-end widget) (gint (max 0 (or right 0))))))
+
 (defun set-container-bar-height (container height)
   (when container
     (cond
@@ -668,16 +678,23 @@ response.  The BODY is wrapped with `with-protect'."
                                       :type :toplevel
                                       :default-width 1600
                                       :default-height 1200)
-            root-box-layout (make-instance 'gtk:gtk-box
-                                           :orientation :vertical)
+            root-box-layout (make-instance 'gtk:gtk-overlay)
             horizontal-box-layout (make-instance 'gtk:gtk-box
-                                                 :orientation :horizontal)
+                                                 :orientation :vertical
+                                                 :halign :fill
+                                                 :valign :end)
             left-panel-container (make-instance 'gtk:gtk-box
-                                                :orientation :horizontal)
+                                                :orientation :horizontal
+                                                :halign :start
+                                                :valign :fill)
             main-buffer-container (make-instance 'gtk:gtk-box
-                                                 :orientation :vertical)
+                                                 :orientation :vertical
+                                                 :hexpand t
+                                                 :vexpand t)
             right-panel-container (make-instance 'gtk:gtk-box
-                                                 :orientation :horizontal)
+                                                 :orientation :horizontal
+                                                 :halign :end
+                                                 :valign :fill)
             prompt-buffer-container (make-instance 'gtk:gtk-box
                                                    :orientation :vertical)
             message-container (make-instance 'gtk:gtk-box
@@ -685,25 +702,16 @@ response.  The BODY is wrapped with `with-protect'."
             status-container (make-instance 'gtk:gtk-box
                                             :orientation :vertical)
             key-string-buffer (make-instance 'gtk:gtk-entry))
-      (gtk:gtk-box-pack-start horizontal-box-layout
-                              left-panel-container
-                              :expand nil :fill t)
-      (gtk:gtk-box-pack-start horizontal-box-layout
-                              main-buffer-container
-                              :expand t :fill t)
-      (gtk:gtk-box-pack-start horizontal-box-layout
-                              right-panel-container
-                              :expand nil :fill t)
-      (gtk:gtk-box-pack-start root-box-layout
-                              horizontal-box-layout
-                              :expand t :fill t)
-      (gtk:gtk-box-pack-end root-box-layout
+      (gtk:gtk-container-add root-box-layout main-buffer-container)
+      (gtk:gtk-overlay-add-overlay root-box-layout left-panel-container)
+      (gtk:gtk-overlay-add-overlay root-box-layout right-panel-container)
+      (gtk:gtk-box-pack-end horizontal-box-layout
                             message-container
                             :expand nil)
       (gtk:gtk-box-pack-start message-container
                               (gtk-object message-buffer)
                               :expand t :fill t)
-      (gtk:gtk-box-pack-end root-box-layout
+      (gtk:gtk-box-pack-end horizontal-box-layout
                             status-container
                             :expand nil)
       (gtk:gtk-box-pack-start status-container
@@ -713,13 +721,14 @@ response.  The BODY is wrapped with `with-protect'."
             (configure-web-view
              (make-instance 'webkit:webkit-web-view
                             :web-context (get-web-context *browser* "default"))
-             (canvas-color *browser*)))
-      (gtk:gtk-box-pack-end root-box-layout
+             (gdk:make-gdk-rgba :red 0.0d0 :green 0.0d0 :blue 0.0d0 :alpha 0.0d0)))
+      (gtk:gtk-box-pack-end horizontal-box-layout
                             prompt-buffer-container
                             :expand nil)
       (gtk:gtk-box-pack-start prompt-buffer-container
                               prompt-buffer-view
                               :expand t :fill t)
+      (gtk:gtk-overlay-add-overlay root-box-layout horizontal-box-layout)
       (gtk:gtk-container-add gtk-object root-box-layout)
       (ensure-prompt-view-listeners window)
       (connect-signal window "delete-event" nil (widget event)
@@ -746,6 +755,10 @@ response.  The BODY is wrapped with `with-protect'."
           (unless maximized-p (ffi-window-unmaximize window :user-event-p nil)))
         nil)
       (gtk:gtk-widget-show-all gtk-object)
+      (when-let ((rgba (canvas-color *browser*)))
+        (gtk:gtk-widget-override-background-color gtk-object :normal rgba))
+      (set-widget-margins (gtk-object status-buffer) 12 12 5 12)
+      (set-widget-margins prompt-buffer-view 12 12 0 12)
       (set-container-bar-height message-container (height message-buffer))
       (set-container-bar-height status-container (height status-buffer))
       (set-container-bar-height prompt-buffer-container 0)
@@ -800,7 +813,13 @@ response.  The BODY is wrapped with `with-protect'."
   (gtk:gtk-window-fullscreen (gtk-object window)))
 
 (define-ffi-method ffi-window-unfullscreen ((window gtk-window) &key &allow-other-keys)
-  (gtk:gtk-window-unfullscreen (gtk-object window)))
+  (gtk:gtk-window-unfullscreen (gtk-object window))
+  (when-let ((buffer (and (page-fullscreen-p window) (buffer window))))
+    (ffi-buffer-evaluate-javascript-async
+     buffer
+     (ps:ps
+       (when (ps:@ document fullscreen-element)
+         (ps:chain document (exit-fullscreen)))))))
 
 (define-ffi-method ffi-window-maximize ((window gtk-window) &key &allow-other-keys)
   (gtk:gtk-window-maximize (gtk-object window)))
@@ -1392,7 +1411,10 @@ non-null pointer."
           (when parent
             (gtk:gtk-container-remove parent widget))
           (gtk:gtk-box-pack-start target widget :expand nil :fill t)))
-      (setf (gtk:gtk-widget-width-request widget) (gint (max 0 (or width 0)))
+      (setf (gtk:gtk-widget-width-request widget)
+            (gint (max 0 (- (or width 0)
+                            (gtk:gtk-widget-margin-start widget)
+                            (gtk:gtk-widget-margin-end widget))))
             (gtk:gtk-widget-height-request widget) -1)
       (gtk:gtk-widget-show target)
       (gtk:gtk-widget-show widget)))
@@ -1421,6 +1443,7 @@ non-null pointer."
     (nyxt::print-status (status-buffer window))
     (ffi-print-message (message-buffer window) "Ready."))
   (when focus (ffi-focus-buffer buffer))
+  (nyxt::apply-page-container window)
   buffer)
 
 (define-ffi-method ffi-height ((buffer prompt-buffer))
@@ -1846,16 +1869,12 @@ non-null pointer."
         (connect-signal buffer "enter-fullscreen" nil (web-view)
           (declare (ignore web-view))
           (when-let ((window (window buffer)))
-            (ffi-window-fullscreen window :user-event-p nil)
-            (disable-message-buffer window)
-            (disable-status-buffer window))
+            (enter-page-fullscreen window :user-event-p nil))
           nil)
         (connect-signal buffer "leave-fullscreen" nil (web-view)
           (declare (ignore web-view))
           (when-let ((window (window buffer)))
-            (ffi-window-unfullscreen window :user-event-p nil)
-            (enable-message-buffer window)
-            (enable-status-buffer window))
+            (leave-page-fullscreen window :user-event-p nil))
           nil)))
   buffer)
 
@@ -1937,8 +1956,36 @@ non-null pointer."
 (define-ffi-method ffi-buffer-set-background-color ((buffer gtk-buffer) color)
   (let ((rgba (css-color->gdk-rgba color))
         (view (gtk-object buffer)))
-    (when (and rgba view)
-      (webkit:webkit-web-view-set-background-color view rgba))))
+    (when rgba
+      (when view
+        (webkit:webkit-web-view-set-background-color view rgba))
+      (when-let ((window (window buffer)))
+        (when (and (gtk-object window)
+                   (not (auxiliary-buffer-p buffer))
+                   (not (panel-buffer-p buffer))
+                   (eq buffer (buffer window)))
+          (gtk:gtk-widget-override-background-color (gtk-object window) :normal rgba))))))
+
+(define-ffi-method ffi-buffer-set-insets ((buffer prompt-buffer)
+                                          &key (top 0) (left 0) (bottom 0) (right 0))
+  (set-widget-margins (or (gtk-object buffer)
+                          (and (window buffer)
+                               (slot-value (window buffer) 'prompt-buffer-view)))
+                      top left bottom right))
+
+(define-ffi-method ffi-buffer-set-insets ((buffer gtk-buffer)
+                                          &key (top 0) (left 0) (bottom 0) (right 0))
+  (let ((widget (gtk-object buffer)))
+    (set-widget-margins widget top left bottom right)
+    (when (and widget (panel-buffer-p buffer) (visible-p buffer))
+      (setf (gtk:gtk-widget-width-request widget)
+            (gint (max 0 (- (nyxt::width buffer)
+                            (max 0 (or left 0))
+                            (max 0 (or right 0)))))))))
+
+(define-ffi-method ffi-buffer-set-corner-radius ((buffer gtk-buffer) radius)
+  (declare (ignore radius))
+  nil)
 
 (defun wait-for-committed-load (buffer &optional (timeout 5.0))
   (unless (renderer-thread-p nyxt::*renderer*)

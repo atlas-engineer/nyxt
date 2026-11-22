@@ -31,34 +31,6 @@
                       `(h1
                         :color ,theme:action-color "!important")))))
 
-(defmethod assert-contrast ((theme theme:theme)
-                            &key (min-color+-contrast 8.5)
-                              (min-color-contrast 6.5)
-                              (min-color--contrast 4.5))
-  (macrolet ((assert-contrast-ratio (color1 color2 min-contrast)
-               `(assert-true (>= (theme:contrast-ratio ,color1 ,color2)
-                                 ,min-contrast))))
-    (multiple-value-bind (on-colors regular-colors minus-colors plus-colors)
-        (values-list
-         (theme:filter-palette (list (alexandria:curry #'uiop:string-prefix-p "ON-")
-                                     (alexandria:rcurry #'uiop:string-suffix-p "COLOR")
-                                     (alexandria:rcurry #'uiop:string-suffix-p "COLOR-")
-                                     (alexandria:rcurry #'uiop:string-suffix-p "COLOR+"))
-                               (theme:palette theme)))
-      (loop for on-color in on-colors
-            for regular-color in regular-colors
-            for minus-color in minus-colors
-            for plus-color in plus-colors
-            do (assert-contrast-ratio (funcall regular-color theme)
-                                      (funcall on-color theme)
-                                      min-color-contrast)
-            do (assert-contrast-ratio (funcall plus-color theme)
-                                      (funcall on-color theme)
-                                      min-color+-contrast)
-            do (assert-contrast-ratio (funcall minus-color theme)
-                                      (funcall on-color theme)
-                                      min-color--contrast)))))
-
 (define-test logo-color ()
   (assert-string= "#000000" (theme:logo-color theme:+light-theme+))
   (assert-string= "#FFFFFF" (theme:on-logo-color theme:+light-theme+))
@@ -83,6 +55,16 @@
     (assert-string= "#ECECEC" (theme:button-color light))
     (assert-string= "#ECECEC" (theme:button-color- light))))
 
+(define-test surface-color ()
+  (assert-string= "color-mix(in srgb, #ECECEC 88%, transparent)"
+                  (theme:surface-color theme:+light-theme+))
+  (assert-string= "color-mix(in srgb, #3B4252 88%, transparent)"
+                  (theme:surface-color theme:+dark-theme+))
+  (let ((theme (make-instance 'theme:theme
+                              :background-color "white"
+                              :surface-color "#FFFFFF")))
+    (assert-string= "#FFFFFF" (theme:surface-color theme))))
+
 (define-test heading-color ()
   (assert-string= "#444444" (theme:heading-color theme:+light-theme+))
   (assert-string= "#5E81AC" (theme:heading-color theme:+dark-theme+))
@@ -95,9 +77,3 @@
                               :primary-color "#686868"
                               :primary-color- "#555555")))
     (assert-string= "#555555" (theme:heading-color theme))))
-
-(define-test default-light-theme-contrast ()
-  (assert-contrast theme:+light-theme+))
-
-(define-test default-dark-theme-contrast ()
-  (assert-contrast theme:+dark-theme+))

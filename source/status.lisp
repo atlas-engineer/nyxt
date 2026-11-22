@@ -9,7 +9,7 @@
     :type (maybe window)
     :documentation "The `window' to which the status buffer is attached.")
    (height
-    40
+    57
     :type integer
     :writer nil
     :reader height
@@ -81,26 +81,25 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('truetype')")
-      '(html
+      `(html
         :height "100%"
-        :overflow "hidden")
+        :overflow "hidden"
+        :background-color "transparent")
       `(body
         :display "flex"
         :align-items "center"
         :height "100%"
+        :margin 0
         :overflow "hidden"
         :box-sizing "border-box"
-        :background-color ,(format nil "color-mix(in srgb, ~a 55%, ~a)"
-                                  theme:secondary-color+
-                                  theme:background-color)
-        :color ,theme:on-secondary-color
+        :background-color ,theme:surface-color
+        :color ,theme:on-background-color
         :font-family ,theme:font-family
         :font-size "13px"
         :line-height "16px"
         :white-space "nowrap"
         :user-select "none"
-        :padding 0
-        :margin 0)
+        :padding 0)
       '(*
         :box-sizing "border-box")
       '("#container"
@@ -110,7 +109,7 @@
         :min-width "0"
         :height "28px"
         :gap "12px"
-        :padding "0 8px"
+        :padding "0 8px 0 24px"
         :overflow "hidden")
       '("#controls"
         :display "flex"
@@ -334,8 +333,9 @@
   nil)
 
 (defmethod (setf height) (value (status-buffer status-buffer))
-  (setf (ffi-height status-buffer) value)
-  (setf (slot-value status-buffer 'height) value))
+  (let ((height (max 0 value)))
+    (setf (ffi-height status-buffer) height
+          (slot-value status-buffer 'height) height)))
 
 (export-always 'mode-status)
 (defgeneric mode-status (status mode)
@@ -348,9 +348,9 @@
 
 (defun sort-modes-for-status (modes)
   "Return visible modes in MODES, with `nyxt/mode/keyscheme:keyscheme-mode'
- placed first."
+placed first."
   (multiple-value-bind (keyscheme-mode other-modes)
-      (sera:partition #'nyxt/mode/keyscheme::keyscheme-mode-p
+      (sera:partition #'nyxt/mode/keyscheme:keyscheme-mode-p
                       (sera:filter #'visible-in-status-p modes))
     (append keyscheme-mode other-modes)))
 

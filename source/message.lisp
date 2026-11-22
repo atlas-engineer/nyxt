@@ -73,22 +73,25 @@
         "format('woff')")
       '(:font-face :font-family "dejavu sans mono" :src
         "url('nyxt-resource:DejaVuSansMono.ttf')" "format('truetype')")
-      '(html
+      `(html
         :height "100%"
-        :overflow "hidden")
+        :overflow "hidden"
+        :background-color "transparent")
       `(body
+        :display "flex"
+        :align-items "center"
         :height "100%"
+        :margin 0
+        :padding "0 8px 0 10px"
+        :box-sizing "border-box"
         :overflow "hidden"
         :white-space "nowrap"
         :text-overflow "ellipsis"
-        :background-color ,theme:background-color-
+        :background-color "transparent"
         :color ,theme:on-background-color
         :font-family ,theme:font-family
-        :font-size "75vh"
-        :line-height "100vh"
-        :padding 0
-        :padding-left "4px"
-        :margin 0))))
+        :font-size "12px"
+        :line-height "12px"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -103,8 +106,9 @@
   (ffi-print-message message-buffer "Ready."))
 
 (defmethod (setf height) (value (message-buffer message-buffer))
-  (setf (ffi-height message-buffer) value)
-  (setf (slot-value message-buffer 'height) value))
+  (let ((height (max 0 value)))
+    (setf (ffi-height message-buffer) height
+          (slot-value message-buffer 'height) height)))
 
 (defclass messages-appender (log4cl-impl:appender) ())
 

@@ -70,6 +70,9 @@
     :documentation "Fill for a button. Darker than the page in a light theme and lighter than the page in a dark theme.")
    (button-color-
     :documentation "Button fill while hovered.")
+   (surface-color
+    :documentation "Frosted fill for a panel, the status bar, and the prompt.
+When omitted, an 88% mix of `background-color-' over transparency, so a blur shows the page through it.")
    (font-family
     "Public Sans"
     :documentation "The font family to use by default.")
@@ -129,7 +132,13 @@
           (or (and (slot-value theme 'background-color)
                    (dark-p theme)
                    (slot-value theme 'background-color-))
-              (slot-value theme 'button-color)))))
+              (slot-value theme 'button-color))))
+  (unless (slot-value theme 'surface-color)
+    (let ((color (or (slot-value theme 'background-color-)
+                     (slot-value theme 'background-color))))
+      (when color
+        (setf (slot-value theme 'surface-color)
+              (format nil "color-mix(in srgb, ~a 88%, transparent)" color))))))
 
 (export-always 'dark-p)
 (defmethod dark-p ((theme theme))

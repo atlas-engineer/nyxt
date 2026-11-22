@@ -118,7 +118,7 @@
                  (:file "update")))
                (:module "Core modes"
                 :pathname "mode"
-                :depends-on ("Core")
+                :depends-on ("Core" "panel")
                 :components
                 ((:file "input-edit")
                  (:file "buffer-listing")
@@ -143,8 +143,8 @@
                  (:file "download" :depends-on ("file-manager"))))
                (:file "mode/terminal" :depends-on ("Core modes"))
                (:file "mode/base" :depends-on ("Core modes" "mode/terminal"))
-               (:file "status" :depends-on ("Core"))
-               (:file "panel" :depends-on ("status" "Core modes"))
+               (:file "panel" :depends-on ("Core"))
+               (:file "status" :depends-on ("Core modes"))
                (:module "Help"
                 :pathname ""
                 :depends-on ("Core modes" "Modes")

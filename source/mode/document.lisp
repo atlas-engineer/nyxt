@@ -529,6 +529,7 @@ heading sinks."
                                        :left "0"
                                        :width "0"
                                        :height "0"
+                                       :margin "0"
                                        :box-sizing "border-box"
                                        :border "1px solid"
                                        :border-color ,theme:action-color
@@ -583,6 +584,8 @@ heading sinks."
           (dolist (id (list "nyxt-overlay" "nyxt-rectangle-selection"))
             (ps:let ((element (nyxt/ps:qs document (+ "#" id))))
               (when element
+                (when (ps:@ element nyxt-resize-observer)
+                  (ps:chain element nyxt-resize-observer (disconnect)))
                 (ps:chain element (remove)))))
           (ps:dolist (handle (nyxt/ps:qsa document ".nyxt-frame-handle"))
             (ps:chain handle (remove))))
@@ -614,12 +617,12 @@ heading sinks."
                   (ps:@ frame x2) right
                   (ps:@ frame y1) top
                   (ps:@ frame y2) bottom)))
-        (defun place-handles ()
+        (defun place-handles (origin-x origin-y)
           (ps:let* ((frame (frame-box))
-                    (x1 (ps:@ frame x1))
-                    (y1 (ps:@ frame y1))
-                    (x2 (ps:@ frame x2))
-                    (y2 (ps:@ frame y2))
+                    (x1 (- (ps:@ frame x1) origin-x))
+                    (y1 (- (ps:@ frame y1) origin-y))
+                    (x2 (- (ps:@ frame x2) origin-x))
+                    (y2 (- (ps:@ frame y2) origin-y))
                     (mx (/ (+ x1 x2) 2))
                     (my (/ (+ y1 y2) 2))
                     (show (if (and (> (- x2 x1) 0) (> (- y2 y1) 0))
@@ -640,15 +643,21 @@ heading sinks."
                 (setf (ps:@ handle style display) show)))))
         (defun update-selection-rectangle ()
           (normalize)
-          (ps:let* ((frame (frame-box))
-                    (element (nyxt/ps:qs document "#nyxt-rectangle-selection")))
-            (setf (ps:@ element style left) (+ (ps:@ frame x1) "px"))
-            (setf (ps:@ element style top) (+ (ps:@ frame y1) "px"))
-            (setf (ps:@ element style width)
-                  (+ (- (ps:@ frame x2) (ps:@ frame x1)) "px"))
-            (setf (ps:@ element style height)
-                  (+ (- (ps:@ frame y2) (ps:@ frame y1)) "px"))
-            (place-handles)))
+          (ps:let ((frame (frame-box))
+                   (element (nyxt/ps:qs document "#nyxt-rectangle-selection")))
+            (when element
+              (setf (ps:@ element style left) "0px")
+              (setf (ps:@ element style top) "0px")
+              (ps:let* ((origin (ps:chain element (get-bounding-client-rect)))
+                        (origin-x (+ (ps:@ origin left) (ps:@ window |pageXOffset|)))
+                        (origin-y (+ (ps:@ origin top) (ps:@ window |pageYOffset|))))
+                (setf (ps:@ element style left) (+ (- (ps:@ frame x1) origin-x) "px"))
+                (setf (ps:@ element style top) (+ (- (ps:@ frame y1) origin-y) "px"))
+                (setf (ps:@ element style width)
+                      (+ (- (ps:@ frame x2) (ps:@ frame x1)) "px"))
+                (setf (ps:@ element style height)
+                      (+ (- (ps:@ frame y2) (ps:@ frame y1)) "px"))
+                (place-handles origin-x origin-y)))))
         (defun zone (x y)
           (ps:let* ((frame (frame-box))
                     (pad 12)
@@ -779,7 +788,15 @@ heading sinks."
                                (lambda (e)
                                  (ps:chain window (scroll-by (ps:@ e delta-x) (ps:@ e delta-y)))
                                  (ps:chain e (prevent-default)))
-                               (ps:create :passive nil)))))
+                               (ps:create :passive nil)))
+            (when (ps:@ window |ResizeObserver|)
+              (ps:let ((observer (ps:new (|ResizeObserver|
+                                          (lambda ()
+                                            (ps:let ((frame (frame-box)))
+                                              (when (and frame (ps:@ frame ready))
+                                                (update-selection-rectangle))))))))
+                (ps:chain observer (observe overlay))
+                (setf (ps:@ overlay nyxt-resize-observer) observer)))))
         (remove-existing)
         (add-stylesheet)
         (add-overlay)
@@ -850,6 +867,8 @@ heading sinks."
       (when rectangle
         (ps:chain rectangle (remove)))
       (when overlay
+        (when (ps:@ overlay nyxt-resize-observer)
+          (ps:chain overlay nyxt-resize-observer (disconnect)))
         (ps:chain overlay (remove))))
     (ps:dolist (handle (nyxt/ps:qsa document ".nyxt-frame-handle"))
       (ps:chain handle (remove)))

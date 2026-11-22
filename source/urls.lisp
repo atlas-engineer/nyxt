@@ -527,10 +527,6 @@ requests."
                                        `(lambda () ,@body)))))
     (ps:create :mode "no-cors")))
 
-(defvar *lisp-request-url* nil
-  "The `lisp' request URL while its callback runs.
-A callback can read query arguments that the page appended.")
-
 (defun parse-buffer-id (string)
   "Return the non-negative integer encoded by STRING, or NIL."
   (when (and (stringp string)
@@ -553,12 +549,10 @@ A callback can read query arguments that the page appended.")
                    request-id buffer title)
         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                              (gethash request-id (lisp-url-callbacks buffer)))))
-          (let ((request-url %url))
-            (run-thread "lisp-url"
-              (let ((*lisp-request-url* request-url))
-                (handler-case (run callback)
-                  (prompt-buffer-canceled ()
-                    (log:debug "Prompt buffer interrupted"))))))
+          (run-thread "lisp-url"
+            (handler-case (run callback)
+              (prompt-buffer-canceled ()
+                (log:debug "Prompt buffer interrupted"))))
           (log:warn "Request ~a isn't bound to a callback in buffer ~a"
                     %url buffer))
         (values "{}" "application/json")))
