@@ -90,7 +90,7 @@ The list element keeps a row it has already built."
                 (user-interface:html-class element) "empty"
                 (user-interface:text element) "No messages.")))))
 
-(defmethod customize-instance :after ((mode message-mode) &key)
+(defmethod enable ((mode message-mode) &key)
   "Keep MODE's list in step with `messages-content'."
   (define-setf-handler browser messages-content mode
     (lambda (browser)
@@ -100,7 +100,7 @@ The list element keeps a row it has already built."
 (define-internal-page-command-global list-messages ()
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
   "Show the *Messages* buffer."
-  (let ((messages (messages (find-submode 'message-mode buffer))))
+  (let ((messages (messages (find-mode buffer 'message-mode))))
     (user-interface:connect messages buffer)
     (spinneret:with-html-string
       (:nstyle

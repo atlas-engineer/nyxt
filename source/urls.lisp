@@ -88,9 +88,21 @@ text keeps its line breaks without a card."
                      :line-height "24px")))))
 
 (export-always 'error-help)
-(defun error-help (&optional (title "Unknown error") (text ""))
+(defun error-help (&optional (title "Unknown error") (text "") buffer)
   "A helper to print error messages as displayable HTML."
-  (let ((theme (theme *browser*)))
+  (let* ((theme (theme *browser*))
+         (base-style (if buffer
+                         (style buffer)
+                         (theme:themed-css theme
+                           '(* :box-sizing border-box)
+                           `(body
+                             :background-color ,theme:background-color
+                             :color ,theme:on-background-color
+                             :font-family ,theme:font-family
+                             :font-size "17px"
+                             :line-height "24px"
+                             :margin "0"
+                             :padding "24px")))))
     (values
      (spinneret:with-html-string
        (:doctype)
@@ -99,7 +111,7 @@ text keeps its line breaks without a card."
          (:title title)
          (:style
           (:raw (uiop:strcat
-                 (style (current-buffer))
+                 base-style
                  (notice-css (theme:primary-color theme)
                              (theme:on-background-color theme)
                              (theme:monospace-font-family theme))))))
@@ -495,16 +507,18 @@ IPv4 rewrite of a numeric host."
                  :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
 
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
-(ps:defpsmacro nyxt/ps::lisp-eval ((&key (buffer '(nyxt:current-buffer)) title)
-                                   &body body)
+(ps:defpsmacro nyxt/ps::lisp-eval ((&key buffer title id) &body body)
   "Request a URL that evaluates BODY in BUFFER.
 TITLE is purely informative.
 The request returns immediately. BODY runs on its own thread, so a command
 that waits, such as `prompt', does not block `nyxt-resource' or other `lisp'
 requests."
+  (unless buffer
+    (error "nyxt/ps:lisp-eval requires :buffer."))
   `(fetch
     (ps:lisp (quri:render-uri
-              (lisp-url :buffer ,buffer
+              (lisp-url ,@(when id `(:id ,id))
+                        :buffer ,buffer
                         :title ,title
                         :callback ,(if (and (sera:single body)
                                             (member (first (first body))
@@ -517,46 +531,34 @@ requests."
   "The `lisp' request URL while its callback runs.
 A callback can read query arguments that the page appended.")
 
-(defvar *lisp-callback-buffer-hook* nil
-  "Function of one buffer, or NIL.
-Return the buffer that buffer's `lisp' callback should run in, or NIL to keep it.")
-
-(-> lisp-callback-buffer (buffer) buffer)
-(defun lisp-callback-buffer (buffer)
-  "Return the buffer in which BUFFER's `lisp' callback should run.
-A status buffer stores its callbacks the same way any `lisp' URL buffer does.
-The commands on that strip, such as `history-backwards', act on the window's
-page. They read `current-buffer', which would otherwise be the strip.
-`*lisp-callback-buffer-hook*' does the same for the side panel."
-  (or (and (status-buffer-p buffer)
-           (window buffer)
-           (active-buffer (window buffer)))
-      (and *lisp-callback-buffer-hook*
-           (funcall *lisp-callback-buffer-hook* buffer))
-      buffer))
+(defun parse-buffer-id (string)
+  "Return the non-negative integer encoded by STRING, or NIL."
+  (when (and (stringp string)
+             (plusp (length string))
+             (every #'digit-char-p string))
+    (parse-integer string)))
 
 (define-internal-scheme "lisp"
     (lambda (url)
-      (when-let* ((%url (quri:uri url))
+      (when-let* ((%url (handler-case (quri:uri url)
+                          (quri:uri-error () nil)))
                   (request-id (lisp-request-id %url))
                   (query (quri:uri-query-params %url))
                   (title (assoc-value query "title" :test 'equal))
-                  (buffer-id (assoc-value query "buffer" :test 'equal))
-                  (buffer (find (read-from-string buffer-id)
+                  (buffer-id (parse-buffer-id (assoc-value query "buffer" :test 'equal)))
+                  (buffer (find buffer-id
                                 (internal-buffer-list :all t)
                                 :key 'id)))
         (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a"
                    request-id buffer title)
         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
-                              (gethash request-id (lisp-url-callbacks buffer)))))
-          (let ((target (lisp-callback-buffer buffer))
-                (request-url %url))
+                             (gethash request-id (lisp-url-callbacks buffer)))))
+          (let ((request-url %url))
             (run-thread "lisp-url"
               (let ((*lisp-request-url* request-url))
-                (with-current-buffer target
-                  (handler-case (run callback)
-                    (prompt-buffer-canceled ()
-                      (log:debug "Prompt buffer interrupted")))))))
+                (handler-case (run callback)
+                  (prompt-buffer-canceled ()
+                    (log:debug "Prompt buffer interrupted"))))))
           (log:warn "Request ~a isn't bound to a callback in buffer ~a"
                     %url buffer))
         (values "{}" "application/json")))

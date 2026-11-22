@@ -64,7 +64,9 @@ internal programming APIs."
   ((default-modes (cons 'bookmark-mode %slot-value%))))
 
 (defmethod bookmarks-file ((buffer buffer))
-  (bookmarks-file (find-submode 'bookmark-mode buffer)))
+  (if-let ((mode (find-mode buffer 'bookmark-mode)))
+    (bookmarks-file mode)
+    (make-instance 'bookmarks-file)))
 
 (defun group-bookmarks (buffer)
   (let ((bookmarks-table (make-hash-table :test #'equalp))
@@ -148,7 +150,7 @@ Set this place after a save. A `define-setf-handler' on it redraws
 In particular, we ignore the protocol (e.g. HTTP or HTTPS does not matter)."
   (url-equal (url e1) (url e2)))
 
-(defmacro with-bookmarks ((bookmarks &optional (buffer '(current-buffer))) &body body)
+(defmacro with-bookmarks ((bookmarks buffer) &body body)
   "Bind BOOKMARKS to BUFFER's bookmark list for BODY, then save it.
 Saving bumps `revision', which redraws an open `list-bookmarks'."
   (alex:with-gensyms (file)
@@ -158,15 +160,15 @@ Saving bumps `revision', which redraws an open `list-bookmarks'."
        (incf (revision ,file)))))
 
 (-> persist-bookmark
-    (quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
+    (buffer quri:uri &key (:title string) (:date (or time:timestamp null)) (:tags t))
     t)
 (export-always 'persist-bookmark)
-(defun persist-bookmark (url &key date title tags)
-  "Store the bookmark for URL in `bookmarks-file' of the current buffer.
+(defun persist-bookmark (buffer url &key date title tags)
+  "Store the bookmark for URL in `bookmarks-file' of BUFFER.
 Creates a `bookmark-entry' with DATE, TITLE, and TAGS, when provided.
 If there's a bookmarks with the same URL, update the TITLE, TAGS, and DATE
 instead."
-  (with-bookmarks (bookmarks)
+  (with-bookmarks (bookmarks buffer)
     (unless (or (url-empty-p url)
                 (string= "about:blank" (render-url url)))
       (multiple-value-bind (entries bookmarks-without-url)
@@ -190,7 +192,9 @@ instead."
 
 (define-class bookmark-source (prompter:source)
   ((prompter:name "Bookmarks")
-   (prompter:constructor (files:content (bookmarks-file (current-buffer))))
+   (buffer nil :type (maybe buffer))
+   (prompter:constructor (lambda (source)
+                           (files:content (bookmarks-file (buffer source)))))
    (prompter:enable-marks-p t)
    (prompter:active-attributes-keys
     '("URL" "Title" "Tags")
@@ -201,10 +205,12 @@ By default, matches URL, title, and tags of the bookmark, but can also match
 against date, given `prompter:active-attributes-keys' configuration."))
 
 (defmethod url-sources ((mode bookmark-mode) actions-on-return)
-  (make-instance 'bookmark-source :actions-on-return actions-on-return))
+  (make-instance 'bookmark-source
+                 :buffer (buffer mode)
+                 :actions-on-return actions-on-return))
 
-(defun tag-suggestions ()
-  (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
+(defun tag-suggestions (buffer)
+  (let ((bookmarks (files:content (bookmarks-file buffer))))
     ;; Warning: `sort' is destructive and `append' does not copy the last list,
     ;; so if we used `delete-duplicates' here it would have modified the last
     ;; list.
@@ -214,6 +220,7 @@ against date, given `prompter:active-attributes-keys' configuration."))
 
 (define-class tag-source (prompter:source)
   ((prompter:name "Tags")
+   (buffer nil :type (maybe buffer))
    (prompter:filter-preprocessor
     (lambda (initial-suggestions-copy source input)
       (prompter:delete-inexact-matches
@@ -224,12 +231,12 @@ against date, given `prompter:active-attributes-keys' configuration."))
     (lambda (suggestion source input)
       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:enable-marks-p t)
-   (prompter:constructor (tag-suggestions))))
+   (prompter:constructor (lambda (source) (tag-suggestions (buffer source))))))
 
 (export-always 'url-bookmark-tags)
-(defun url-bookmark-tags (url)
-  "Return the list of tags of the bookmark corresponding to URL."
-  (let ((bookmarks (files:content (bookmarks-file (current-buffer)))))
+(defun url-bookmark-tags (buffer url)
+  "Return the list of tags of the bookmark corresponding to URL in BUFFER."
+  (let ((bookmarks (files:content (bookmarks-file buffer))))
     (when-let ((existing (find url bookmarks :key #'url :test #'url-equal)))
       (tags existing))))
 
@@ -246,12 +253,12 @@ against date, given `prompter:active-attributes-keys' configuration."))
    (prompter:enable-marks-p t)))
 
 (export-always 'bookmark)
-(defmethod bookmark ((url simple-array))
-  (bookmark (quri:uri url)))
+(defmethod bookmark (owner (url simple-array))
+  (bookmark owner (quri:uri url)))
 
-(defmethod bookmark ((url quri:uri))
+(defmethod bookmark (owner (url quri:uri))
   (let ((title (prompt1
-                :prompt (format nil  "Title for ~a" (render-url url))
+                :prompt (format nil "Title for ~a" (render-url url))
                 :input (fetch-url-title (render-url url))
                 :sources (make-instance 'prompter:raw-source
                                         :name "Title")))
@@ -260,13 +267,14 @@ against date, given `prompter:active-attributes-keys' configuration."))
                :sources (list
                          (make-instance 'new-tag-source)
                          (make-instance 'tag-source
-                                        :marks (url-bookmark-tags url))))))
-    (persist-bookmark url :tags tags :title title)))
+                                        :buffer owner
+                                        :marks (url-bookmark-tags owner url))))))
+    (persist-bookmark owner url :tags tags :title title)))
 
-(defmethod bookmark ((buffer buffer))
+(defmethod bookmark (owner (buffer buffer))
   (let* ((url (url buffer))
          (title (prompt1
-                 :prompt (format nil  "Title for ~a" (render-url url))
+                 :prompt (format nil "Title for ~a" (render-url url))
                  :input (title buffer)
                  :sources (make-instance 'prompter:raw-source
                                          :name "Title")))
@@ -277,46 +285,50 @@ against date, given `prompter:active-attributes-keys' configuration."))
                           (make-instance 'keyword-source
                                          :buffer buffer)
                           (make-instance 'tag-source
-                                         :marks (url-bookmark-tags
-                                                 (url buffer)))))))
-    (persist-bookmark url :title title :tags tags)))
+                                         :buffer owner
+                                         :marks (url-bookmark-tags owner url))))))
+    (persist-bookmark owner url :title title :tags tags)))
 
-(defmethod bookmark ((history-entry history-entry))
+(defmethod bookmark (owner (history-entry history-entry))
   (let* ((url (url history-entry))
          (title (prompt1
-                 :prompt (format nil  "Title for ~a" (render-url url))
+                 :prompt (format nil "Title for ~a" (render-url url))
                  :input (title history-entry)
                  :sources (make-instance 'prompter:raw-source
                                          :name "Title")))
          (tags (prompt
-                :prompt (format nil  "Tag(s) for ~a" (render-url url))
+                :prompt (format nil "Tag(s) for ~a" (render-url url))
                 :sources (list
                           (make-instance 'new-tag-source)
                           (make-instance 'tag-source
-                                         :marks (url-bookmark-tags url))))))
-    (persist-bookmark url :tags tags :title title)))
+                                         :buffer owner
+                                         :marks (url-bookmark-tags owner url))))))
+    (persist-bookmark owner url :tags tags :title title)))
 
-(define-command add-bookmark ()
-  "Prompt for objects to bookmark."
-  (prompt
-   :prompt "Add Bookmark(s)"
-   :input (render-url (url (current-buffer)))
-   :sources (list
-             (make-instance 'prompter:raw-source
-                            :actions-on-return
-                            (lambda-mapped-command bookmark))
-             (make-instance 'buffer-source
-                            :actions-on-return
-                            (lambda-mapped-command bookmark))
-             (make-instance 'global-history-source
-                            :actions-on-return
-                            (lambda-mapped-command bookmark)))))
+(define-command add-bookmark (buffer)
+  "Prompt for objects to bookmark in BUFFER."
+  (let ((bookmark-in-buffer
+          (lambda-command bookmark* (targets)
+            "Bookmark chosen object(s) in BUFFER."
+            (dolist (target targets)
+              (bookmark buffer target)))))
+    (prompt
+     :prompt "Add Bookmark(s)"
+     :input (render-url (url buffer))
+     :sources (list
+               (make-instance 'prompter:raw-source
+                              :actions-on-return bookmark-in-buffer)
+               (make-instance 'buffer-source
+                              :buffer buffer
+                              :actions-on-return bookmark-in-buffer)
+               (make-instance 'global-history-source
+                              :actions-on-return bookmark-in-buffer)))))
 
-(define-command delete-bookmark (&optional urls-or-bookmark-entries)
-  "Delete bookmark(s) matching the chosen URLS-OR-BOOKMARK-ENTRIES.
+(define-command delete-bookmark (buffer &optional urls-or-bookmark-entries)
+  "Delete bookmark(s) in BUFFER matching the chosen URLS-OR-BOOKMARK-ENTRIES.
 URLS-OR-BOOKMARK-ENTRIES could be a list or a single URL/`bookmark-entry'."
   (if urls-or-bookmark-entries
-      (with-bookmarks (bookmarks)
+      (with-bookmarks (bookmarks buffer)
         (setf bookmarks
               (set-difference
                bookmarks
@@ -329,12 +341,13 @@ URLS-OR-BOOKMARK-ENTRIES could be a list or a single URL/`bookmark-entry'."
       (let ((entries (prompt
                       :prompt "Delete bookmark(s)"
                       :sources (make-instance 'bookmark-source
+                                              :buffer buffer
                                               :enable-marks-p t))))
-        (delete-bookmark entries))))
+        (delete-bookmark buffer entries))))
 
-(-> edit-bookmark-entry (bookmark-entry) t)
-(defun edit-bookmark-entry (bookmark)
-  "Prompt for a new title and tags for BOOKMARK and store them."
+(-> edit-bookmark-entry (buffer bookmark-entry) t)
+(defun edit-bookmark-entry (buffer bookmark)
+  "Prompt for a new title and tags for BOOKMARK in BUFFER and store them."
   (let* ((url (url bookmark))
          (title (prompt1
                  :prompt (format nil "Title for ~a" (render-url url))
@@ -346,27 +359,32 @@ URLS-OR-BOOKMARK-ENTRIES could be a list or a single URL/`bookmark-entry'."
                 :sources (list
                           (make-instance 'new-tag-source)
                           (make-instance 'tag-source
-                                         :marks (url-bookmark-tags url))))))
-    (persist-bookmark url :title title :tags tags)))
+                                         :buffer buffer
+                                         :marks (url-bookmark-tags buffer url))))))
+    (persist-bookmark buffer url :title title :tags tags)))
 
-(define-command edit-bookmark ()
-  "Edit bookmark(s)."
+(define-command edit-bookmark (buffer)
+  "Edit bookmark(s) in BUFFER."
   (dolist (bookmark (prompt
                      :prompt "Edit bookmark(s)"
                      :sources (make-instance 'bookmark-source
+                                             :buffer buffer
                                              :enable-marks-p t)))
-    (edit-bookmark-entry bookmark)))
+    (edit-bookmark-entry buffer bookmark)))
 
-(define-command set-url-from-bookmark ()
-  "Set the URL for the current buffer from a bookmark.
-With marks, open the first bookmark in the current buffer, and the rest in other
+(define-command set-url-from-bookmark (buffer)
+  "Set the URL for BUFFER from a bookmark.
+With marks, open the first bookmark in BUFFER, and the rest in other
 buffers in the background."
   (prompt
    :prompt "Open bookmark(s)"
    :sources (make-instance
              'bookmark-source
+             :buffer buffer
              :actions-on-return
-             (list #'buffer-load*
+             (list (lambda-command buffer-load-bookmark* (suggestions)
+                     "Load bookmark(s) starting in BUFFER."
+                     (buffer-load* suggestions buffer))
                    (lambda-command new-buffer-load (suggestion-values)
                      "Load bookmark(s) in new buffer(s)."
                      (mapc (lambda (url) (make-buffer :url (url url))) (rest suggestion-values))
@@ -374,7 +392,9 @@ buffers in the background."
                    (lambda-command copy-url* (suggestions)
                      "Copy bookmark URL."
                      (copy-to-clipboard (render-url (url (first suggestions)))))
-                   'delete-bookmark))))
+                   (lambda-command delete-bookmark* (suggestions)
+                     "Delete chosen bookmark(s)."
+                     (delete-bookmark buffer suggestions))))))
 
 (-> bookmark-stamp (bookmark-entry) list)
 (defun bookmark-stamp (bookmark)
@@ -422,7 +442,7 @@ buffers in the background."
                                     (nyxt/ps:lisp-eval
                                      (:title "edit-bookmark"
                                       :buffer buffer)
-                                     (edit-bookmark-entry bookmark))))
+                                     (edit-bookmark-entry buffer bookmark))))
            (make-instance 'user-interface:button
                           :html-class "control close"
                           :alt-text "Delete"
@@ -432,7 +452,7 @@ buffers in the background."
                                     (nyxt/ps:lisp-eval
                                      (:title "delete-bookmark"
                                       :buffer buffer)
-                                     (delete-bookmark bookmark))))))))
+                                     (delete-bookmark buffer bookmark))))))))
 
 (-> bookmark-group (t buffer) t)
 (defun bookmark-group (tag buffer)
@@ -504,7 +524,7 @@ The list element keeps a row it has already built."
                (user-interface:html-class element) "bookmark-groups"
                (user-interface:text element) nil))))))
 
-(defmethod customize-instance :after ((mode bookmark-listing-mode) &key)
+(defmethod enable ((mode bookmark-listing-mode) &key)
   "Keep MODE's list in step with the bookmark file."
   (let ((buffer (buffer mode)))
     (unless (listing mode)
@@ -516,14 +536,14 @@ The list element keeps a row it has already built."
                            :template (lambda (item)
                                        (bookmark-item item buffer))
                            :item-key (lambda (item)
-                                       (bookmark-item-key item buffer))))
-      (define-setf-handler bookmarks-file revision mode
-        (lambda (file)
-          (let ((page-file (bookmarks-file buffer)))
-            (when (or (eq file page-file)
-                      (uiop:pathname-equal (files:expand file)
-                                           (files:expand page-file)))
-              (render-bookmarks mode))))))
+                                       (bookmark-item-key item buffer)))))
+    (define-setf-handler bookmarks-file revision mode
+      (lambda (file)
+        (let ((page-file (bookmarks-file buffer)))
+          (when (or (eq file page-file)
+                    (uiop:pathname-equal (files:expand file)
+                                         (files:expand page-file)))
+            (render-bookmarks mode)))))
     (render-bookmarks mode)))
 
 (export-always 'list-bookmarks)
@@ -531,7 +551,7 @@ The list element keeps a row it has already built."
     (bookmarks-buffer "*Bookmarks*" 'nyxt/mode/bookmark:bookmark-listing-mode)
   "List all bookmarks in a new buffer.
 Splits bookmarks into groups by tags."
-  (let ((listing (listing (find-submode 'bookmark-listing-mode bookmarks-buffer))))
+  (let ((listing (listing (find-mode bookmarks-buffer 'bookmark-listing-mode))))
     (user-interface:connect listing bookmarks-buffer)
     (spinneret:with-html-string
       (:nstyle
@@ -662,13 +682,13 @@ Splits bookmarks into groups by tags."
             entries)))
 
 (define-command import-bookmarks-from-html
-    (&key (html-file (prompt1
-                      :input (uiop:native-namestring (uiop:getcwd))
-                      :extra-modes 'nyxt/mode/file-manager:file-manager-mode
-                      :sources (make-instance
-                                'nyxt/mode/file-manager:file-source
-                                :extensions '("html")))))
-  "Import bookmarks from an HTML-FILE with bookmarks from other browsers."
+    (buffer &key (html-file (prompt1
+                             :input (uiop:native-namestring (uiop:getcwd))
+                             :extra-modes 'nyxt/mode/file-manager:file-manager-mode
+                             :sources (make-instance
+                                       'nyxt/mode/file-manager:file-source
+                                       :extensions '("html")))))
+  "Import bookmarks into BUFFER from an HTML-FILE with bookmarks from other browsers."
   (if (and (uiop:file-exists-p html-file)
            (equal (pathname-type html-file) "html"))
       (with-open-file (in-html html-file :external-format :utf-8)
@@ -680,18 +700,20 @@ Splits bookmarks into groups by tags."
                    (tags (plump:attribute a-tag "tags"))
                    (url-uri (quri:uri url)))
               (when (str:starts-with? "http" (quri:uri-scheme url-uri))
-                (persist-bookmark url-uri
+                (persist-bookmark buffer
+                                  url-uri
                                   :title title
                                   :date (ignore-errors (time:unix-to-timestamp (parse-integer date)))
                                   :tags (when tags
                                           (str:split "," tags))))))))
       (echo "The file doesn't exist or is not an HTML file.")))
 
-(define-command bookmark-hint ()
-  "Prompt for element hints and bookmark them."
+(define-command bookmark-hint (buffer)
+  "Prompt for element hints in BUFFER and bookmark them."
   (nyxt/mode/hint:query-hints
+   buffer
    "Bookmark hint"
    (lambda (result)
      (dolist (url (mapcar #'url result))
-       (bookmark (quri:uri url))))
+       (bookmark buffer (quri:uri url))))
    :selector "a"))

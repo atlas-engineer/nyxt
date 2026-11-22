@@ -8,27 +8,20 @@
   "Generate the JavaScript code and run it right away.
 
 If :ASYNC is provided as T before the body, then the code is run asynchronously.
-If :BUFFER is provided before the body, the code is evaluated in the provided
-buffer, instead of the default `current-buffer'.
+:BUFFER must be provided before the body to specify the buffer in which the
+code is evaluated.
 
 The body of the code is expanded in the implicit `ps:ps'.
 
-Returns the transformed result of evaluating JavaScript code or NIL if :ASYNC.
-
-Examples:
-;; Set input in the `current-prompt-buffer' asynchronously.
-\(ps-eval :buffer (current-prompt-buffer) :async t
-  (setf (ps:@ (nyxt/ps:qs document \"#input\") value) \"foo\"))
-
-;; Get the class of the active element in the `current-buffer'
-\(ps-eval (ps:@ document active-element class-name))"
+Returns the transformed result of evaluating JavaScript code or NIL if :ASYNC."
   (let ((async-p (second (member :async args)))
-        (buffer (second (member :buffer args))))
+        (buffer (or (second (member :buffer args))
+                    (error "ps-eval requires :buffer."))))
     `(progn
        (,(if async-p
              'ffi-buffer-evaluate-javascript-async
              'ffi-buffer-evaluate-javascript)
-        ,(or buffer '(current-buffer))
+        ,buffer
         (ps:ps ,@(loop for index below (length args)
                        for arg = (nth index args)
                        when (member arg '(:buffer :async))
@@ -38,38 +31,37 @@ Examples:
        ,@(when async-p '(nil)))))
 
 (export-always 'define-parenscript)
-(defmacro define-parenscript (script-name args &body script-body)
-  "Define parenscript method SCRIPT-NAME with arguments ARGS.
+(defmacro define-parenscript (script-name (buffer &rest args) &body script-body)
+  "Define parenscript method SCRIPT-NAME on BUFFER and ARGS.
 SCRIPT-BODY must be a valid parenscript and will be wrapped in `ps:ps'.
 Any Lisp expression must be wrapped in `ps:lisp'.
 
-The compiled Javascript runs in the current buffer.
+The compiled Javascript runs in BUFFER.
 
 Since it is defined via `defmethod', it is extensible via method
 qualifiers (`:before', `:after', `:around')."
   (multiple-value-bind (body declarations documentation)
       (alex:parse-body script-body :documentation t)
     (declare (ignore declarations))
-    `(defmethod ,script-name ,args
+    `(defmethod ,script-name (,buffer ,@args)
        ,documentation
-       (ps-eval :buffer (current-buffer) ,@body))))
+       (ps-eval :buffer ,buffer ,@body))))
 
 (export-always 'define-parenscript-async)
-(defmacro define-parenscript-async (script-name args &body script-body)
+(defmacro define-parenscript-async (script-name (buffer &rest args) &body script-body)
   "Like `define-parenscript', but Javascript runs asynchronously."
   (multiple-value-bind (body declarations documentation)
       (alex:parse-body script-body :documentation t)
     (declare (ignore declarations))
-    `(defmethod ,script-name ,args
+    `(defmethod ,script-name (,buffer ,@args)
        ,documentation
-       (ps-eval :async t :buffer (current-buffer) ,@body))))
+       (ps-eval :async t :buffer ,buffer ,@body))))
 
 (export-always 'ps-labels)
 (defmacro ps-labels (&body args)
   "Create `labels'-like Parenscript functions callable from Lisp.
 ARGS can start with :ASYNC and :BUFFER keyword args.
-- :BUFFER is the buffer to run the created functions in. Defaults to
-  `current-buffer'.
+- :BUFFER is the buffer to run the created functions in.
 - :ASYNC is whether the function runs asynchronously. Defaults to NIL, so the
   bound functions return the result of JS evaluation synchronously.
 
@@ -77,34 +69,18 @@ Bindings are similar to the `labels'/`flet' bindings. They have a structure of:
 \(NAME [:BUFFER BUFFER] [:ASYNC BOOLEAN] ARGS
    &BODY BODY)
 
-Binding-specific :BUFFER and :ASYNC can override the `pl-labels'-global :BUFFER
-and :ASYNC.
-
-Example:
-\(ps-labels
-  :buffer some-buffer
-  :async t ;; Run functions asynchronously by default.
-  ((print-to-console
-    ;; Override the buffer to current one.
-    :buffer (current-buffer)
-    (something)
-    ;; Notice the `ps:lisp': args are Lisp values.
-    (ps:chain console (log (ps:stringify (ps:lisp something)))))
-   (add
-    ;; Override the :ASYNC for the function to be synchronous.
-    :async nil
-    (n1 n2)
-    (+ (ps:lisp n1) (ps:lisp n2))))
-  (print-to-console (add 5 200.8)))"
+Binding-specific :BUFFER and :ASYNC can override the `ps-labels'-global :BUFFER
+and :ASYNC."
   (let* ((global-buffer (second (member :buffer args)))
          (global-async (second (member :async args)))
          (functions (find-if (lambda (e) (and (listp e) (every #'listp e)))
                              args))
          (body (rest (member functions args))))
     (flet ((transform-definition (name args)
-             (let ((buffer (if (member :buffer args)
-                               (second (member :buffer args))
-                               global-buffer))
+             (let ((buffer (or (if (member :buffer args)
+                                   (second (member :buffer args))
+                                   global-buffer)
+                               (error "ps-labels binding ~a requires :buffer." name)))
                    (async-p (if (member :async args)
                                 (second (member :async args))
                                 global-async))
@@ -117,7 +93,7 @@ Example:
                        (,(if async-p
                              'ffi-buffer-evaluate-javascript-async
                              'ffi-buffer-evaluate-javascript)
-                        ,(or buffer '(current-buffer))
+                        ,buffer
                         (ps:ps ,@(rest args)))
                        ;; Return nil on async invocations.
                        ,@(when async-p '(nil))))))
@@ -125,7 +101,7 @@ Example:
                       collect (transform-definition name args))
          ,@body))))
 
-(define-parenscript %document-scroll-position (&optional (y 0 y-provided-p) (x 0 x-provided-p))
+(define-parenscript %document-scroll-position (buffer &optional (y 0 y-provided-p) (x 0 x-provided-p))
   (let ((x (ps:lisp x))
         (y (ps:lisp y)))
     (if (or (ps:lisp x-provided-p) (ps:lisp y-provided-p))
@@ -134,26 +110,23 @@ Example:
               (ps:chain window page-x-offset)))))
 
 (export-always 'document-scroll-position)
-(defmethod document-scroll-position (&optional (buffer (current-buffer)))
+(defmethod document-scroll-position (buffer)
   "Get current scroll position or set it.
-If passed no arguments, return a list of two elements: vertical (Y) and
-horizontal (X) offset.
+Return a list of two elements: vertical (Y) and horizontal (X) offset.
 If `setf'-d to a single value (or a single list) -- set Y to it.
 If `setf'-d to a list of two values -- set Y to `first' and X to `second' element."
-  (with-current-buffer buffer
-    (let ((position (%document-scroll-position)))
-      (when (listp position)
-        position))))
+  (let ((position (%document-scroll-position buffer)))
+    (when (listp position)
+      position)))
 
-(defmethod (setf document-scroll-position) (value &optional (buffer (current-buffer)))
+(defmethod (setf document-scroll-position) (value buffer)
   (when value
-    (with-current-buffer buffer
-      (destructuring-bind (y &optional x)
-          (uiop:ensure-list value)
-        (%document-scroll-position y x)))))
+    (destructuring-bind (y &optional x)
+        (uiop:ensure-list value)
+      (%document-scroll-position buffer y x))))
 
 (export-always 'document-get-paragraph-contents)
-(define-parenscript document-get-paragraph-contents (&key (limit 100000))
+(define-parenscript document-get-paragraph-contents (buffer &key (limit 100000))
   "Get all the <p> elements text."
   (let ((result ""))
     (loop for element in (nyxt/ps:qsa document (list "p"))
@@ -162,8 +135,8 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
     (ps:chain result (slice 0 (ps:lisp limit)))))
 
 (export-always 'add-stylesheet)
-(defun add-stylesheet (id style &optional (buffer (current-buffer)))
-  "Set STYLE of element featuring ID."
+(defun add-stylesheet (id style buffer)
+  "Set STYLE of element featuring ID in BUFFER."
   (ps-eval :async t :buffer buffer
     (unless (nyxt/ps:qs document (ps:lisp (str:concat "#" id)))
       (ps:try
@@ -173,7 +146,7 @@ If `setf'-d to a list of two values -- set Y to `first' and X to `second' elemen
          (setf (ps:chain style-element inner-text) (ps:lisp style)))
        (:catch (error))))))
 
-(defun html-write (html-document &optional (buffer (current-buffer)))
+(defun html-write (html-document buffer)
   "Set BUFFER's document to HTML-DOCUMENT.
 Overwrites the whole HTML document (head and body elements included)."
   ;; Don't use document.write().
@@ -182,12 +155,12 @@ Overwrites the whole HTML document (head and body elements included)."
     (setf (ps:chain document (get-elements-by-tag-name "html") 0 |innerHTML|)
           (ps:lisp html-document))))
 
-(defun html-set (content &optional (buffer (current-buffer)))
+(defun html-set (content buffer)
   "Set BUFFER contents to CONTENT."
   (ps-eval :async t :buffer buffer
     (setf (ps:@ document body |innerHTML|) (ps:lisp content))))
 
-(defun html-set-style (style-string &optional (buffer (current-buffer)))
+(defun html-set-style (style-string buffer)
   (let ((style (spinneret:with-html-string (:style (:raw style-string)))))
     (ps-eval :async t :buffer buffer
       (ps:chain document body (|insertAdjacentHTML| "afterbegin" (ps:lisp style))))))

@@ -23,18 +23,18 @@
 
 (defun test-set-url (url)
   (let ((url-channel (nyxt::make-channel 1)))
-    (nyxt:start :no-config t)
+    (nyxt:start :no-config t
                 :no-auto-config t
                 :socket "/tmp/nyxt-test.socket")
     (hooks:once-on (nyxt:prompt-buffer-ready-hook *browser*) prompt-buffer
       (prompter:all-ready-p prompt-buffer)
       (nyxt:set-prompt-buffer-input url prompt-buffer)
       (prompter:all-ready-p prompt-buffer)
-      (hooks:once-on (nyxt:buffer-loaded-hook (nyxt:current-buffer)) buffer
+      (hooks:once-on (nyxt:buffer-loaded-hook (nyxt:buffer (nyxt:current-window))) buffer
         (lparallel.queue:push-queue (nyxt:render-url (nyxt:url buffer)) url-channel))
       (nyxt/mode/prompt-buffer:run-action-on-return prompt-buffer))
     (nyxt:run-thread "run set-url"
       ;; TODO: Test if thread returns.
-      (nyxt:set-url))
+      (nyxt:set-url (nyxt:buffer (nyxt:current-window))))
     (assert-string= url (lparallel.queue:try-pop-queue url-channel :timeout 5))
     (nyxt:quit)))

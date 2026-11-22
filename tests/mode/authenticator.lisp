@@ -5,11 +5,10 @@
 
 (define-test toggle-authenticator-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/authenticator:authenticator-mode
-                                  buffer))
-      (assert-true (disable-modes* 'nyxt/mode/authenticator:authenticator-mode
-                                   buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/authenticator:authenticator-mode
+                                buffer))
+    (assert-true (disable-modes* 'nyxt/mode/authenticator:authenticator-mode
+                                 buffer))))
 
 (defun authenticator-entry (secret &rest args)
   (apply #'make-instance 'nyxt/mode/authenticator:authenticator-entry
@@ -118,26 +117,28 @@
          (buffer (make-instance 'modable-buffer))
          (file (make-instance 'nyxt/mode/authenticator:authenticators-file
                               :profile (make-instance 'files:virtual-profile))))
-    (with-current-buffer buffer
-      (enable-modes* 'nyxt/mode/authenticator:authenticator-mode buffer)
-      (setf (nyxt/mode/authenticator:authenticators-file
-             (find-submode 'nyxt/mode/authenticator:authenticator-mode buffer))
-            file)
-      (nyxt/mode/authenticator:persist-authenticator
-       (authenticator-entry "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
-                            :label "GitHub"
-                            :otp-type :hotp))
-      (assert-string= "755224"
-                      (nyxt/mode/authenticator::use-code
-                       (first (files:content file))))
-      (assert-eq 1 (nyxt/mode/authenticator:counter
-                    (first (files:content file))))
-      (nyxt/mode/authenticator:persist-authenticator
-       (authenticator-entry "MFRGGZDFMZTWQ2LK" :label "github"))
-      (let ((entries (files:content file)))
-        (assert-eq 1 (length entries))
-        (assert-string= "MFRGGZDFMZTWQ2LK"
-                        (nyxt/mode/authenticator:secret (first entries)))))))
+    (enable-modes* 'nyxt/mode/authenticator:authenticator-mode buffer)
+    (setf (nyxt/mode/authenticator:authenticators-file
+           (find-mode buffer 'nyxt/mode/authenticator:authenticator-mode))
+          file)
+    (nyxt/mode/authenticator:persist-authenticator
+     (authenticator-entry "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+                          :label "GitHub"
+                          :otp-type :hotp)
+     buffer)
+    (assert-string= "755224"
+                    (nyxt/mode/authenticator::use-code
+                     (first (files:content file))
+                     buffer))
+    (assert-eq 1 (nyxt/mode/authenticator:counter
+                  (first (files:content file))))
+    (nyxt/mode/authenticator:persist-authenticator
+     (authenticator-entry "MFRGGZDFMZTWQ2LK" :label "github")
+     buffer)
+    (let ((entries (files:content file)))
+      (assert-eq 1 (length entries))
+      (assert-string= "MFRGGZDFMZTWQ2LK"
+                      (nyxt/mode/authenticator:secret (first entries))))))
 
 (define-test authenticators-file-sits-beside-bookmarks ()
   (let ((authenticators (files:expand

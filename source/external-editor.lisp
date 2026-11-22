@@ -19,17 +19,17 @@ so invoke on a separate thread when possible."
 ;; BUG: Fails when the input field loses its focus, e.g the DuckDuckGo search
 ;; bar.  A possible solution is to keep track of the last focused element for
 ;; each buffer.
-(define-parenscript select-input-field ()
+(define-parenscript select-input-field (buffer)
   (let ((active-element (nyxt/ps:active-element document)))
     (when (nyxt/ps:element-editable-p active-element)
       (ps:chain active-element (select)))))
 
-(define-command-global edit-with-external-editor ()
+(define-command-global edit-with-external-editor (buffer)
   "Edit the current input field using `external-editor-program'."
   (run-thread "external editor"
-    (select-input-field)
-    (ffi-buffer-paste (current-buffer)
-                      (%edit-with-external-editor (ffi-buffer-copy (current-buffer))))))
+    (select-input-field buffer)
+    (ffi-buffer-paste buffer
+                      (%edit-with-external-editor (ffi-buffer-copy buffer)))))
 
 ;; Should belong to user-files.lisp but the define-command-global macro is
 ;; defined later.
@@ -43,7 +43,7 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
     (with-protect ("Failed editing: ~a. See `external-editor-program' slot." :condition)
       (uiop:run-program `(,@cmd ,(uiop:native-namestring path))))))
 
-(define-command-global view-source-with-external-editor (&optional (buffer (current-buffer)))
+(define-command-global view-source-with-external-editor (buffer)
   "View the current page source using `external-editor-program'."
   (run-thread "source viewer"
     (%edit-with-external-editor (if (web-buffer-p buffer)

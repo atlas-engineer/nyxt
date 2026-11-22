@@ -3,13 +3,13 @@
 
 (in-package :nyxt)
 
-(defun manual-html ()
+(defun manual-html (&optional buffer)
   (spinneret:with-html-string
     (:ntoc
       (tutorial-content)
-      (manual-content))))
+      (manual-content buffer))))
 
-(defun manual-content ()
+(defun manual-content (&optional buffer)
   (spinneret:with-html
     (let ((auto-config-file (namestring (files:expand *auto-config-file*)))
           (config-file (namestring (files:expand *config-file*)))
@@ -30,14 +30,15 @@ it's running!")
         (:p "The following section assumes knowledge of basic Common Lisp or a
 similar programming language.")
         (:p "The user needs to manually create the Nyxt configuration file, and the parent folders if necessary."
-            (when (and (current-buffer) ; In case manual is dumped.
+            (when (and buffer ; In case manual is dumped.
                        (not (files:nil-pathname-p config-file))
                        (not (uiop:file-exists-p config-file)))
               (:p "You can also press the button below to create it."
                   (:p (:a :class "button"
                           :onclick (ps:ps
                                      (nyxt/ps:lisp-eval
-                                      (:title "create-config-file")
+                                      (:title "create-config-file"
+                                       :buffer buffer)
                                       (ensure-directories-exist config-file)
                                       (files:ensure-file-exists config-file)
                                       (echo "Configuration file created at ~s." config-file)))
@@ -227,8 +228,9 @@ Nyxt provides. For example, one can use the "
             (:nxref :slot 'url-at-point :class-name 'buffer) ":")
         (:ncode
           '(ffi-add-context-menu-command
-            (lambda ()
-              (nyxt/mode/bookmark:persist-bookmark (url-at-point (current-buffer))))
+            (define-command my-bookmark-link (buffer)
+              "Bookmark the link under the pointer in BUFFER."
+              (nyxt/mode/bookmark:persist-bookmark buffer (url-at-point buffer)))
             "Bookmark Link")))
 
       (:nsection :title "Custom URL schemes"
@@ -268,7 +270,8 @@ page:")
                 (:h1 (princ-to-string (random max)))
                 (:button.button
                  :onclick (ps:ps (nyxt/ps:lisp-eval
-                                  (:title "re-load/re-generate the random number")
+                                  (:buffer buffer
+                                   :title "re-load/re-generate the random number")
                                   (ffi-buffer-reload buffer)))
                  :title "Re-generate the random number again"
                  "New number"))))
@@ -294,7 +297,7 @@ internal schemes do.")
 way, including simply writing it by hand ;)")
            (:li (:code "nyxt/ps:lisp-eval")
                 " is a Parenscript macro to request Nyxt to run arbitrary code. The signature is: "
-                (:code "((&key (buffer '(nyxt:current-buffer)) title) &body body)")
+                (:code "((&key buffer title id) &body body)")
                 ". You can bind it to a " (:code "<button>") "'s " (:code "onClick")
                 " event, for example."))
           (:p "If you're making an extension, you might find other macros more useful. "
@@ -349,7 +352,7 @@ specify which input and output values are expected.")
           (:li (:nxref :slot 'window-make-hook :class-name 'window) " for when a new window is created.")
           (:li (:nxref :slot 'window-delete-hook :class-name 'window) " for when a window is deleted.")
           (:li (:nxref :slot 'window-set-buffer-hook :class-name 'window)
-               " for when the " (:nxref :function 'current-buffer) " changes in the window.")
+               " for when the " (:nxref :slot 'buffer :class-name 'window) " changes in the window.")
           (:li (:nxref :slot 'buffer-load-hook :class-name 'network-buffer)
                " for when there's a new page loading in the buffer.")
           (:li (:nxref :slot 'buffer-loaded-hook :class-name 'network-buffer)

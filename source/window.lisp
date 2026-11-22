@@ -18,10 +18,9 @@ Should be redefined by the renderer."))
     (new-id)
     :type unsigned-byte
     :documentation "Unique identifier for a window.")
-   (active-buffer
+   (buffer
     (make-instance 'buffer)
-    :documentation "The current buffer of the window.
-Not to be confused with `current-buffer' or `focused-buffer'.")
+    :documentation "The buffer displayed in the window.")
    (active-prompt-buffers
     '()
     :export nil
@@ -96,23 +95,23 @@ The handlers take the window as argument."))
 
 (defmethod titler ((window window))
   "Return the title of WINDOW."
-  (str:concat (title (active-buffer window)) " － Nyxt"))
+  (str:concat (title (buffer window)) " － Nyxt"))
 
 (defgeneric window-shows-buffer-p (window buffer)
   (:method ((window window) buffer)
     (not (null
           (and buffer
                (or (find buffer (active-prompt-buffers window))
-                   (eq buffer (active-buffer window))
+                   (eq buffer (buffer window))
                    (eq buffer (status-buffer window))
                    (eq buffer (message-buffer window))
                    (find buffer (panel-buffers window)))))))
   (:documentation "Return non-nil when BUFFER is a view WINDOW is showing."))
 
-(defmethod (setf active-buffer) :around (value (window window))
+(defmethod (setf buffer) :around (value (window window))
   (declare (ignore value))
   (call-next-method)
-  (set-window-title))
+  (set-window-title window))
 
 (hooks:define-hook-type window (function (window))
   "Hook acting on `window's.")
@@ -136,14 +135,14 @@ The handlers take the window as argument."))
 (defmethod prompter:object-attributes ((window window) (source window-source))
   (declare (ignore source))
   `(("ID" ,(id window) (:width 1))
-    ("Active buffer" ,(title (active-buffer window)) (:width 3))))
+    ("Buffer" ,(title (buffer window)) (:width 3))))
 
 (define-command delete-window ()
   "Delete the queried window(s)."
   (prompt :prompt "Delete window(s)" :sources 'window-source))
 
-(define-command delete-current-window (&optional (window (current-window)))
-  "Delete WINDOW, or the current window, when omitted. Quit if it is the last one."
+(define-command delete-current-window ((window window))
+  "Delete WINDOW. Quit if it is the last one."
   (ffi-window-delete window))
 
 (define-command make-window (&optional buffer)
@@ -153,47 +152,47 @@ The handlers take the window as argument."))
     (ffi-window-set-buffer window buffer)
     (values window buffer)))
 
-(define-command toggle-fullscreen (&optional (window (current-window)))
-  "Toggle fullscreen state of window."
+(define-command toggle-fullscreen ((window window))
+  "Toggle fullscreen state of WINDOW."
   (if (fullscreen-p window)
       (ffi-window-unfullscreen window)
       (ffi-window-fullscreen window)))
 
-(define-command toggle-maximize (&optional (window (current-window)))
-  "Toggle maximized state of window."
+(define-command toggle-maximize ((window window))
+  "Toggle maximized state of WINDOW."
   (if (maximized-p window)
       (ffi-window-unmaximize window)
       (ffi-window-maximize window)))
 
 (export-always 'enable-status-buffer)
-(defun enable-status-buffer (&optional (window (current-window)))
+(defun enable-status-buffer (window)
   (setf (ffi-height (status-buffer window)) (height (status-buffer window))))
 
 (export-always 'disable-status-buffer)
-(defun disable-status-buffer (&optional (window (current-window)))
+(defun disable-status-buffer (window)
   (setf (ffi-height (status-buffer window)) 0))
 
 (export-always 'enable-message-buffer)
-(defun enable-message-buffer (&optional (window (current-window)))
+(defun enable-message-buffer (window)
   (setf (ffi-height (message-buffer window)) (height (message-buffer window))))
 
 (export-always 'disable-message-buffer)
-(defun disable-message-buffer (&optional (window (current-window)))
+(defun disable-message-buffer (window)
   (setf (ffi-height (message-buffer window)) 0))
 
-(define-command toggle-toolbars (&optional (window (current-window)))
-  "Toggle the visibility of the message and status buffers."
+(define-command toggle-toolbars ((window window))
+  "Toggle the visibility of the message and status buffers in WINDOW."
   (toggle-status-buffer window)
   (toggle-message-buffer window))
 
-(define-command toggle-status-buffer (&optional (window (current-window)))
-  "Toggle the visibility of the status buffer."
+(define-command toggle-status-buffer ((window window))
+  "Toggle the visibility of the status buffer in WINDOW."
   (if (zerop (ffi-height (status-buffer window)))
       (enable-status-buffer window)
       (disable-status-buffer window)))
 
-(define-command toggle-message-buffer (&optional (window (current-window)))
-  "Toggle the visibility of the message buffer."
+(define-command toggle-message-buffer ((window window))
+  "Toggle the visibility of the message buffer in WINDOW."
   (if (zerop (ffi-height (message-buffer window)))
       (enable-message-buffer window)
       (disable-message-buffer window)))

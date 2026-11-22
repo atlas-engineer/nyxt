@@ -34,17 +34,17 @@
   (list (lambda-command copy-as-hex* (colors)
           "Copy the color as hex #XXXXXX string."
           (let ((hex (cl-colors-ng:print-hex (first colors))))
-            (ffi-buffer-copy (current-buffer) hex)
+            (copy-to-clipboard hex)
             (echo "~s copied to clipboard." hex)))
         (lambda-command copy-as-rgb* (colors)
           "Copy the color as CSS rgb() function string."
           (let ((rgb (cl-colors-ng:print-css-rgb/a (first colors))))
-            (ffi-buffer-copy (current-buffer) rgb)
+            (copy-to-clipboard rgb)
             (echo "Copied ~a to clipboard!" rgb)))
         (lambda-command copy-as-hsl* (colors)
           "Copy the color as CSS hsl() function string."
           (let ((hsl (cl-colors-ng:print-css-hsl (first colors))))
-            (ffi-buffer-copy (current-buffer) hsl)
+            (copy-to-clipboard hsl)
             (echo "Copied ~a to clipboard!" hsl)))))
 
 (export-always 'color-source)

@@ -82,7 +82,7 @@ The list element keeps a row it has already built."
                   (user-interface:html-class element) "empty"
                   (user-interface:text element) "No buffers."))))))
 
-(defmethod customize-instance :after ((mode buffer-listing-mode) &key)
+(defmethod enable ((mode buffer-listing-mode) &key)
   "Keep MODE's list in step with the buffers.
 The handlers are the ones `status-buffer' uses for its tabs."
   (setf (user-interface:template (listing mode))
@@ -109,7 +109,7 @@ The handlers are the ones `status-buffer' uses for its tabs."
   (when (or (str:emptyp (title listing-buffer))
             (string= (title listing-buffer) (render-url (url listing-buffer))))
     (setf (title listing-buffer) "*Buffers*"))
-  (let ((listing (listing (find-submode 'buffer-listing-mode listing-buffer))))
+  (let ((listing (listing (find-mode listing-buffer 'buffer-listing-mode))))
     (user-interface:connect listing listing-buffer)
     (spinneret:with-html-string
       (:nstyle
@@ -164,16 +164,15 @@ The handlers are the ones `status-buffer' uses for its tabs."
         (:h1 "Buffers"))
       (user-interface:to-html listing))))
 
-(define-command-global add-buffer-listing-panel (&key ((:side panel-side) :left)
-                                                      (window (current-window)))
+(define-command-global add-buffer-listing-panel ((window window) &key (side :left))
   "Add a panel that lists the open buffers on SIDE of WINDOW."
   (let ((panel (add-panel-buffer window
                                  (make-instance 'nyxt:buffer-listing-panel
-                                                :side panel-side
+                                                :side side
                                                 :title "Buffers"))))
     (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffers)))
     panel))
 
-(define-command-global add-buffer-listing-panel-right (&optional (window (current-window)))
+(define-command-global add-buffer-listing-panel-right ((window window))
   "Add a panel that lists the open buffers on the right of WINDOW."
-  (add-buffer-listing-panel :side :right :window window))
+  (add-buffer-listing-panel window :side :right))

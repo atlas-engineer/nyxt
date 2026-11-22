@@ -606,17 +606,17 @@ view before those threads run, and a call into the missing view has no method."
                             (on-signal-notify-title buffer title)))))
     (cef:add-listener buffer :fullscreen
                       (lambda (buffer data)
-                        (declare (ignore buffer))
                         (run-thread "fullscreen"
-                          (if (assoc-value data :fullscreen)
-                              (progn
-                                (ffi-window-fullscreen (current-window) :user-event-p nil)
-                                (disable-message-buffer (current-window))
-                                (disable-status-buffer (current-window)))
-                              (progn
-                                (ffi-window-unfullscreen (current-window) :user-event-p nil)
-                                (enable-message-buffer (current-window))
-                                (enable-status-buffer (current-window)))))))
+                          (when-let ((window (window buffer)))
+                            (if (assoc-value data :fullscreen)
+                                (progn
+                                  (ffi-window-fullscreen window :user-event-p nil)
+                                  (disable-message-buffer window)
+                                  (disable-status-buffer window))
+                                (progn
+                                  (ffi-window-unfullscreen window :user-event-p nil)
+                                  (enable-message-buffer window)
+                                  (enable-status-buffer window)))))))
     (unless (member (type-of buffer) '(status-buffer message-buffer prompt-buffer))
       (cef:add-listener buffer :context-menu
                         (lambda (buffer data)
@@ -624,8 +624,7 @@ view before those threads run, and a call into the missing view has no method."
                           (populate-context-menu buffer)))
       (cef:add-listener buffer :context-menu-command
                         (lambda (buffer data)
-                          (declare (ignore buffer))
-                          (run-context-menu-command data))))))
+                          (run-context-menu-command buffer data))))))
 
 (defmethod ffi-buffer-initialize-foreign-object ((buffer prompt-buffer))
   (unless (cef:web-contents buffer)
@@ -757,12 +756,12 @@ view before those threads run, and a call into the missing view has no method."
 (defmethod ffi-buffer-navigate-forwards ((buffer cef-buffer))
   (cef:go-forward (cef:web-contents buffer)))
 
-(defun update-active-buffer-bounds (window delta)
-  "Recalculate the bounds of the active window to compensate for changes in the
+(defun update-window-buffer-bounds (window delta)
+  "Recalculate the bounds of WINDOW's buffer to compensate for changes in the
 height of the status/prompt/message buffer."
-  (when (active-buffer window)
+  (when (buffer window)
     (let ((window-bounds (cef:get-bounds window)))
-      (cef:set-bounds (active-buffer window)
+      (cef:set-bounds (buffer window)
                       :x 0
                       :y 0
                       :width (assoc-value window-bounds :width)
@@ -787,7 +786,7 @@ height of the status/prompt/message buffer."
                         :width (assoc-value bounds :width)
                         :height height)
         (when (window buffer)
-          (update-active-buffer-bounds (window buffer) 0)))))
+          (update-window-buffer-bounds (window buffer) 0)))))
 
 (defmethod ffi-focus-buffer ((buffer cef-buffer))
   (cef:focus buffer)
@@ -1116,7 +1115,7 @@ returns to the message loop."
   (dolist (view (list (status-buffer window) (message-buffer window)))
     (when (and view (ignore-errors (cef:web-contents view)))
       (ignore-errors (cef:kill view))))
-  (when-let ((page (or (current-view window) (active-buffer window))))
+  (when-let ((page (or (current-view window) (buffer window))))
     (when (and (not (auxiliary-buffer-p page))
                (ignore-errors (cef:web-contents page))
                (find page (cef:views window)))
@@ -1295,10 +1294,12 @@ re-enters CEF."
     (run-thread "hover"
       (if (uiop:emptyp url)
           (progn
-            (nyxt::print-message "")
+            (when-let ((window (window buffer)))
+              (nyxt::print-message "" window))
             (setf (url-at-point buffer) (quri:uri "")))
           (progn
-            (nyxt::print-message (str:concat "→ " url))
+            (when-let ((window (window buffer)))
+              (nyxt::print-message (str:concat "→ " url) window))
             (setf (url-at-point buffer) (quri:uri url)))))))
 
 (defvar *context-menu-commands-by-id* (make-hash-table)
@@ -1333,11 +1334,11 @@ re-enters CEF."
                           do (add (format nil "~a: ~a" label command-label) command)))))
                nyxt::*context-menu-commands*))))
 
-(defun run-context-menu-command (data)
+(defun run-context-menu-command (buffer data)
   (let* ((raw (assoc-value data :command-id))
          (command-id (if (realp raw) (round raw) raw))
          (command (gethash command-id *context-menu-commands-by-id*)))
     (when command
       (if (command-p command)
-          (nyxt::run-async command)
+          (nyxt:dispatch-command command buffer)
           (run-thread "context-menu-command" (funcall command))))))

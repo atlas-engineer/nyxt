@@ -6,20 +6,19 @@
 (define-test toggle-vi-modes ()
   (let* ((buffer (make-instance 'input-and-modable-buffer))
          (default-keyscheme (nkeymaps:name (keyscheme buffer))))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/vi:vi-normal-mode buffer))
-      (assert-string= "vi-normal"
-                      (nkeymaps:name (keyscheme buffer)))
-      (assert-true (disable-modes* 'nyxt/mode/vi:vi-normal-mode buffer))
-      (assert-string= default-keyscheme
-                      (nkeymaps:name (keyscheme buffer)))
+    (assert-true (enable-modes* 'nyxt/mode/vi:vi-normal-mode buffer))
+    (assert-string= "vi-normal"
+                    (nkeymaps:name (keyscheme buffer)))
+    (assert-true (disable-modes* 'nyxt/mode/vi:vi-normal-mode buffer))
+    (assert-string= default-keyscheme
+                    (nkeymaps:name (keyscheme buffer)))
 
-      (assert-true (enable-modes* 'nyxt/mode/vi:vi-insert-mode buffer))
-      (assert-string= "vi-insert"
-                      (nkeymaps:name (keyscheme buffer)))
-      (assert-true (disable-modes* 'nyxt/mode/vi:vi-insert-mode buffer))
-      (assert-string= default-keyscheme
-                      (nkeymaps:name (keyscheme buffer))))))
+    (assert-true (enable-modes* 'nyxt/mode/vi:vi-insert-mode buffer))
+    (assert-string= "vi-insert"
+                    (nkeymaps:name (keyscheme buffer)))
+    (assert-true (disable-modes* 'nyxt/mode/vi:vi-insert-mode buffer))
+    (assert-string= default-keyscheme
+                    (nkeymaps:name (keyscheme buffer)))))
 
 (defun vi-binding (mode-class keyscheme keyspec)
   (let ((mode (make-instance mode-class

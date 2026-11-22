@@ -39,7 +39,7 @@ The SOURCE can either be
 - a JavaScript string to evaluate,
 - a `cl:pathname' to a JavaScript source file,
 - or a form evaluating to a JavaScript string."
-      `(define-command ,name (&optional (buffer (current-buffer)))
+      `(define-command ,name (buffer)
          ,documentation
          ,(generate-body source)))
 
@@ -47,7 +47,7 @@ The SOURCE can either be
     (defmacro define-bookmarklet-command-global (name documentation source)
       "Define a global bookmarklet command of name NAME.
 See `define-bookmarklet-command'."
-      `(define-command-global ,name (&optional (buffer (current-buffer)))
+      `(define-command-global ,name (buffer)
          ,documentation
          ,(generate-body source)))))
 

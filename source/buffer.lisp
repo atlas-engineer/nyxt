@@ -568,6 +568,10 @@ on may want to have dynamic interactions."))
   (:metaclass user-class)
   (:documentation "A buffer in which the user can input."))
 
+(defmethod keyscheme ((buffer buffer))
+  "Return the default keyscheme for non-input buffers."
+  keyscheme:cua)
+
 (define-class auxiliary-buffer (buffer)
   ()
   (:export-class-name-p t)
@@ -657,11 +661,13 @@ scope is that of buffers."))
 (defmethod (setf url) :around (value (buffer document-buffer))
   (declare (ignore value))
   (call-next-method)
-  (set-window-title))
+  (when-let ((window (window buffer)))
+    (set-window-title window)))
 (defmethod (setf title) :around (value (buffer document-buffer))
   (declare (ignore value))
   (call-next-method)
-  (set-window-title))
+  (when-let ((window (window buffer)))
+    (set-window-title window)))
 
 (export-always 'default-modes)
 (defgeneric default-modes (buffer)
@@ -798,7 +804,7 @@ Return the created buffer."
   buffer)
 
 (export-always 'update-document-model)
-(defun update-document-model (&key (buffer (current-buffer)))
+(defun update-document-model (&key buffer)
   "Update BUFFER's `document-model' as to include Nyxt identifiers."
   (ps-eval :buffer buffer
     (defvar nyxt-identifier-counter 0)
@@ -818,11 +824,12 @@ Return the created buffer."
       (when (ps:@ node shadow-root)
         (ps:chain node (set-attribute "nyxt-shadow-root" "")))
       nyxt-identifier-counter)
-    (setf nyxt-identifier-counter
-          (add-nyxt-identifiers (ps:chain document body))))
-  (when-let ((body-json (with-current-buffer buffer
-                          (nyxt/dom::get-document-body-json))))
+    (when (ps:@ document body)
+      (setf nyxt-identifier-counter
+            (add-nyxt-identifiers (ps:chain document body)))))
+  (when-let ((body-json (nyxt/dom::get-document-body-json buffer)))
     (let ((dom (nyxt/dom::named-json-parse body-json)))
+      (setf (gethash dom nyxt/dom::*dom-buffers*) buffer)
       (unless (uiop:emptyp (plump:text dom))
         (setf (document-model buffer) dom)
         (when (web-buffer-p buffer)
@@ -838,6 +845,10 @@ Return the created buffer."
   (not (buffer-get (id buffer))))
 
 (defmethod document-model ((buffer buffer) &key use-cached-p)
+  (declare (ignore use-cached-p))
+  nil)
+
+(defmethod document-model ((buffer document-buffer) &key use-cached-p)
   "A wraparound accessor to BUFFER's `document-model'.
 
 In case the page changed more than `document-model-delta-threshold', runs
@@ -870,6 +881,9 @@ In case the page changed more than `document-model-delta-threshold', runs
                     (update-document-model :buffer buffer)
                     (slot-value buffer 'document-model))))))))
 
+(defmethod keywords ((buffer buffer))
+  nil)
+
 (defmethod keywords ((buffer web-buffer))
   "Return the terms that best describe the contents of BUFFER.
 They are parsed when the page's document is read. NIL until then, and when
@@ -879,11 +893,12 @@ the page has none."
 (define-class keyword-source (prompter:source)
   ((prompter:name "Keywords")
    (buffer
-    (current-buffer)
-    :type buffer)
+    nil
+    :type (maybe buffer))
    (prompter:enable-marks-p t)
    (prompter:constructor (lambda (source)
-                           (mapcar #'first (nyxt::keywords (buffer source))))))
+                           (when (buffer source)
+                             (mapcar #'first (nyxt::keywords (buffer source)))))))
   (:export-class-name-p t)
   (:documentation "Source listing the keywords for source `buffer'."))
 
@@ -906,7 +921,10 @@ MODES is a list of mode symbols.
 If URL is empty, the `default-new-buffer-url' browser slot is used instead.
 To load nothing, set it to 'about:blank'.
 LOAD-URL-P controls whether to load URL right at buffer creation."
-  (let* ((url (url url))
+  (let* ((default-url (if *browser*
+                          (default-new-buffer-url *browser*)
+                          (quri:uri (nyxt-url 'new))))
+         (url (url (if (url-empty-p url) default-url url)))
          (buffer (apply #'make-instance
                         buffer-class
                         :title title
@@ -1004,38 +1022,39 @@ This is a low-level function.  See `buffer-delete' and `delete-buffer'."
 (defmethod window ((buffer buffer))
   "Get the window containing a buffer."
   (find buffer (alex:hash-table-values (windows *browser*))
-        :key #'active-buffer))
+        :key #'buffer))
 
-(defun last-active-buffer ()
-  "Return buffer with most recent `last-access'."
-  (first (sort-by-time (buffer-list))))
-
-(defmethod active-buffer-p ((buffer buffer))
-  (find buffer (mapcar #'active-buffer (window-list))))
-
-(defun get-inactive-buffer ()
-  "Return inactive buffers sorted by `last-access', when applicable.
-If none exist, make a new inactive buffer."
-  (if-let ((inactive (set-difference (buffer-list)
-                                     (mapcar #'active-buffer (window-list)))))
-    (first (sort-by-time inactive))
+(defun background-buffer ()
+  "Return unshown buffers sorted by `last-access', when applicable.
+If none exist, make a new buffer."
+  (if-let ((unshown (set-difference (buffer-list)
+                                    (mapcar #'buffer (window-list)))))
+    (first (sort-by-time unshown))
     (make-buffer)))
 
-(define-command copy-url ()
-  "Save current URL to clipboard."
+(define-command copy-url (buffer)
+  "Save BUFFER URL to clipboard."
   (echo "~s copied to clipboard."
-        (copy-to-clipboard (render-url (url (current-buffer))))))
+        (copy-to-clipboard (render-url (url buffer)))))
 
-(define-command copy-title ()
-  "Save current page title to clipboard."
+(define-command copy-title (buffer)
+  "Save BUFFER page title to clipboard."
   (echo "~a copied to clipboard."
-        (copy-to-clipboard (title (current-buffer)))))
+        (copy-to-clipboard (title buffer))))
 
 (define-class buffer-source (prompter:source)
   ((prompter:name "Buffer list")
-   (prompter:constructor (append (list (active-buffer (current-window)))
-                                 (remove (active-buffer (current-window))
-                                         (buffer-list))))
+   (buffer
+    nil
+    :type (maybe buffer))
+   (prompter:constructor
+    (lambda (source)
+      (let ((origin (or (buffer source)
+                        (when-let ((win (current-window)))
+                          (buffer win)))))
+        (if origin
+            (cons origin (remove origin (buffer-list)))
+            (buffer-list)))))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)
    (prompter:actions-on-return (list (lambda-unmapped-command set-current-buffer)
@@ -1046,12 +1065,13 @@ If none exist, make a new inactive buffer."
     (lambda-command set-current-buffer* (buffer)
       "Set current BUFFER for the active window."
       (set-current-buffer buffer :focus nil)))
-   (prompter:destructor (let ((buffer (current-buffer)))
-                          (lambda (prompter source)
-                            (declare (ignore source))
-                            (unless (or (prompter:returned-p prompter)
-                                        (eq buffer (current-buffer)))
-                              (set-current-buffer buffer)))))
+   (prompter:destructor
+    (lambda (prompter source)
+      (when-let ((origin (buffer source)))
+        (unless (or (prompter:returned-p prompter)
+                    (and (window origin)
+                         (eq origin (buffer (window origin)))))
+          (set-current-buffer origin)))))
    (prompter:active-attributes-keys
     '("Title" "URL" "Keywords")
     :accessor nil))
@@ -1077,27 +1097,29 @@ buffer currently chosen as suggestion."))
         `(("Keywords" ,(buffer-keyword-line buffer) (:width 2))))
     ("ID" ,(id buffer) (:width 1))))
 
-(define-command switch-buffer ()
+(define-command switch-buffer (buffer)
   "Switch buffer using fuzzy completion."
   (prompt
    :prompt "Switch to buffer"
-   :sources (make-instance 'buffer-source)))
+   :sources (make-instance 'buffer-source :buffer buffer)))
 
-(define-command switch-buffer-domain (&key domain (buffer (current-buffer)))
-  "Switch to buffer sharing the same domain as the current one."
+(define-command switch-buffer-domain (buffer &key domain)
+  "Switch to buffer sharing the same domain as BUFFER."
   (let ((domain (or domain (quri:uri-domain (url buffer)))))
     (prompt
      :prompt "Switch to buffer in current domain"
      :sources (make-instance 'buffer-source
+                             :buffer buffer
                              :constructor
                              (sera:filter (match-domain domain)
                                           (sort-by-time (buffer-list)))))))
 
-(define-command toggle-prompt-buffer-focus ()
-  "Toggle the focus between the current buffer and the current prompt buffer."
-  (when-let ((prompt-buffer (current-prompt-buffer)))
+(define-command toggle-prompt-buffer-focus (buffer)
+  "Toggle the focus between the window's buffer and the current prompt buffer."
+  (when-let* ((window (window buffer))
+              (prompt-buffer (first (active-prompt-buffers window))))
     (if (prompt-buffer-focused-p prompt-buffer)
-        (prog1 (ffi-focus-buffer (current-buffer))
+        (prog1 (ffi-focus-buffer (buffer window))
           (indicate-prompt-buffer-focus prompt-buffer nil))
         (prog1 (ffi-focus-buffer prompt-buffer)
           (indicate-prompt-buffer-focus prompt-buffer t)))))
@@ -1152,14 +1174,13 @@ BUFFERS should be a list of `buffer's."
   (if-confirm ((format nil "Delete ~a buffer(s)?" (length (buffer-list))))
       (mapcar #'ffi-buffer-delete (buffer-list))))
 
-(define-command delete-current-buffer ()
-  "Delete the current buffer and switch to the last visited one.
+(define-command delete-current-buffer (buffer)
+  "Delete BUFFER and switch to the last visited one.
 If no other buffers exist, load the start page."
-  (ffi-buffer-delete (current-buffer)))
+  (ffi-buffer-delete buffer))
 
-(define-command delete-other-buffers (&optional (buffer (current-buffer)))
-  "Delete all buffers except BUFFER.
-When BUFFER is omitted, it defaults to the current one."
+(define-command delete-other-buffers (buffer)
+  "Delete all buffers except BUFFER."
   (let ((buffers-to-delete (remove buffer (buffer-list))))
     (if-confirm ((format nil "Delete ~a buffer(s)?" (length buffers-to-delete)))
         (mapcar #'ffi-buffer-delete buffers-to-delete))))
@@ -1167,22 +1188,38 @@ When BUFFER is omitted, it defaults to the current one."
 ;; Useful to be used by prompt buffer actions, since they take a list as
 ;; argument.
 (export-always 'buffer-load*)
-(defun buffer-load* (url-list)
-  "Load first element of URL-LIST in current buffer and the rest in new buffers."
+(defun buffer-load* (url-list buffer)
+  "Load first element of URL-LIST in BUFFER and the rest in new buffers."
   (mapc (lambda (url) (make-buffer :url (url url))) (rest url-list))
-  (ffi-buffer-load (current-buffer) (url (first url-list))))
+  (when buffer
+    (ffi-buffer-load buffer (url (first url-list)))))
+
+(defun source-buffer-load-action (source)
+  (lambda-command buffer-load-in-source* (url-list)
+    "Load URL-LIST starting in SOURCE's buffer."
+    (buffer-load* url-list (buffer source))))
 
 (define-class global-history-source (prompter:source)
   ((prompter:name "Global history")
+   (buffer
+    nil
+    :type (maybe buffer))
    (prompter:constructor (recent-distinct-history-entries 512 *browser*))
    (prompter:enable-marks-p t)
-   (prompter:filter-preprocessor #'prompter:filter-exact-matches)
-   (prompter:actions-on-return #'buffer-load*))
+   (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source listing the latest distinct URLs in history.
 Offers at most 512 URLs, newest first.
 Loads the entry with default `prompter:actions-on-return'."))
+
+(defmethod initialize-instance :after ((source global-history-source)
+                                       &key (actions-on-return nil actions-supplied-p)
+                                       &allow-other-keys)
+  (declare (ignore actions-on-return))
+  (unless actions-supplied-p
+    (setf (slot-value source 'prompter:actions-on-return)
+          (list (source-buffer-load-action source)))))
 
 (define-class url-or-query ()
   ((data
@@ -1261,6 +1298,9 @@ requested.  When the first word of `data' matches the `shortcut' of a
 
 (define-class url-or-query-source (prompter:source)
   ((prompter:name "URL or search query")
+   (buffer
+    nil
+    :type (maybe buffer))
    (prompter:filter-preprocessor
     (lambda (suggestions source input)
       (declare (ignore suggestions source))
@@ -1274,12 +1314,19 @@ requested.  When the first word of `data' matches the `shortcut' of a
                             (prompter:value (first prompt-suggestions)))))
         completion
         prompt-suggestions)))
-   (prompter:filter nil)
-   (prompter:actions-on-return #'buffer-load*))
+   (prompter:filter nil))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "Source listing URL queries from user input in a DWIM fashion.
 See `url-or-query'."))
+
+(defmethod initialize-instance :after ((source url-or-query-source)
+                                       &key (actions-on-return nil actions-supplied-p)
+                                       &allow-other-keys)
+  (declare (ignore actions-on-return))
+  (unless actions-supplied-p
+    (setf (slot-value source 'prompter:actions-on-return)
+          (list (source-buffer-load-action source)))))
 
 (defmethod prompter:object-attributes ((query url-or-query)
                                        (source url-or-query-source))
@@ -1299,43 +1346,50 @@ specified for their contents."
   (let ((actions-on-return (uiop:ensure-list actions-on-return)))
     (append
      (list (make-instance 'url-or-query-source
+                          :buffer buffer
                           :actions-on-return actions-on-return)
            (make-instance 'global-history-source
+                          :buffer buffer
                           :actions-on-return actions-on-return))
      (mappend (rcurry #'url-sources (uiop:ensure-list actions-on-return))
               (enabled-modes buffer)))))
 
-(define-command set-url (&key (default-action #'buffer-load*))
-  "Set the URL for the current buffer, completing with history.
+(define-command set-url (buffer &key default-action)
+  "Set the URL for BUFFER, completing with history.
 The prompt starts with a `composite-source', the top suggestions from each
 source, so a result can be chosen without moving through every source."
   (let* ((history (set-url-history *browser*))
+         (load-in-buffer (lambda-command buffer-load-in-target* (suggestions)
+                           "Load URL(s) starting in BUFFER."
+                           (buffer-load* suggestions buffer)))
          (actions-on-return
-           (list #'buffer-load*
+           (list load-in-buffer
                  (lambda-command copy-url* (suggestions)
                    "Copy the URL of the chosen suggestion."
                    (copy-to-clipboard
                     (render-url (url (first suggestions))))))))
-    (pushnew default-action actions-on-return)
+    (when default-action
+      (pushnew default-action actions-on-return))
     (prompt :prompt "Open URL"
-            :input (render-url (url (current-buffer)))
+            :input (render-url (url buffer))
             :history history
             :composite-source-p t
-            :sources (url-sources (current-buffer) actions-on-return))
-    (current-buffer)))
+            :sources (url-sources buffer actions-on-return))
+    buffer))
 
-(define-command set-url-new-buffer ()
-  (set-url :default-action
+(define-command set-url-new-buffer (buffer)
+  (set-url buffer
+           :default-action
            (lambda-command new-buffer-load* (suggestion-values)
              "Load URL(s) in new buffer(s)."
              (mapc (lambda (suggestion) (make-buffer :url (url suggestion)))
                    (rest suggestion-values))
              (make-buffer-focus :url (url (first suggestion-values))))))
 
-(define-command reload-current-buffer ()
-  "Reload current buffer.
+(define-command reload-current-buffer (buffer)
+  "Reload BUFFER.
 Return it."
-  (ffi-buffer-reload (current-buffer)))
+  (ffi-buffer-reload buffer))
 
 (define-command reload-buffers
     (&optional (buffers
@@ -1347,17 +1401,17 @@ Return BUFFERS."
   (mapcar #'ffi-buffer-reload (alex:ensure-list buffers))
   buffers)
 
-(define-command switch-buffer-previous (&key (offset 1) (buffer (current-buffer)))
+(define-command switch-buffer-previous (buffer &key (offset 1))
   "Switch to the previous buffer."
   (let ((buffer-list (buffer-list)))
-    (set-current-buffer (nth (mod (+ offset (position buffer buffer-list))
-                                  (length buffer-list))
-                             buffer-list))))
+    (when buffer-list
+      (set-current-buffer (nth (mod (+ offset (or (position buffer buffer-list) 0))
+                                    (length buffer-list))
+                               buffer-list)))))
 
-(define-command switch-buffer-next
-    (&key (offset 1) (buffer (current-buffer)))
+(define-command switch-buffer-next (buffer &key (offset 1))
   "Switch to the next buffer."
-  (switch-buffer-previous :offset (- offset) :buffer buffer))
+  (switch-buffer-previous buffer :offset (- offset)))
 
 (define-command switch-buffer-last ()
   "Switch to the last visited buffer.
@@ -1366,7 +1420,7 @@ The buffer with the most recent access time is returned."
   (when-let ((buffer (second (sort-by-time (buffer-list)))))
     (set-current-buffer buffer)))
 
-(define-command open-inspector ()
-  "Open the inspector, a graphical tool to inspect the buffer."
-  (ffi-inspector-show (current-buffer))
-  (current-buffer))
+(define-command open-inspector (buffer)
+  "Open the inspector, a graphical tool to inspect BUFFER."
+  (ffi-inspector-show buffer)
+  buffer)

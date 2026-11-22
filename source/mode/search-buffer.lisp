@@ -303,7 +303,13 @@ qualifies as a match."
           finally (return (nreverse match-indices)))))
 
 (export-always 'search-document)
-(defun search-document (pattern &key buffer node (mark-p nil) (test #'string-equal))
+(defun search-document (pattern &key buffer
+                                     (node (when-let ((dom (and buffer (document-model buffer))))
+                                             (let ((body (clss:select "body" dom)))
+                                               (when (plusp (length body))
+                                                 (elt body 0)))))
+                                     (mark-p nil)
+                                     (test #'string-equal))
   "Search for PATTERN in BUFFER's DOM NODE.
 
 NODE is a `plump' or `nyxt/dom' object.
@@ -384,7 +390,8 @@ MARK-P accepts the following values:
                                   (push partial-match matches)
                                   (setf partial-match nil
                                         seen nil))))))))))
-      (traverse-dfs node))
+      (when node
+        (traverse-dfs node)))
     ;; Search marks logic.
     (cond ((null mark-p)
            (setf matches (nreverse matches)))
@@ -398,7 +405,7 @@ MARK-P accepts the following values:
                  do (setf (marked-p match) t))
            (setf matches (nreverse matches))))))
 
-(define-command remove-search-marks (&optional (buffer (current-buffer)))
+(define-command remove-search-marks (buffer)
   "Remove all search marks."
   (ps-eval :buffer buffer
     (dolist (match (nyxt/ps:qsa (ps:@ document body) "span[nyxt-search-mark]"))
@@ -409,12 +416,12 @@ MARK-P accepts the following values:
         ;; Ensure text nodes aren't empty and adjacent ones are concatenated.
         (ps:chain parent (normalize))))))
 
-(defun maybe-remove-search-marks (&optional (buffer (current-buffer)))
+(defun maybe-remove-search-marks (buffer)
   (unless (keep-search-marks-p buffer) (remove-search-marks buffer)))
 
 (define-class search-buffer-source (prompter:source)
   ((prompter:name "Matches")
-   (buffer (current-buffer))
+   (buffer nil :type (maybe buffer))
    (test-function
     nil
     :type (or null function)
@@ -460,32 +467,19 @@ For shorter search patterns, `initial-delay' applies.")
             (sleep (initial-delay source)))
           (search-document input
                            :buffer buffer
-                           :node (elt (clss:select "body" (document-model buffer)) 0)
                            :test (or (test-function source) (smart-case-test input))
                            :mark-p (maximum-marked-matches source))))))
-   (prompter:actions-on-current-suggestion
-    (lambda-command mark-match (suggestion)
-      "Scroll to search match."
-      (set-current-buffer (buffer suggestion) :focus nil)
-      (maybe-update-marks suggestion (current-source))
-      (when (invisible-p suggestion)
-        (setf (slot-value (current-source) 'prompter:suggestions)
-              (delete suggestion
-                      (slot-value (current-source) 'prompter:suggestions)
-                      :key #'prompter:value))
-        ;; FIXME Hack that enables the above deletion to cascade.
-        ;; See https://github.com/atlas-engineer/nyxt/issues/2894.
-        (prompter:run-action-on-current-suggestion (current-prompt-buffer)))
-      (mark-alternate suggestion)))
    (prompter:actions-on-return
     (lambda-command maybe-remove-search-marks (marks)
       (let ((match (first marks)))
         (maybe-remove-search-marks (buffer match))
         match)))
    (prompter:constructor
-    (lambda (source) (add-stylesheet "nyxt-search-stylesheet"
-                                     (style (find-submode 'search-buffer-mode))
-                                     (buffer source))))
+    (lambda (source)
+      (when-let ((mode (find-mode (buffer source) 'search-buffer-mode)))
+        (add-stylesheet "nyxt-search-stylesheet"
+                        (style mode)
+                        (buffer source)))))
    (prompter:destructor
     (lambda (prompter source)
       (declare (ignore source))
@@ -496,6 +490,28 @@ For shorter search patterns, `initial-delay' applies.")
   (:metaclass user-class)
   (:documentation "The source for search suggestions.
 Fetches all the suggestions in `buffer' that match the input as per `test-function'."))
+
+(defmethod initialize-instance :after
+    ((source search-buffer-source)
+     &key (actions-on-current-suggestion nil actions-supplied-p)
+     &allow-other-keys)
+  (declare (ignore actions-on-current-suggestion))
+  (unless actions-supplied-p
+    (setf (slot-value source 'prompter:actions-on-current-suggestion)
+          (list (lambda-command mark-match (suggestion)
+                  "Scroll to search match."
+                  (set-current-buffer (buffer suggestion) :focus nil)
+                  (maybe-update-marks suggestion source)
+                  (when (invisible-p suggestion)
+                    (setf (slot-value source 'prompter:suggestions)
+                          (delete suggestion
+                                  (slot-value source 'prompter:suggestions)
+                                  :key #'prompter:value))
+                    ;; FIXME Hack that enables the above deletion to cascade.
+                    ;; See https://github.com/atlas-engineer/nyxt/issues/2894.
+                    (when-let ((prompt (nyxt::source-prompt-buffer source)))
+                      (prompter:run-action-on-current-suggestion prompt)))
+                  (mark-alternate suggestion))))))
 
 (defmethod maybe-update-marks (current-match (source search-buffer-source))
   "Recompute search marks, if needed.
@@ -510,20 +526,21 @@ At any given time, only `maximum-marked-matches' matches are marked."
       (mapcar (lambda (match) (setf (marked-p match) nil)) matches)
       (mapcar (lambda (match) (setf (marked-p match) t)) (nreverse match-batch)))))
 
-(define-command search-buffer ()
-  "Search incrementally on the current buffer.
+(define-command search-buffer (buffer)
+  "Search incrementally on BUFFER.
 To remove the search marks when closing the search prompt, set DOCUMENT-BUFFER's
 `keep-search-marks-p' slot to nil by adding the following to the config file:
 
   (define-configuration document-buffer
     ((keep-search-marks-p nil)))"
   (prompt :prompt "Search text"
-          :sources (make-instance 'search-buffer-source)))
+          :sources (make-instance 'search-buffer-source :buffer buffer)))
 
-(define-command search-buffers ()
+(define-command search-buffers (buffer)
   "Search incrementally in multiple buffers."
   (let ((buffers (prompt :prompt "Search in buffer(s)"
                          :sources (make-instance 'buffer-source
+                                                 :buffer buffer
                                                  :actions-on-return #'identity))))
     (prompt :prompt "Search text"
             :sources (mapcar (lambda (buffer)

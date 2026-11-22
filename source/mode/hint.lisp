@@ -175,9 +175,9 @@ are spread through the list. This is Vimium's alphabet-hint assignment."
                            collect (aref hints index))
                      #'string<))))))
 
-(-> generate-hints (alex:non-negative-integer) (list-of string))
-(defun generate-hints (length)
-  (generate-hint-strings length (hints-alphabet (find-submode 'hint-mode))))
+(-> generate-hints (buffer alex:non-negative-integer) (list-of string))
+(defun generate-hints (buffer length)
+  (generate-hint-strings length (hints-alphabet (find-mode buffer 'hint-mode))))
 
 (defun hint-record-field (record key)
   "Return the value of KEY in a hint record alist from the renderer."
@@ -611,10 +611,7 @@ Return their hint records, or nil when none remain or hints were dismissed."
 
 (defun hint-prompt (source)
   "Return the active prompt whose sources include SOURCE."
-  (when-let ((prompt (current-prompt-buffer)))
-    (when (and (find source (prompter:sources prompt))
-               (find prompt (nyxt::active-prompt-buffers (window prompt))))
-      prompt)))
+  (nyxt::source-prompt-buffer source))
 
 (defun refresh-hint-prompt (source &key (attempts 1))
   "Recompute SOURCE's prompt listing. Return the prompt, or nil if it is gone.
@@ -677,9 +674,9 @@ prompt is refreshed, then its URLs are filled in."
                 (unless (refresh-hint-prompt source)
                   (return))))))))))
 
-(defun add-hints (&key selector (buffer (current-buffer)) source css alphabet
+(defun add-hints (&key selector buffer source css alphabet
                     (x-placement :left) show-hint-scope-p)
-  "Hint elements matching SELECTOR and return plump elements for the viewport.
+  "Hint elements matching SELECTOR in BUFFER and return plump elements for the viewport.
 Viewport badges are drawn before this function returns. When SOURCE is given,
 a background thread fills their URLs, then draws off-screen badges and adds
 those elements to the prompt."
@@ -689,12 +686,12 @@ those elements to the prompt."
       (load-hint-details elements buffer source))
     elements))
 
-(define-parenscript remove-hintable-attribute ()
+(define-parenscript remove-hintable-attribute (buffer)
   (ps:dolist (element (nyxt/ps:rqsa document "[nyxt-hintable]"))
     (ps:chain element (remove-attribute "nyxt-hintable"))
     (ps:chain element (remove-attribute "nyxt-hint"))))
 
-(define-parenscript-async remove-hint-elements ()
+(define-parenscript-async remove-hint-elements (buffer)
   (setf (ps:@ window nyxt-hint-pending) (array))
   (ps:let ((hints-parent (nyxt/ps:qs-id document "nyxt-hints")))
     (when hints-parent
@@ -704,10 +701,9 @@ those elements to the prompt."
   (ps:dolist (element (nyxt/ps:rqsa document ".nyxt-element-hint"))
     (ps:chain element class-list (remove "nyxt-element-hint"))))
 
-(defun remove-hints (&key (buffer (current-buffer)))
-  (declare (ignore buffer))
-  (remove-hint-elements)
-  (remove-hintable-attribute))
+(defun remove-hints (&key buffer)
+  (remove-hint-elements buffer)
+  (remove-hintable-attribute buffer))
 
 (export-always 'identifier)
 (defmethod identifier ((element plump:element))
@@ -715,7 +711,7 @@ those elements to the prompt."
   (plump:attribute element "nyxt-hint"))
 
 (export-always 'highlight-current-hint)
-(define-parenscript highlight-current-hint (&key element scroll)
+(define-parenscript highlight-current-hint (buffer &key element scroll)
   "Accent the hint for the ELEMENT to be distinguishable from other hints.
 If SCROLL (default to NIL), scroll the hint into view."
   (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
@@ -737,7 +733,7 @@ If SCROLL (default to NIL), scroll the hint into view."
         (ps:chain (or (ps:@ %element nyxt-element) %element)
                   (scroll-into-view (ps:create block "center")))))))
 
-(define-parenscript-async set-hint-visibility (hint state)
+(define-parenscript-async set-hint-visibility (buffer hint state)
   "Set visibility STATE of HINT element.
 
 Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
@@ -745,7 +741,7 @@ Consult https://developer.mozilla.org/en-US/docs/Web/CSS/visibility."
          (el (nyxt/ps:qs shadow (ps:lisp (str:concat "#nyxt-hint-" (identifier hint))))))
     (when el (setf (ps:@ el style "visibility") (ps:lisp state)))))
 
-(define-parenscript-async dim-hint-prefix (hint prefix-length)
+(define-parenscript-async dim-hint-prefix (buffer hint prefix-length)
   "Dim the first PREFIX-LENGTH characters of HINT element.
 The badge itself stays opaque so the remaining characters stay readable."
   (let* ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root))
@@ -767,12 +763,12 @@ The badge itself stays opaque so the remaining characters stay readable."
   (let ((pending (gethash prompt *hint-follow-input*)))
     (and (stringp pending) (string-equal input pending))))
 
-(defun cancel-hint-follow (prompt)
+(defun cancel-hint-follow (prompt buffer)
   "Drop a pending follow for PROMPT and restore vi-style auto-return."
   (bt:with-lock-held (*hint-follow-lock*)
     (remhash prompt *hint-follow-input*))
   (setf (prompter:auto-return-p prompt)
-        (eq :vi (hinting-type (find-submode 'hint-mode)))))
+        (eq :vi (hinting-type (find-mode buffer 'hint-mode)))))
 
 (defun schedule-hint-follow (prompt input)
   "Follow PROMPT after half a second if INPUT is still what the user has typed.
@@ -801,41 +797,41 @@ A finished hint such as \"ap\" may be the start of a longer query such as
 
 (define-class hint-source (prompter:source)
   ((prompter:name "Hints")
+   (buffer nil :type (maybe buffer))
    (prompter:actions-on-current-suggestion-enabled-p t)
    (prompter:filter-preprocessor
-    (if (eq :vi (hinting-type (find-submode 'hint-mode)))
-        (lambda (suggestions source input)
-          (declare (ignore source))
-          (loop for suggestion in suggestions
-                for hint = (prompter:value suggestion)
-                for hinted-element-id = (nyxt/dom:get-nyxt-id hint)
-                if (str:starts-with-p input
-                                      (prompter:attributes-default suggestion)
-                                      :ignore-case t)
-                  do (set-hint-visibility hint "visible")
-                  and do (when (show-hint-scope-p (find-submode 'hint-mode))
-                           (ps-eval
-                             (nyxt/ps:add-class-nyxt-id hinted-element-id
-                                                        "nyxt-element-hint")))
-                  and do (dim-hint-prefix hint (length input))
-                  and collect suggestion
-                else do (set-hint-visibility hint "hidden")
-                     and do (when (show-hint-scope-p (find-submode 'hint-mode))
-                              (ps-eval
-                                (nyxt/ps:remove-class-nyxt-id hinted-element-id
-                                                              "nyxt-element-hint")))))
-        #'prompter:delete-inexact-matches))
+    (lambda (suggestions source input)
+      (let* ((buffer (buffer source))
+             (mode (find-mode buffer 'hint-mode)))
+        (if (eq :vi (hinting-type mode))
+            (loop for suggestion in suggestions
+                  for hint = (prompter:value suggestion)
+                  for hinted-element-id = (nyxt/dom:get-nyxt-id hint)
+                  if (str:starts-with-p input
+                                        (prompter:attributes-default suggestion)
+                                        :ignore-case t)
+                    do (set-hint-visibility buffer hint "visible")
+                    and do (when (show-hint-scope-p mode)
+                             (ps-eval :buffer buffer
+                               (nyxt/ps:add-class-nyxt-id hinted-element-id
+                                                          "nyxt-element-hint")))
+                    and do (dim-hint-prefix buffer hint (length input))
+                    and collect suggestion
+                  else do (set-hint-visibility buffer hint "hidden")
+                       and do (when (show-hint-scope-p mode)
+                                (ps-eval :buffer buffer
+                                  (nyxt/ps:remove-class-nyxt-id hinted-element-id
+                                                                "nyxt-element-hint"))))
+            (prompter:delete-inexact-matches suggestions source input)))))
    (prompter:filter
-    (if (eq :vi (hinting-type (find-submode 'hint-mode)))
-        (lambda (suggestion source input)
-          (declare (ignore source))
+    (lambda (suggestion source input)
+      (if (eq :vi (hinting-type (find-mode (buffer source) 'hint-mode)))
           (str:starts-with-p input
                              (prompter:attributes-default suggestion)
-                             :ignore-case t))
-        #'prompter:fuzzy-match))
+                             :ignore-case t)
+          (prompter:fuzzy-match suggestion source input))))
    (prompter:filter-postprocessor
     (lambda (suggestions source input)
-      (declare (ignore source))
       (flet ((hint-string (suggestion)
                (or (plump:attribute (prompter:value suggestion) "nyxt-hint") "")))
         (multiple-value-bind (exact rest)
@@ -849,58 +845,65 @@ A finished hint such as \"ap\" may be the start of a longer query such as
           ;; hint that has not been listed yet.
           (if (and (= 2 (length input)) (sera:single exact))
               (progn
-                (when-let ((prompt (current-prompt-buffer)))
+                (when-let ((prompt (hint-prompt source)))
                   (schedule-hint-follow prompt input))
                 exact)
               (progn
-                (when-let ((prompt (current-prompt-buffer)))
-                  (cancel-hint-follow prompt))
+                (when-let ((prompt (hint-prompt source)))
+                  (cancel-hint-follow prompt (buffer source)))
                 (multiple-value-bind (matching-hints other-hints)
                   (sera:partition
                    (lambda (suggestion)
                      (str:starts-with-p input (hint-string suggestion) :ignore-case t))
                    rest)
                 (append exact matching-hints other-hints))))))))
-   (prompter:actions-on-current-suggestion
-    (when (eq :emacs (hinting-type (find-submode 'hint-mode)))
-      (lambda-command highlight-current-hint* (suggestion)
-        "Highlight hint."
-        (highlight-current-hint :element suggestion
-                                :scroll nil))))
-   (prompter:actions-on-marks
-    (lambda (marks)
-      (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
-                            marks)))
-        (ps-eval
-          (let ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root)))
-            (dolist (marked (nyxt/ps:qsa shadow ".nyxt-mark-hint"))
-              (ps:chain marked class-list (remove "nyxt-mark-hint")))
-            (dolist (mark (ps:lisp (list 'quote %marks)))
-              (ps:chain (nyxt/ps:qs shadow mark) class-list (add "nyxt-mark-hint"))))))))
-   (prompter:actions-on-return
-    (list 'identity
-          (lambda-command click* (elements)
-            (dolist (element (rest elements))
-              (nyxt/dom:click-element element))
-            (nyxt/dom:click-element (first elements))
-            nil)
-          (lambda-command focus* (elements)
-            (dolist (element (rest elements))
-              (nyxt/dom:focus-select-element element))
-            (nyxt/dom:focus-select-element (first elements))
-            nil)))))
+   (prompter:actions-on-current-suggestion nil)
+   (prompter:actions-on-marks nil)
+   (prompter:actions-on-return nil)))
+
+(defmethod initialize-instance :after ((source hint-source) &key)
+  (let* ((buffer (buffer source))
+         (mode (and buffer (find-mode buffer 'hint-mode))))
+    (when (and mode (eq :emacs (hinting-type mode)))
+      (setf (slot-value source 'prompter:actions-on-current-suggestion)
+            (list (lambda-command highlight-current-hint* (suggestion)
+                    "Highlight hint."
+                    (highlight-current-hint buffer
+                                            :element suggestion
+                                            :scroll nil)))))
+    (setf (slot-value source 'prompter:actions-on-marks)
+          (list (lambda (marks)
+                  (let ((%marks (mapcar (lambda (mark) (str:concat "#nyxt-hint-" (identifier mark)))
+                                        marks)))
+                    (ps-eval :buffer buffer
+                      (let ((shadow (ps:@ (nyxt/ps:qs document "#nyxt-hints") shadow-root)))
+                        (dolist (marked (nyxt/ps:qsa shadow ".nyxt-mark-hint"))
+                          (ps:chain marked class-list (remove "nyxt-mark-hint")))
+                        (dolist (mark (ps:lisp (list 'quote %marks)))
+                          (ps:chain (nyxt/ps:qs shadow mark) class-list (add "nyxt-mark-hint"))))))))
+          (slot-value source 'prompter:actions-on-return)
+          (list 'identity
+                (lambda-command click* (elements)
+                  (dolist (element (rest elements))
+                    (nyxt/dom:click-element buffer element))
+                  (nyxt/dom:click-element buffer (first elements))
+                  nil)
+                (lambda-command focus* (elements)
+                  (dolist (element (rest elements))
+                    (nyxt/dom:focus-select-element buffer element))
+                  (nyxt/dom:focus-select-element buffer (first elements))
+                  nil)))))
 
 (export-always 'query-hints)
-(defun query-hints (prompt function
-                    &key (enable-marks-p t)
-                         (selector (hints-selector (find-submode 'hint-mode))))
-  "Prompt for elements matching SELECTOR, hinting them visually.
+(defun query-hints (buffer prompt function
+                    &key (enable-marks-p t) selector)
+  "Prompt for elements matching SELECTOR in BUFFER, hinting them visually.
 ENABLE-MARKS-P defines whether several elements can be chosen.
 PROMPT is the text to show while prompting for hinted elements.
 FUNCTION is the action to perform on the selected elements."
   (when-let*
-      ((buffer (current-buffer))
-       (mode (find-submode 'hint-mode buffer))
+      ((mode (find-mode buffer 'hint-mode))
+       (selector (or selector (hints-selector mode)))
        (result (prompt
                 :prompt prompt
                 ;; TODO: No need to find the symbol if we move this code (and
@@ -913,6 +916,7 @@ FUNCTION is the action to perform on the selected elements."
                             :default)
                 :hide-suggestion-count-p (eq :vi (hinting-type mode))
                 :sources (make-instance 'hint-source
+                                        :buffer buffer
                                         :enable-marks-p enable-marks-p
                                         :constructor
                                         (lambda (source)
@@ -924,8 +928,7 @@ FUNCTION is the action to perform on the selected elements."
                                                      :x-placement (x-placement mode)
                                                      :show-hint-scope-p (show-hint-scope-p mode))))
                 :after-destructor (lambda ()
-                                    (with-current-buffer buffer
-                                      (remove-hints :buffer buffer))))))
+                                    (remove-hints :buffer buffer)))))
     (funcall function result)))
 
 (defmethod prompter:object-attributes :around ((element plump:element) (source hint-source))
@@ -990,13 +993,13 @@ FUNCTION is the action to perform on the selected elements."
    (when (nyxt/dom:body img)
      `(("Body" ,(str:shorten 80 (nyxt/dom:body img)))))))
 
-(defmethod %follow-hint ((element plump:element))
-  (nyxt/dom:click-element element))
+(defmethod %follow-hint (buffer (element plump:element))
+  (nyxt/dom:click-element buffer element))
 
-(defun ensure-hint-url (element)
-  "Return ELEMENT's URL, fetching it from the page when the prompt row does not have it yet."
+(defun ensure-hint-url (buffer element)
+  "Return ELEMENT's URL, fetching it from BUFFER when the prompt row does not have it yet."
   (or (url element)
-      (let ((href (ps-eval
+      (let ((href (ps-eval :buffer buffer
                     (let ((el (nyxt/ps:rqs-nyxt-id document
                                                    (ps:lisp (nyxt/dom:get-nyxt-id element)))))
                       (when el
@@ -1012,23 +1015,23 @@ FUNCTION is the action to perform on the selected elements."
               (plump:set-attribute element "href" href))
           (url element)))))
 
-(defmethod %follow-hint ((a nyxt/dom:a-element))
-  (alex:if-let ((target (ensure-hint-url a)))
-    (ffi-buffer-load (current-buffer) target)
-    (nyxt/dom:click-element a)))
+(defmethod %follow-hint (buffer (a nyxt/dom:a-element))
+  (alex:if-let ((target (ensure-hint-url buffer a)))
+    (ffi-buffer-load buffer target)
+    (nyxt/dom:click-element buffer a)))
 
-(defmethod %follow-hint ((input nyxt/dom:input-element))
+(defmethod %follow-hint (buffer (input nyxt/dom:input-element))
   (str:string-case (plump:attribute input "type")
-                   ("button" (nyxt/dom:click-element input))
-                   ("radio" (nyxt/dom:check-element input))
-                   ("checkbox" (nyxt/dom:check-element input))
-                   (otherwise (nyxt/dom:focus-select-element input))))
+                   ("button" (nyxt/dom:click-element buffer input))
+                   ("radio" (nyxt/dom:check-element buffer input))
+                   ("checkbox" (nyxt/dom:check-element buffer input))
+                   (otherwise (nyxt/dom:focus-select-element buffer input))))
 
-(defmethod %follow-hint ((textarea nyxt/dom:textarea-element))
-  (nyxt/dom:focus-select-element textarea))
+(defmethod %follow-hint (buffer (textarea nyxt/dom:textarea-element))
+  (nyxt/dom:focus-select-element buffer textarea))
 
-(defmethod %follow-hint ((details nyxt/dom:details-element))
-  (nyxt/dom:toggle-details-element details))
+(defmethod %follow-hint (buffer (details nyxt/dom:details-element))
+  (nyxt/dom:toggle-details-element buffer details))
 
 (define-class options-source (prompter:source)
   ((prompter:name "Options")
@@ -1036,10 +1039,10 @@ FUNCTION is the action to perform on the selected elements."
   (:export-class-name-p t)
   (:documentation "Prompt source for select tag options."))
 
-(defmethod %follow-hint ((select nyxt/dom:select-element))
+(defmethod %follow-hint (buffer (select nyxt/dom:select-element))
   (when (zerop (length (clss:select "option" select)))
     (when-let ((record (find (nyxt/dom:get-nyxt-id select)
-                             (fetch-hint-details (current-buffer) (list select))
+                             (fetch-hint-details buffer (list select))
                              :key (lambda (record) (hint-record-field record :id))
                              :test #'string=)))
       (apply-hint-details select record)))
@@ -1050,53 +1053,58 @@ FUNCTION is the action to perform on the selected elements."
                                                      :enable-marks-p
                                                      (plump:attribute select "multiple")))))
     (dolist (option (mapcar (rcurry #'find options :test #'equalp) values))
-      (nyxt/dom:select-option-element option select))))
+      (nyxt/dom:select-option-element buffer option select))))
 
-(defmethod %follow-hint-new-buffer-focus ((a nyxt/dom:a-element))
-  (make-buffer-focus :url (ensure-hint-url a)))
+(defmethod %follow-hint-new-buffer-focus (buffer (a nyxt/dom:a-element))
+  (make-buffer-focus :url (ensure-hint-url buffer a)))
 
-(defmethod %follow-hint-new-buffer-focus ((element plump:element))
-  (%follow-hint element))
+(defmethod %follow-hint-new-buffer-focus (buffer (element plump:element))
+  (%follow-hint buffer element))
 
-(defmethod %follow-hint-new-buffer ((a nyxt/dom:a-element))
-  (make-buffer :url (ensure-hint-url a) :load-url-p t))
+(defmethod %follow-hint-new-buffer (buffer (a nyxt/dom:a-element))
+  (make-buffer :url (ensure-hint-url buffer a) :load-url-p t))
 
-(defmethod %follow-hint-new-buffer ((element plump:element))
-  (%follow-hint element))
+(defmethod %follow-hint-new-buffer (buffer (element plump:element))
+  (%follow-hint buffer element))
 
-(defmethod %copy-hint-url ((a nyxt/dom:a-element))
-  (ffi-buffer-copy (current-buffer) (render-url (ensure-hint-url a))))
+(defmethod %copy-hint-url (buffer (a nyxt/dom:a-element))
+  (ffi-buffer-copy buffer (render-url (ensure-hint-url buffer a))))
 
-(defmethod %copy-hint-url ((img nyxt/dom:img-element))
-  (ffi-buffer-copy (current-buffer) (render-url (ensure-hint-url img))))
+(defmethod %copy-hint-url (buffer (img nyxt/dom:img-element))
+  (ffi-buffer-copy buffer (render-url (ensure-hint-url buffer img))))
 
-(defmethod %copy-hint-url ((element plump:element))
+(defmethod %copy-hint-url (buffer (element plump:element))
+  (declare (ignore buffer))
   (echo "Unsupported operation for <~a> hint: can't copy hint URL."
         (plump:tag-name element)))
 
-(define-command follow-hint ()
-  "Follow the top element hint selection in the current buffer."
-  (query-hints "Select elements"
+(define-command follow-hint (buffer)
+  "Follow the top element hint selection in BUFFER."
+  (query-hints buffer
+               "Select elements"
                (lambda (results)
-                 (%follow-hint (first results))
-                 (mapcar #'%follow-hint-new-buffer (rest results)))))
+                 (%follow-hint buffer (first results))
+                 (mapcar (curry #'%follow-hint-new-buffer buffer) (rest results)))))
 
-(define-command follow-hint-new-buffer ()
+(define-command follow-hint-new-buffer (buffer)
   "Like `follow-hint', but selection is handled in background buffers."
-  (query-hints "Select elements"
+  (query-hints buffer
+               "Select elements"
                (lambda (result)
-                 (mapcar #'%follow-hint-new-buffer result))))
+                 (mapcar (curry #'%follow-hint-new-buffer buffer) result))))
 
-(define-command follow-hint-new-buffer-focus ()
+(define-command follow-hint-new-buffer-focus (buffer)
   "Like `follow-hint-new-buffer', but switch to the top background buffer."
-  (query-hints "Select elements"
+  (query-hints buffer
+               "Select elements"
                (lambda (result)
-                 (%follow-hint-new-buffer-focus (first result))
-                 (mapcar #'%follow-hint-new-buffer (rest result)))))
+                 (%follow-hint-new-buffer-focus buffer (first result))
+                 (mapcar (curry #'%follow-hint-new-buffer buffer) (rest result)))))
 
-(define-command copy-hint-url ()
+(define-command copy-hint-url (buffer)
   "Save the element hint's URL to the clipboard."
-  (query-hints "Select element"
-               (lambda (result) (%copy-hint-url (first result)))
+  (query-hints buffer
+               "Select element"
+               (lambda (result) (%copy-hint-url buffer (first result)))
                :enable-marks-p nil
                :selector "a"))

@@ -157,30 +157,9 @@ listed and chosen from with the command `set-action-on-return' (bound to
 
 (export-always 'define-command-prompt)
 (defmacro define-command-prompt (name (prompt-buffer &rest arglist) &body body)
-  "Like `define-command', but the first argument is special:
-- it is considered a keyword argument if `&keyword' is in arglist, `&optional'
-  otherwise,
-- it is bound to `current-prompt-buffer' if unspecified,
-- the body is skipped and a warning is emitted unless non-nil."
-  (multiple-value-bind (forms declares documentation)
-      (alex:parse-body body :documentation t)
-    (multiple-value-bind (required optional rest keywords aok? aux key?)
-        (alex:parse-ordinary-lambda-list arglist)
-      (flet ((unparse-arguments (prompt-buffer-sym)
-               (if keywords
-                   (push `((,(intern (string prompt-buffer-sym) "KEYWORD")
-                            ,prompt-buffer-sym) (current-prompt-buffer) nil)
-                         keywords)
-                   (push `(,prompt-buffer-sym (current-prompt-buffer) nil)
-                         optional))
-               (sera:unparse-ordinary-lambda-list
-                required optional rest keywords aok? aux key?)))
-        `(define-command ,name ,(unparse-arguments prompt-buffer)
-           ,@(sera:unsplice documentation)
-           ,@declares
-           (if prompt-buffer
-               (progn ,@forms)
-               (log:warn "Can't call ~a on nil prompt buffer" ',name)))))))
+  "Define a `prompt-buffer' command NAME taking PROMPT-BUFFER explicitly."
+  `(define-command ,name ((,prompt-buffer prompt-buffer) ,@arglist)
+     ,@body))
 
 (define-command-prompt next-suggestion (prompt-buffer)
   "Select next entry in prompt buffer."
@@ -234,34 +213,13 @@ listed and chosen from with the command `set-action-on-return' (bound to
   "Select entry by N next pages in PROMPT-BUFFER.
 If N is negative, go to previous pages instead."
   (unless (= 0 n)
-    (let ((step-page-index
-            (ps-eval :buffer prompt-buffer
-              (defun step-row (row)
-                (ps:chain
-                 (aref (ps:chain row parent-node rows)
-                       (max 0
-                            (min (- (ps:chain row parent-node rows length) 1)
-                                 (+ (if (< 0 (ps:lisp n)) 1 -1)
-                                    (ps:chain row row-index)))))))
-              (defun find-first-element-out-of-view (row)
-                (if (nyxt/ps:element-in-view-port-p row)
-                    (let ((new-row (step-row row)))
-                      (if (eq new-row row)
-                          row
-                          (find-first-element-out-of-view new-row)))
-                    row))
-              (-
-               (ps:chain
-                (find-first-element-out-of-view (nyxt/ps:qs document "#selection"))
-                row-index)
-               (ps:chain (nyxt/ps:qs document "#selection") row-index)))))
-      (and-let* ((index-diff step-page-index))
-        (prompter:next-suggestion prompt-buffer
-                                  index-diff)))
+    (prompter:next-suggestion prompt-buffer
+                              (* n (nyxt::prompt-suggestion-window)))
     (prompt-render-suggestions prompt-buffer)))
 
 (define-command-prompt contract (prompt-buffer &key (delta 10))
-  (decf (ffi-height prompt-buffer) delta))
+  (setf (ffi-height prompt-buffer)
+        (max 56 (- (ffi-height prompt-buffer) delta))))
 
 (define-command-prompt expand (prompt-buffer &key (delta 10))
   (incf (ffi-height prompt-buffer) delta))
@@ -269,7 +227,7 @@ If N is negative, go to previous pages instead."
 (define-command-prompt previous-page (prompt-buffer &key (n 1))
   "Select entry by N previous pages in PROMPT-BUFFER.
 If N is negative, go to next pages instead."
-  (next-page :prompt-buffer prompt-buffer :n (- n)))
+  (next-page prompt-buffer :n (- n)))
 
 (define-command-prompt run-action-on-return (prompt-buffer)
   "Have the PROMPT-BUFFER return the marks, then quit."
@@ -285,21 +243,18 @@ If N is negative, go to next pages instead."
 (define-class attribute-source (prompter:source)
   ((prompter:name "List of prompter attributes")
    (prompter:enable-marks-p t)
-   (prompter:suggestion-maker 'make-attribute-suggestion)
-   (prompter:actions-on-return #'return-marks-only)))
+   (prompter:suggestion-maker 'make-attribute-suggestion)))
 
-(defun return-marks-only (suggestion-values)
-  "Return marked suggestions only.
-They are returned untouched.
-This is useful for prompters where we want either marks or nothing, but not the
-current unmarked suggestion."
-  (multiple-value-bind (suggestion source)
-      (prompter:%current-suggestion (current-prompt-buffer))
-    (if (and (typep source 'attribute-source)
-             (not (prompter:marks source)))
-        (remove (prompter:value suggestion) suggestion-values
-                :test #'equal)
-        suggestion-values)))
+(defmethod initialize-instance :after ((source attribute-source)
+                                       &key (actions-on-return nil actions-supplied-p)
+                                       &allow-other-keys)
+  (declare (ignore actions-on-return))
+  (unless actions-supplied-p
+    (setf (slot-value source 'prompter:actions-on-return)
+          (list (lambda-command return-marks-only* (suggestion-values)
+                  "Return marked suggestions only."
+                  (when (prompter:marks source)
+                    suggestion-values))))))
 
 (define-command-prompt toggle-attributes-display
     (prompt-buffer &key (source (current-source prompt-buffer)))
@@ -325,7 +280,6 @@ command does nothing there."
   ((prompter:name "Prompt buffer commands")
    (parent-prompt-buffer (error "Parent prompt buffer required"))
    (global-p nil)
-   (buffer (current-prompt-buffer))
    (prompter:suggestion-maker 'make-prompt-buffer-command-suggestion)))
 
 (defun make-prompt-buffer-command-suggestion (command source)
@@ -341,13 +295,13 @@ command does nothing there."
           (prompt1 :prompt "Command to run in current prompt buffer"
                    :sources (make-instance
                              'prompt-buffer-command-source
+                             :buffer prompt-buffer
                              :parent-prompt-buffer prompt-buffer))))
-    (funcall* command)))
+    (when command
+      (dispatch-command command prompt-buffer))))
 
-(defun prompt-buffer-actions-on-return (&optional (window (current-window)))
-  (or (and-let* ((first-prompt-buffer
-                  (first (nyxt::active-prompt-buffers window))))
-        (prompter:actions-on-return first-prompt-buffer))
+(defun prompt-buffer-actions-on-return (prompt-buffer)
+  (or (and prompt-buffer (prompter:actions-on-return prompt-buffer))
       (progn
         (echo-warning "No actions to choose from.")
         (error 'prompt-buffer-canceled))))
@@ -367,16 +321,18 @@ command does nothing there."
 
 (define-class action-on-return-source (prompter:source)
   ((prompter:name "List of actions-on-return")
-   (prompter:constructor (prompt-buffer-actions-on-return))
    (prompter:suggestion-maker 'make-action-suggestion)))
 
 (define-command-prompt set-action-on-return (prompt-buffer)
   "Prompt for an action to run over PROMPT-BUFFER `prompter:marks'."
-  (if (equal (mapcar #'type-of (prompter:sources (current-prompt-buffer)))
+  (if (equal (mapcar #'type-of (prompter:sources prompt-buffer))
              '(action-on-return-source))
       (echo "Already displaying actions-on-return of previous prompt buffer.")
       (when-let ((action (prompt1 :prompt "Set return action to run over marks"
-                                  :sources 'action-on-return-source)))
+                                  :sources (make-instance
+                                            'action-on-return-source
+                                            :constructor (prompt-buffer-actions-on-return
+                                                          prompt-buffer)))))
         (prompter:run-action-on-return prompt-buffer action))))
 
 (define-command-prompt quit-prompt-buffer (prompt-buffer)
@@ -397,7 +353,8 @@ PROMPT-BUFFER."
 Only available if current PROMPT-BUFFER source `enable-marks-p' is non-nil.
 DIRECTION can be `:forward' or `:backward' and specifies which suggestion to
 select next."
-  (prompter:toggle-mark prompt-buffer)
+  (when (prompter:%current-suggestion prompt-buffer)
+    (prompter:toggle-mark prompt-buffer))
   (match direction
     (:forward (next-suggestion prompt-buffer))
     (:backward (previous-suggestion prompt-buffer))))
@@ -405,8 +362,7 @@ select next."
 (define-command-prompt toggle-mark-backwards (prompt-buffer)
   "Mark current suggestion and `previous-suggestion'.
 Only available if `prompter:enable-marks-p' is non-nil."
-  (toggle-mark-forwards :prompt-buffer prompt-buffer
-                        :direction :backward))
+  (toggle-mark-forwards prompt-buffer :direction :backward))
 
 (define-command-prompt mark-all (prompt-buffer)
   "Mark all suggestions in the current source.
@@ -426,16 +382,28 @@ Only available if `prompter:enable-marks-p' is non-nil."
   (prompter:toggle-mark-all prompt-buffer)
   (prompt-render-suggestions prompt-buffer))
 
+(defun marked-selection-strings (prompt-buffer)
+  "Return the default attribute string for each marked item in PROMPT-BUFFER."
+  (loop for source in (prompter:sources prompt-buffer)
+        nconc (loop for mark in (reverse (prompter:marks source))
+                    for suggestion = (or (find mark (prompter:suggestions source)
+                                               :key #'prompter:value)
+                                         (find mark (prompter:initial-suggestions source)
+                                               :key #'prompter:value))
+                    collect (if suggestion
+                                (prompter:attributes-default suggestion)
+                                (second (first (prompter:object-attributes mark source)))))))
+
 (define-command-prompt copy-selection (prompt-buffer)
   "Save default property of selection to clipboard."
-  (let* ((marks (prompter:all-marks prompt-buffer))
-         (props (if marks
-                    (mapcar #'prompter:attributes-default marks)
-                    (list (prompter:attributes-default
-                           (prompter:%current-suggestion
-                            prompt-buffer)))))
+  (let* ((marked (marked-selection-strings prompt-buffer))
+         (current (prompter:%current-suggestion prompt-buffer))
+         (props (cond
+                  (marked marked)
+                  (current (list (prompter:attributes-default current)))
+                  (t '())))
          ;; Reverse so that text is ordered from oldest mark to newest.
-         (text (str:join +newline+ (reverse props))))
+         (text (str:join +newline+ (remove nil props))))
     (unless (str:emptyp text)
       (copy-to-clipboard text)
       (echo "~s copied to clipboard." text))))
@@ -450,30 +418,26 @@ Only available if `prompter:enable-marks-p' is non-nil."
   (ffi-buffer-cut prompt-buffer)
   (nyxt::update-prompt-input prompt-buffer))
 
-(defun history-entries (&optional (window (current-window)))
-  (and-let* ((first-prompt-buffer (first (nyxt::active-prompt-buffers window))))
-    (containers:container->list
-     (prompter:history first-prompt-buffer))))
-
 (define-class prompt-buffer-history-source (prompter:source)
-  ((prompter:name "Prompt buffer input history")
-   (prompter:constructor (history-entries))))
+  ((prompter:name "Prompt buffer input history")))
 
 (define-command-prompt history (prompt-buffer)
   "Choose a PROMPT-BUFFER input history entry to insert as input."
   (let ((history (prompter:history prompt-buffer)))
     (if (and history (not (containers:empty-p history)))
         (let ((input (prompt1 :prompt "Input history"
-                              :sources 'prompt-buffer-history-source)))
+                              :sources (make-instance
+                                        'prompt-buffer-history-source
+                                        :constructor (containers:container->list history)))))
           (unless (str:empty? input)
-            (nyxt:set-prompt-buffer-input input)))
+            (nyxt:set-prompt-buffer-input input prompt-buffer)))
         (echo "Prompt buffer has no history."))))
 
 (define-command-prompt insert-current-suggestion (prompt-buffer)
   "Insert current suggestion default property in the PROMPT-BUFFER input."
-  (when-let ((selection (prompter:attributes-default
-                         (prompter:%current-suggestion prompt-buffer))))
-    (nyxt:set-prompt-buffer-input selection)))
+  (when-let* ((suggestion (prompter:%current-suggestion prompt-buffer))
+              (selection (prompter:attributes-default suggestion)))
+    (nyxt:set-prompt-buffer-input selection prompt-buffer)))
 
 (define-command-prompt move-start-of-input (prompt-buffer)
   "Move to the beginning of PROMPT-BUFFER input."
@@ -497,29 +461,35 @@ Only available if `prompter:enable-marks-p' is non-nil."
 ;; it.  Ideas?
 
 (define-command-prompt scroll-other-buffer-up
-    (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
+    (prompt-buffer &key scroll-distance)
   "Scroll up the buffer behind the prompt."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (ps:lisp (- scroll-distance))))))
+  (when-let ((page (and (window prompt-buffer) (buffer (window prompt-buffer)))))
+    (let ((distance (or scroll-distance (scroll-distance page))))
+      (ps-eval :async t :buffer page
+        (ps:chain window (scroll-by 0 (ps:lisp (- distance))))))))
 
 (define-command-prompt scroll-other-buffer-down
-    (prompt-buffer &key (scroll-distance (scroll-distance (current-buffer))))
+    (prompt-buffer &key scroll-distance)
   "Scroll down the buffer behind the prompt."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (ps:lisp scroll-distance)))))
+  (when-let ((page (and (window prompt-buffer) (buffer (window prompt-buffer)))))
+    (let ((distance (or scroll-distance (scroll-distance page))))
+      (ps-eval :async t :buffer page
+        (ps:chain window (scroll-by 0 (ps:lisp distance)))))))
 
 (define-command-prompt scroll-page-up-other-buffer (prompt-buffer)
   "Scroll up the buffer behind the prompt by one page."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window
-              (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                 (ps:@ window inner-height)))))))
+  (when-let ((page (and (window prompt-buffer) (buffer (window prompt-buffer)))))
+    (ps-eval :async t :buffer page
+      (ps:chain window
+                (scroll-by 0 (- (* (ps:lisp (page-scroll-ratio page))
+                                   (ps:@ window inner-height))))))))
 
 (define-command-prompt scroll-page-down-other-buffer (prompt-buffer)
   "Scroll down the buffer behind the prompt by one page."
-  (ps-eval :async t :buffer (current-buffer)
-    (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio (current-buffer)))
-                                     (ps:@ window inner-height))))))
+  (when-let ((page (and (window prompt-buffer) (buffer (window prompt-buffer)))))
+    (ps-eval :async t :buffer page
+      (ps:chain window (scroll-by 0 (* (ps:lisp (page-scroll-ratio page))
+                                       (ps:@ window inner-height)))))))
 
 (defmethod default-modes append ((buffer prompt-buffer)) '(prompt-buffer-mode))
 
@@ -528,6 +498,6 @@ Only available if `prompter:enable-marks-p' is non-nil."
                   (list (sym:resolve-symbol :document-mode :mode)
                         (sym:resolve-symbol :base-mode :mode))))
 
-(define-command describe-prompt-buffer ()
+(define-command-prompt describe-prompt-buffer (prompt-buffer)
   "Describe a prompt buffer instance."
-  (describe-bindings :buffer (current-prompt-buffer)))
+  (describe-bindings prompt-buffer))

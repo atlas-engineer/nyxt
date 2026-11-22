@@ -23,8 +23,7 @@ mode to traverse chosen URLs."))
        "M-p" 'expedition-previous
        "M-n" 'expedition-next)))))
 
-(define-command expedition-next
-    (&key (expedition (find-submode 'expedition-mode)))
+(define-command expedition-next ((expedition expedition-mode))
   "Go to the next URL in the expedition."
   (if (> (length (urls expedition)) (+ 1 (index expedition)))
       (progn
@@ -33,8 +32,7 @@ mode to traverse chosen URLs."))
                          (nth (index expedition) (urls expedition))))
       (echo "End of expedition.")))
 
-(define-command expedition-previous
-    (&key (expedition (find-submode 'expedition-mode)))
+(define-command expedition-previous ((expedition expedition-mode))
   "Go to the previous URL in the expedition."
   (if (> (index expedition) 0)
       (progn
@@ -43,7 +41,7 @@ mode to traverse chosen URLs."))
                          (nth (index expedition) (urls expedition))))
       (echo "Start of expedition.")))
 
-(define-command-global select-frame-expedition (&key (buffer (current-buffer)))
+(define-command-global select-frame-expedition (buffer)
   "Run an expedition through a set of URLs selected with a rectangle."
   (let* ((urls
            (reverse
@@ -53,8 +51,7 @@ mode to traverse chosen URLs."))
                                             :enable-marks-p t)
                     :after-destructor
                     (lambda ()
-                      (with-current-buffer buffer
-                        (nyxt/mode/document::frame-element-clear))))))
+                      (nyxt/mode/document::frame-element-clear buffer)))))
          (urls (mapcar #'quri:uri urls))
          (buffer (make-buffer :title "" :url (first urls))))
     (enable (make-instance 'expedition-mode :urls urls :buffer buffer))

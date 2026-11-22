@@ -50,10 +50,15 @@
             do (error "Timed out waiting for ~a." description)
           do (sleep 0.05))))
 
-(defun page-text (&optional (buffer (nyxt:current-buffer)))
+(defun current-page ()
+  (let ((window (nyxt:current-window)))
+    (and window (nyxt:buffer window))))
+
+(defun page-text (&optional (buffer (current-page)))
   (or (ignore-errors
        (nyxt:ps-eval :buffer buffer
-         (ps:chain document body inner-text)))
+         (when (ps:@ document body)
+           (ps:@ document body inner-text))))
       ""))
 
 (defun element-text (buffer selector)
@@ -70,18 +75,18 @@
            (when element (ps:@ element value)))))
       ""))
 
-(defun scroll-y (&optional (buffer (nyxt:current-buffer)))
+(defun scroll-y (&optional (buffer (current-page)))
   (or (ignore-errors
        (nyxt:ps-eval :buffer buffer (ps:@ window page-y-offset)))
       0))
 
-(defun search-mark-count (&optional (buffer (nyxt:current-buffer)))
+(defun search-mark-count (&optional (buffer (current-page)))
   (or (ignore-errors
        (nyxt:ps-eval :buffer buffer
          (ps:@ (nyxt/ps:qsa document "[nyxt-search-mark]") length)))
       0))
 
-(defun wait-for-text (text &key (buffer (nyxt:current-buffer)) (timeout 20))
+(defun wait-for-text (text &key (buffer (current-page)) (timeout 20))
   (wait-until (lambda () (search text (page-text buffer)))
               :timeout timeout
               :description text)
@@ -109,7 +114,7 @@
                   (or failure
                       (and nyxt:*browser*
                            (ignore-errors (nyxt:current-window))
-                           (nyxt:current-buffer))))
+                           (current-page))))
                 :timeout 90
                 :description "the browser window")
     (when failure
@@ -137,7 +142,7 @@
 (defun close-other-buffers ()
   (unless (nyxt:buffer-list)
     (nyxt:make-buffer-focus))
-  (let ((keep (nyxt:current-buffer)))
+  (let ((keep (current-page)))
     (dolist (buffer (remove keep (nyxt:buffer-list)))
       (nyxt:ffi-buffer-delete buffer))
     (wait-until (lambda ()
@@ -148,26 +153,27 @@
     keep))
 
 (defun load-page (url-string text &key page-title)
-  (nyxt:ffi-buffer-load (nyxt:current-buffer) (nyxt:url url-string))
-  (wait-for-text text)
-  (when page-title
-    (wait-until (lambda ()
-                  (search page-title (or (nyxt:title (nyxt:current-buffer)) "")))
-                :timeout 10
-                :description page-title))
-  (nyxt:update-document-model)
-  (nyxt:current-buffer))
+  (let ((buffer (current-page)))
+    (nyxt:ffi-buffer-load buffer (nyxt:url url-string))
+    (wait-for-text text :buffer buffer)
+    (when page-title
+      (wait-until (lambda ()
+                    (search page-title (or (nyxt:title buffer) "")))
+                  :timeout 10
+                  :description page-title))
+    (nyxt:update-document-model :buffer buffer)
+    buffer))
 
 (defun open-page (url-string text &key page-title)
-  (nyxt:make-buffer-focus :url url-string)
-  (wait-for-text text)
-  (when page-title
-    (wait-until (lambda ()
-                  (search page-title (or (nyxt:title (nyxt:current-buffer)) "")))
-                :timeout 10
-                :description page-title))
-  (nyxt:update-document-model)
-  (nyxt:current-buffer))
+  (let ((buffer (nyxt:make-buffer-focus :url url-string)))
+    (wait-for-text text :buffer buffer)
+    (when page-title
+      (wait-until (lambda ()
+                    (search page-title (or (nyxt:title buffer) "")))
+                  :timeout 10
+                  :description page-title))
+    (nyxt:update-document-model :buffer buffer)
+    buffer))
 
 (defmacro with-page ((url-string text &key page-title) &body body)
   `(progn
@@ -279,7 +285,7 @@ The second value is true when a value arrived."
       (dismiss-prompts))))
 
 (defun clear-bookmarks ()
-  (setf (files:content (nyxt/mode/bookmark:bookmarks-file (nyxt:current-buffer)))
+  (setf (files:content (nyxt/mode/bookmark:bookmarks-file (current-page)))
         '()))
 
 (defmethod asdf:perform :around

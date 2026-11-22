@@ -6,9 +6,8 @@
 
 (define-test toggle-process-mode ()
   (let ((buffer (make-instance 'modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/process:process-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/process:process-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/process:process-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/process:process-mode buffer))))
 
 (define-test run-action-ad-eternum ()
   ;; Runs twice to ensure that mode instances which have not been garbage

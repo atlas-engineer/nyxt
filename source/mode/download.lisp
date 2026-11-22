@@ -338,10 +338,10 @@ The list element keeps a row it has already built."
   "Redraw each open downloads page."
   (when *browser*
     (dolist (buffer (buffer-list))
-      (alex:when-let ((mode (find-submode 'download-mode buffer)))
+      (alex:when-let ((mode (find-mode buffer 'download-mode)))
         (render-downloads mode)))))
 
-(defmethod customize-instance :after ((mode download-mode) &key)
+(defmethod enable ((mode download-mode) &key)
   "Keep MODE's list in step with the downloads."
   (setf (user-interface:template (listing mode))
         (lambda (download)
@@ -355,7 +355,7 @@ The list element keeps a row it has already built."
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a list of downloads for this session."
-  (let ((listing (listing (find-submode 'download-mode buffer))))
+  (let ((listing (listing (find-mode buffer 'download-mode))))
     (user-interface:connect listing buffer)
     (spinneret:with-html-string
       (:nstyle
@@ -427,16 +427,16 @@ The list element keeps a row it has already built."
       (:h1 "Downloads")
       (user-interface:to-html listing))))
 
-(define-command-global download-url ()
-  "Download the page or file of the current buffer."
-  (ffi-buffer-download (current-buffer) (render-url (url (current-buffer)))))
+(define-command-global download-url (buffer)
+  "Download the page or file of BUFFER."
+  (ffi-buffer-download buffer (render-url (url buffer))))
 
-(define-command-global download-hint-url ()
+(define-command-global download-hint-url (buffer)
   "Prompt for element hints and download them."
-  (let ((buffer (current-buffer)))
-    (nyxt/mode/hint:query-hints
-     "Download link URL"
-     (lambda (selected-links)
-       (loop for link in selected-links
-             do (ffi-buffer-download buffer (render-url (url link)))))
-     :selector "a")))
+  (nyxt/mode/hint:query-hints
+   buffer
+   "Download link URL"
+   (lambda (selected-links)
+     (loop for link in selected-links
+           do (ffi-buffer-download buffer (render-url (url link)))))
+   :selector "a"))

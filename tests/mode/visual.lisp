@@ -7,6 +7,5 @@
 ;; bad design.
 (define-test toggle-visual-mode ()
   (let ((buffer (make-instance 'input-and-modable-buffer)))
-    (with-current-buffer buffer
-      (assert-true (enable-modes* 'nyxt/mode/visual:visual-mode buffer))
-      (assert-true (disable-modes* 'nyxt/mode/visual:visual-mode buffer)))))
+    (assert-true (enable-modes* 'nyxt/mode/visual:visual-mode buffer))
+    (assert-true (disable-modes* 'nyxt/mode/visual:visual-mode buffer))))

@@ -78,15 +78,14 @@ A window shows any number of them. Each is as tall as the page and shows one thi
         (ffi-remove-panel-buffer (window panel) panel)))
   panel)
 
-(-> focused-panel (&optional window) (maybe panel-buffer))
-(defun focused-panel (&optional (window (current-window)))
-  "Return the panel with keyboard focus, or the one most recently added."
-  (when window
-    (let ((keyboard (keyboard-buffer window)))
-      (if (and (panel-buffer-p keyboard)
-               (find keyboard (panel-buffers window)))
-          keyboard
-          (first (last (panel-buffers window)))))))
+(-> focused-panel (window) (maybe panel-buffer))
+(defun focused-panel (window)
+  "Return the panel in WINDOW with keyboard focus, or the one most recently added."
+  (let ((keyboard (keyboard-buffer window)))
+    (if (and (panel-buffer-p keyboard)
+             (find keyboard (panel-buffers window)))
+        keyboard
+        (first (last (panel-buffers window))))))
 
 (export-always 'add-panel-buffer)
 (-> add-panel-buffer (window panel-buffer) (values panel-buffer &optional))
@@ -112,7 +111,7 @@ A window shows any number of them. Each is as tall as the page and shows one thi
           (if (eq (side panel) :left)
               (- x (width panel))
               (+ x (width panel))))
-    (arm-panel-drag (and (window panel) (active-buffer (window panel)))
+    (arm-panel-drag (and (window panel) (buffer (window panel)))
                     (link-url panel))))
 
 (-> panel-drag-move (panel-buffer (maybe integer)) t)
@@ -222,36 +221,27 @@ chrome.appendChild(handle);
   (declare (ignore url title))
   (install-panel-chrome buffer))
 
-(define-command toggle-panel-buffer (&optional (panel (focused-panel)))
+(define-command toggle-panel-buffer ((panel panel-buffer))
   "Show or hide PANEL."
-  (when panel
-    (setf (visible-p panel) (not (visible-p panel)))
-    (apply-panel-geometry panel))
+  (setf (visible-p panel) (not (visible-p panel)))
+  (apply-panel-geometry panel)
   panel)
 
-(define-command toggle-panel-buffer-side (&optional (panel (focused-panel)))
+(define-command toggle-panel-buffer-side ((panel panel-buffer))
   "Move PANEL to the other side of the page."
-  (when panel
-    (setf (side panel) (if (eq (side panel) :left) :right :left))
-    (setf (visible-p panel) t)
-    (apply-panel-geometry panel)
-    (install-panel-chrome panel))
+  (setf (side panel) (if (eq (side panel) :left) :right :left))
+  (setf (visible-p panel) t)
+  (apply-panel-geometry panel)
+  (install-panel-chrome panel)
   panel)
 
-(define-command delete-panel-buffer (&optional (panel (focused-panel)))
+(define-command delete-panel-buffer ((panel panel-buffer))
   "Remove PANEL from its window."
-  (when panel
-    (let ((window (window panel)))
-      (when window
-        (setf (panel-buffers window) (remove panel (panel-buffers window))))
-      (setf (visible-p panel) nil)
-      (apply-panel-geometry panel)
-      (ignore-errors (ffi-buffer-delete panel))
-      (buffer-delete (id panel))))
+  (let ((window (window panel)))
+    (when window
+      (setf (panel-buffers window) (remove panel (panel-buffers window))))
+    (setf (visible-p panel) nil)
+    (apply-panel-geometry panel)
+    (ignore-errors (ffi-buffer-delete panel))
+    (buffer-delete (id panel)))
   nil)
-
-(setf *lisp-callback-buffer-hook*
-      (lambda (buffer)
-        (when (panel-buffer-p buffer)
-          (let ((window (window buffer)))
-            (and window (active-buffer window))))))

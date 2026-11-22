@@ -127,7 +127,7 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
   "Apply a write, resize, or ready request from the terminal page."
   (let* ((params (quri:uri-query-params (quri:uri url)))
          (buffer (buffer-by-id (assoc-value params "buffer" :test #'equal)))
-         (mode (and buffer (find-submode 'terminal-mode buffer)))
+         (mode (and buffer (find-mode buffer 'terminal-mode)))
          (pty (and mode (pty mode))))
     (when pty
       (let ((action (request-action url)))
@@ -276,9 +276,9 @@ The shell is its own session, so it outlives the process unless it is reaped."
     (ffi-buffer-load buffer (quri:uri (nyxt-url 'terminal-page)))
     buffer))
 
-(define-command-global toggle-terminal-keys (&optional (buffer (current-buffer)))
+(define-command-global toggle-terminal-keys (buffer)
   "Toggle whether keys go to the terminal or to Nyxt."
-  (let ((mode (find-submode 'terminal-mode buffer)))
+  (let ((mode (find-mode buffer 'terminal-mode)))
     (if mode
         (let ((to-terminal (not (keys-to-terminal-p mode))))
           (setf (keys-to-terminal-p mode) to-terminal)

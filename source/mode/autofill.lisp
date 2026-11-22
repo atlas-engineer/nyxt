@@ -82,11 +82,11 @@ it will be in conflict with common-lisp:fill."))
 
 (define-class autofill-source (prompter:source)
   ((prompter:name "Autofills")
-   (prompter:constructor (autofills (find-submode 'autofill-mode)))
-   (prompter:actions-on-return
-    (lambda-command autofill* (autofills)
-      (ffi-buffer-paste (current-buffer)
-                        (funcall (first autofills))))))
+   (buffer nil :type (maybe buffer))
+   (prompter:constructor (lambda (source)
+                           (when-let ((mode (and (buffer source)
+                                                 (find-mode (buffer source) 'autofill-mode))))
+                             (autofills mode)))))
   (:export-class-name-p t)
   (:metaclass user-class)
   (:documentation "A source listing all the available `autofill's
@@ -102,7 +102,13 @@ in the current `autofill-mode'."))
                  (t "function")))
             (:width 3))))
 
-(define-command autofill ()
+(define-command autofill (buffer)
   "Fill in a field with a value from a saved list."
   (prompt :prompt "Autofill"
-          :sources 'autofill-source))
+          :sources (make-instance
+                    'autofill-source
+                    :buffer buffer
+                    :actions-on-return
+                    (lambda-command autofill* (autofills)
+                      (ffi-buffer-paste buffer
+                                        (funcall (first autofills)))))))

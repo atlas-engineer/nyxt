@@ -763,7 +763,7 @@ response.  The BODY is wrapped with `with-protect'."
   (customize-instance window))
 
 (define-ffi-method on-signal-destroy ((window gtk-window))
-  (when-let ((buffer (active-buffer window)))
+  (when-let ((buffer (buffer window)))
     (detach-widget (gtk-object buffer))))
 
 (define-ffi-method ffi-window-delete ((window gtk-window))
@@ -771,7 +771,7 @@ response.  The BODY is wrapped with `with-protect'."
                status-buffer message-buffer)
       window
     (when gtk-object
-      (when-let ((page (active-buffer window)))
+      (when-let ((page (buffer window)))
         (detach-widget (gtk-object page)))
       (dolist (panel (panel-buffers window))
         (detach-widget (gtk-object panel)))
@@ -1089,7 +1089,7 @@ non-null pointer."
         (cffi:null-pointer))))
 
 (define-command-global set-spell-check-languages
-    (&key (buffer (current-buffer))
+    (buffer &key
      (languages (prompt :prompt "Languages to spell check"
                         :sources (make-instance 'prompter:source
                                                 :name "Language codes"
@@ -1351,11 +1351,8 @@ non-null pointer."
                     (webkit:webkit-hit-test-result-image-uri hit-test-result)
                     (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
-        (when-let ((window (window buffer)))
-          (nyxt::print-message
-           (handler-bind ((plump:invalid-xml-character #'abort))
-             (plump:encode-entities (str:concat "→ " (render-url url))))
-           window))
+      (when-let ((window (window buffer)))
+        (nyxt::print-message (str:concat "→ " (render-url url)) window))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
       (when-let ((window (window buffer)))
@@ -1410,7 +1407,7 @@ non-null pointer."
 
 (define-ffi-method ffi-window-set-buffer ((window gtk-window) (buffer gtk-buffer) &key (focus t))
   "Set BROWSER's WINDOW buffer to BUFFER."
-  (when-let ((buried-buffer (and (active-buffer window) (gtk-object (active-buffer window)))))
+  (when-let ((buried-buffer (and (buffer window) (gtk-object (buffer window)))))
     (unless (eq buried-buffer (gtk-object buffer))
       (detach-widget buried-buffer)))
   (when-let ((widget (gtk-object buffer)))
@@ -1742,7 +1739,7 @@ non-null pointer."
                                    (lambda (action parameter)
                                      (declare (ignore action parameter))
                                      (if (command-p target)
-                                         (nyxt:dispatch-command target)
+                                         (nyxt:dispatch-command target buffer)
                                          (run-thread "context-menu-command"
                                            (funcall target))))))))
                          (cond

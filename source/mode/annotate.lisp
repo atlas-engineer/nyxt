@@ -26,7 +26,9 @@ internal programming APIs."
   ((default-modes (cons 'annotate-mode %slot-value%))))
 
 (defmethod annotations-file ((buffer buffer))
-  (annotations-file (find-submode 'annotate-mode buffer)))
+  (if-let ((mode (find-mode buffer 'annotate-mode)))
+    (annotations-file mode)
+    (make-instance 'annotations-file)))
 
 (define-class annotations-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"annotations")
@@ -176,7 +178,7 @@ and edit and delete."
                                             (nyxt/ps:lisp-eval
                                              (:title "edit-annotation"
                                               :buffer buffer)
-                                             (edit-annotation-note annotation))))
+                                             (edit-annotation-note buffer annotation))))
                    (make-instance 'user-interface:button
                                   :html-class "control close"
                                   :alt-text "Delete"
@@ -186,7 +188,7 @@ and edit and delete."
                                             (nyxt/ps:lisp-eval
                                              (:title "delete-annotation"
                                               :buffer buffer)
-                                             (remove-annotation annotation)))))))))))
+                                             (remove-annotation buffer annotation)))))))))))
 
 (-> annotation-section (list buffer) t)
 (defun annotation-section (group buffer)
@@ -229,7 +231,7 @@ and edit and delete."
                                                 (annotation-note note buffer))
                                               notes)))))))
 
-(defmacro with-annotations ((annotations &optional (buffer '(current-buffer))) &body body)
+(defmacro with-annotations ((annotations buffer) &body body)
   "Bind ANNOTATIONS to BUFFER's annotation list for BODY, then save it.
 Saving bumps `revision', which redraws an open annotations list."
   (alex:with-gensyms (file)
@@ -239,12 +241,12 @@ Saving bumps `revision', which redraws an open annotations list."
              ,@body)
          (incf (revision ,file))))))
 
-(defun annotation-add (annotation)
-  (with-annotations (annotations)
+(defun annotation-add (buffer annotation)
+  (with-annotations (annotations buffer)
     (push annotation annotations)))
 
-(defun annotations ()
-  (files:content (annotations-file (current-buffer))))
+(defun annotations (buffer)
+  (files:content (annotations-file buffer)))
 
 (-> annotation-same-p (annotation annotation) boolean)
 (defun annotation-same-p (left right)
@@ -288,20 +290,20 @@ Saving bumps `revision', which redraws an open annotations list."
               :from-end t)))
 
 (-> save-annotation
-    (annotation &key (:data string) (:tags t))
+    (buffer annotation &key (:data string) (:tags t))
     (values (maybe annotation) &optional))
-(defun save-annotation (annotation &key data tags)
-  "Store DATA and TAGS on the file copy of ANNOTATION."
-  (with-annotations (annotations)
+(defun save-annotation (buffer annotation &key data tags)
+  "Store DATA and TAGS on the file copy of ANNOTATION in BUFFER."
+  (with-annotations (annotations buffer)
     (when-let ((stored (stored-annotation annotation annotations)))
       (setf (data stored) (or data "")
             (tags stored) (annotation-tag-list tags))
       stored)))
 
-(-> remove-annotation (annotation) (values (maybe annotation) &optional))
-(defun remove-annotation (annotation)
-  "Remove one ANNOTATION from the annotations file."
-  (with-annotations (annotations)
+(-> remove-annotation (buffer annotation) (values (maybe annotation) &optional))
+(defun remove-annotation (buffer annotation)
+  "Remove one ANNOTATION from BUFFER's annotations file."
+  (with-annotations (annotations buffer)
     (when-let ((stored (stored-annotation annotation annotations)))
       (setf annotations (remove stored annotations :count 1 :test #'eq))
       stored)))
@@ -319,7 +321,7 @@ Saving bumps `revision', which redraws an open annotations list."
                     notes))))
 
 (define-command annotate-current-url
-    (&key (buffer (current-buffer))
+    (buffer &key
      (data (prompt1 :prompt "Annotation"
                     :sources (make-instance 'prompter:raw-source
                                             :name "Note")))
@@ -329,18 +331,19 @@ Saving bumps `revision', which redraws an open annotations list."
                                           :name "New tags"
                                           :enable-marks-p t)
                            (make-instance 'keyword-source :buffer buffer)
-                           (make-instance 'annotation-tag-source)))))
+                           (make-instance 'annotation-tag-source :buffer buffer)))))
   "Create an annotation of the URL of BUFFER.
 
 DATA and TAGS are passed as arguments to `url-annotation' make-instance."
-  (annotation-add (make-instance 'url-annotation
+  (annotation-add buffer
+                  (make-instance 'url-annotation
                                  :url (url buffer)
                                  :data data
                                  :page-title (title buffer)
                                  :tags tags)))
 
 (define-command annotate-highlighted-text
-    (&key (buffer (current-buffer))
+    (buffer &key
      (snippet (ffi-buffer-copy buffer))
      (data (prompt1 :prompt "Annotation"
                     :sources (make-instance 'prompter:raw-source
@@ -351,12 +354,13 @@ DATA and TAGS are passed as arguments to `url-annotation' make-instance."
                                           :name "New tags"
                                           :enable-marks-p t)
                            (make-instance 'keyword-source :buffer buffer)
-                           (make-instance 'annotation-tag-source)))))
+                           (make-instance 'annotation-tag-source :buffer buffer)))))
   "Create an annotation for the highlighted text of BUFFER.
 
 DATA, SNIPPET, and TAGS are passed as arguments to `snippet-annotation'
 make-instance."
-  (annotation-add (make-instance 'snippet-annotation
+  (annotation-add buffer
+                  (make-instance 'snippet-annotation
                                  :snippet snippet
                                  :url (url buffer)
                                  :page-title (title buffer)
@@ -440,7 +444,7 @@ a group it has already built."
                (user-interface:html-class element) "annotation-groups"
                (user-interface:text element) nil))))))
 
-(defmethod customize-instance :after ((mode annotation-listing-mode) &key)
+(defmethod enable ((mode annotation-listing-mode) &key)
   "Keep MODE's list in step with the annotations file."
   (let ((buffer (buffer mode)))
     (unless (listing mode)
@@ -452,20 +456,20 @@ a group it has already built."
                            :template (lambda (annotation)
                                        (annotation-item annotation mode))
                            :item-key (lambda (annotation)
-                                       (annotation-item-key annotation mode))))
-      (define-setf-handler annotations-file revision mode
-        (lambda (file)
-          (let ((page-file (annotations-file buffer)))
-            (when (or (eq file page-file)
-                      (uiop:pathname-equal (files:expand file)
-                                           (files:expand page-file)))
-              (render-annotations mode))))))
+                                       (annotation-item-key annotation mode)))))
+    (define-setf-handler annotations-file revision mode
+      (lambda (file)
+        (let ((page-file (annotations-file buffer)))
+          (when (or (eq file page-file)
+                    (uiop:pathname-equal (files:expand file)
+                                         (files:expand page-file)))
+            (render-annotations mode)))))
     (render-annotations mode)))
 
 (-> annotation-page (buffer) string)
 (defun annotation-page (buffer)
   "Return the annotations page for BUFFER."
-  (let ((listing (listing (find-submode 'annotation-listing-mode buffer))))
+  (let ((listing (listing (find-mode buffer 'annotation-listing-mode))))
     (user-interface:connect listing buffer)
     (spinneret:with-html-string
       (:nstyle
@@ -617,30 +621,32 @@ a group it has already built."
       (:h1 :class "grouped" "Annotations")
       (user-interface:to-html listing))))
 
-(define-internal-page show-annotations-for-current-url
-    (&key (id (id (current-buffer))))
+(define-internal-page show-annotations-for-current-url (&key id)
     (:title "*Annotations*" :page-mode 'annotation-listing-mode)
   "Display the annotations associated to buffer with ID."
-  (let* ((source (nyxt::buffer-get id))
-         (url (url source))
-         (mode (find-submode 'annotation-listing-mode %buffer%)))
+  (let ((source (nyxt::buffer-get id))
+        (mode (find-mode %buffer% 'annotation-listing-mode)))
     (setf (filter mode)
-          (lambda (annotations)
-            (sera:filter (curry #'url-equal url)
-                         annotations
-                         :key (compose #'quri:uri #'url))))
+          (if source
+              (let ((url (url source)))
+                (lambda (annotations)
+                  (sera:filter (curry #'url-equal url)
+                               annotations
+                               :key (compose #'quri:uri #'url))))
+              (constantly '())))
     (render-annotations mode)
     (annotation-page %buffer%)))
 
-(define-command-global show-annotations-for-current-url
-    (&key (buffer (current-buffer)))
+(define-command-global show-annotations-for-current-url (buffer)
   "Create a new buffer with the annotations of the current URL of BUFFER."
   (buffer-load-internal-page-focus 'show-annotations-for-current-url
                                    :id (id buffer)))
 
 (define-class annotation-source (prompter:source)
   ((prompter:name "Annotations")
-   (prompter:constructor (files:content (annotations-file (current-buffer))))
+   (buffer nil :type (maybe buffer))
+   (prompter:constructor (lambda (source)
+                           (files:content (annotations-file (buffer source)))))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches)
    (prompter:enable-marks-p t)))
 
@@ -652,6 +658,7 @@ a group it has already built."
 
 (define-class annotation-tag-source (prompter:source)
   ((prompter:name "Tags")
+   (buffer nil :type (maybe buffer))
    (prompter:filter-preprocessor
     (lambda (initial-suggestions-copy source input)
       (prompter:delete-inexact-matches
@@ -663,15 +670,16 @@ a group it has already built."
       (prompter:fuzzy-match suggestion source (last-word input))))
    (prompter:enable-marks-p t)
    (prompter:constructor
-    (let ((annotations (files:content (annotations-file (current-buffer)))))
-      (sort (remove-duplicates
-             (mappend #'tags annotations)
-             :test #'string-equal)
-            #'string-lessp)))))
+    (lambda (source)
+      (let ((annotations (files:content (annotations-file (buffer source)))))
+        (sort (remove-duplicates
+               (mappend #'tags annotations)
+               :test #'string-equal)
+              #'string-lessp))))))
 
-(-> edit-annotation-note (annotation) (values (maybe annotation) &optional))
-(defun edit-annotation-note (annotation)
-  "Prompt for a new note and tags for ANNOTATION and store them."
+(-> edit-annotation-note (buffer annotation) (values (maybe annotation) &optional))
+(defun edit-annotation-note (buffer annotation)
+  "Prompt for a new note and tags for ANNOTATION in BUFFER and store them."
   (let* ((data (prompt1
                 :prompt "Annotation"
                 :input (or (data annotation) "")
@@ -687,38 +695,42 @@ a group it has already built."
                                            (declare (ignore source input))
                                            (or suggestions
                                                (list ""))))
-                          (make-instance 'keyword-source)
+                          (make-instance 'keyword-source :buffer buffer)
                           (make-instance 'annotation-tag-source
+                                         :buffer buffer
                                          :marks (tags annotation))))))
-    (save-annotation annotation :data data :tags tags)))
+    (save-annotation buffer annotation :data data :tags tags)))
 
-(define-command edit-annotation (&optional annotations)
-  "Edit annotation(s)."
+(define-command edit-annotation (buffer &optional annotations)
+  "Edit annotation(s) in BUFFER."
   (let ((annotations (uiop:ensure-list
                       (or annotations
                           (prompt
                            :prompt "Edit annotation(s)"
-                           :sources (make-instance 'annotation-source))))))
+                           :sources (make-instance 'annotation-source
+                                                   :buffer buffer))))))
     (dolist (annotation annotations)
-      (edit-annotation-note annotation))))
+      (edit-annotation-note buffer annotation))))
 
-(define-command delete-annotation (&optional annotations)
-  "Delete annotation(s)."
+(define-command delete-annotation (buffer &optional annotations)
+  "Delete annotation(s) in BUFFER."
   (let ((annotations (uiop:ensure-list
                       (or annotations
                           (prompt
                            :prompt "Delete annotation(s)"
-                           :sources (make-instance 'annotation-source))))))
+                           :sources (make-instance 'annotation-source
+                                                   :buffer buffer))))))
     (dolist (annotation annotations)
-      (remove-annotation annotation))))
+      (remove-annotation buffer annotation))))
 
 (define-internal-page-command-global show-annotation ()
     (buffer "*Annotations*" 'annotation-listing-mode)
   "Show prompted annotations."
-  (let ((mode (find-submode 'annotation-listing-mode buffer)))
+  (let ((mode (find-mode buffer 'annotation-listing-mode)))
     (handler-case
         (let ((selected (prompt :prompt "Show annotation(s)"
-                                :sources (make-instance 'annotation-source))))
+                                :sources (make-instance 'annotation-source
+                                                        :buffer buffer))))
           (setf (filter mode)
                 (lambda (annotations)
                   (declare (ignore annotations))

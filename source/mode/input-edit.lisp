@@ -20,16 +20,16 @@ function."))
 
 ;;;; Commands for navigating/editing input fields on HTML pages.
 
-(define-parenscript active-input-area-content ()
+(define-parenscript active-input-area-content (buffer)
   (ps:chain (nyxt/ps:active-element document) value))
 
-(define-parenscript set-active-input-area-content (content)
+(define-parenscript set-active-input-area-content (buffer content)
   (setf (ps:chain (nyxt/ps:active-element document) value) (ps:lisp content)))
 
-(define-parenscript active-input-area-cursor ()
+(define-parenscript active-input-area-cursor (buffer)
   (ps:chain (nyxt/ps:active-element document) selection-start))
 
-(define-parenscript set-active-input-area-cursor (selection-start selection-end)
+(define-parenscript set-active-input-area-cursor (buffer selection-start selection-end)
   (ps:chain (nyxt/ps:active-element document)
             (set-selection-range
              (ps:lisp selection-start)
@@ -54,98 +54,113 @@ Run the BODY in the environment with these bound."
      ,@body))
 
 (export-always 'with-input-area)
-(defmacro with-input-area ((contents cursor-position) &body body)
-  "Bind CONTENTS and CURSOR-POSITION to the ones in the currently focused
-input field."
+(defmacro with-input-area ((buffer contents cursor-position) &body body)
+  "Bind CONTENTS and CURSOR-POSITION to the ones in BUFFER's focused input field."
   (let ((unprocessed-cursor (gensym)))
-    `(let* ((,contents (active-input-area-content))
-            (,unprocessed-cursor (active-input-area-cursor))
+    `(let* ((,contents (active-input-area-content ,buffer))
+            (,unprocessed-cursor (active-input-area-cursor ,buffer))
             (,cursor-position (when (numberp ,unprocessed-cursor)
-                                (truncate (active-input-area-cursor)))))
+                                (truncate ,unprocessed-cursor))))
        (declare (ignorable ,contents ,cursor-position))
        (if ,cursor-position
            ,@body
            (echo-warning "Cannot get cursor. Are you in an input field?")))))
 
-(defun move-n-elements (n)
-  (with-input-area (contents cursor-position)
+(defun move-n-elements (buffer n)
+  (with-input-area (buffer contents cursor-position)
     (let ((new-position (+ cursor-position n)))
-      (set-active-input-area-cursor new-position
-                                    new-position))))
+      (set-active-input-area-cursor buffer new-position new-position))))
 
-(defmacro define-input-edit-command (name (&rest args) documentation &body body)
-  `(define-command ,name (,@args)
+(defun sync-prompt-input-area (buffer)
+  (when (prompt-buffer-p buffer)
+    (nyxt::update-prompt-input buffer)))
+
+(defmacro define-input-edit-command (name (buffer &rest args) documentation &body body)
+  `(define-command ,name (,buffer ,@args)
      ,documentation
-     (with-current-buffer (or (current-prompt-buffer) (current-buffer))
-       ,@body)))
+     ,@body))
 
-(define-input-edit-command cursor-forwards ()
+(define-input-edit-command cursor-forwards (buffer)
   "Move cursor forward by one element."
-  (move-n-elements 1))
+  (move-n-elements buffer 1))
 
-(define-input-edit-command cursor-backwards ()
+(define-input-edit-command cursor-backwards (buffer)
   "Move cursor backwards by one element."
-  (move-n-elements -1))
+  (move-n-elements buffer -1))
 
-(define-input-edit-command cursor-forwards-word ()
+(define-input-edit-command cursor-forwards-word (buffer)
   "Move cursor forwards a word."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::move-forward-word cursor
                                       :conservative-word-move
-                                      (conservative-word-move (current-buffer)))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
+                                      (conservative-word-move buffer))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-input-edit-command cursor-backwards-word ()
+(define-input-edit-command cursor-backwards-word (buffer)
   "Move cursor backwards a word."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::move-backward-word cursor
-                                      :conservative-word-move
-                                      (conservative-word-move (current-buffer)))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
+                                       :conservative-word-move
+                                       (conservative-word-move buffer))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
                                     (cluffer:cursor-position cursor)))))
 
-(define-input-edit-command delete-forwards ()
+(define-input-edit-command delete-forwards (buffer)
   "Delete character after cursor."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-item-forward cursor)
       (set-active-input-area-content
+       buffer
        (text-buffer::string-representation text-buffer))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
-                                    (cluffer:cursor-position cursor)))))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
+                                    (cluffer:cursor-position cursor))
+      (sync-prompt-input-area buffer))))
 
-(define-input-edit-command delete-backwards ()
+(define-input-edit-command delete-backwards (buffer)
   "Delete character before cursor."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-item-backward cursor)
       (set-active-input-area-content
+       buffer
        (text-buffer::string-representation text-buffer))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
-                                    (cluffer:cursor-position cursor)))))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
+                                    (cluffer:cursor-position cursor))
+      (sync-prompt-input-area buffer))))
 
-(define-input-edit-command delete-backwards-word ()
+(define-input-edit-command delete-backwards-word (buffer)
   "Delete backwards a word."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-backward-word cursor)
       (set-active-input-area-content
+       buffer
        (text-buffer::string-representation text-buffer))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
-                                    (cluffer:cursor-position cursor)))))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
+                                    (cluffer:cursor-position cursor))
+      (sync-prompt-input-area buffer))))
 
-(define-input-edit-command delete-forwards-word ()
+(define-input-edit-command delete-forwards-word (buffer)
   "Delete forwards a word."
-  (with-input-area (contents cursor-position)
+  (with-input-area (buffer contents cursor-position)
     (with-text-buffer (text-buffer cursor contents cursor-position)
       (text-buffer::delete-forward-word cursor)
       (set-active-input-area-content
+       buffer
        (text-buffer::string-representation text-buffer))
-      (set-active-input-area-cursor (cluffer:cursor-position cursor)
-                                    (cluffer:cursor-position cursor)))))
+      (set-active-input-area-cursor buffer
+                                    (cluffer:cursor-position cursor)
+                                    (cluffer:cursor-position cursor))
+      (sync-prompt-input-area buffer))))
 
 (define-mode input-edit-mode ()
   "Mode for editing input areas in HTML.

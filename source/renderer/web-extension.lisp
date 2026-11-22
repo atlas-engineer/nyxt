@@ -995,13 +995,12 @@ for info in z.infolist():
             (ffi-buffer-reload buffer))))))
   nil)
 
-(define-command-global install-web-extension (&optional source)
+(define-command-global install-web-extension (buffer &optional source)
   "Install a Chromium web extension from a directory, a .zip, a .crx, or a page."
   (handler-case
       (let ((source (or source
-                        (let ((buffer (current-buffer)))
-                          (when (and buffer (url buffer))
-                            (page-extension-source (render-url (url buffer)))))
+                        (when (and buffer (url buffer))
+                          (page-extension-source (render-url (url buffer))))
                         (prompt-web-extension-source))))
         (when source
           (let ((results (install-web-extensions source)))
@@ -1100,7 +1099,7 @@ for info in z.infolist():
              :sources (make-instance 'web-extension-source
                                      :constructor extensions))))
 
-(define-command-global open-web-extension (&optional extension)
+(define-command-global open-web-extension (buffer &optional extension)
   "Open a web extension by name."
   (handler-case
       (let ((extension (cond
@@ -1117,7 +1116,7 @@ for info in z.infolist():
            (echo "~a has no page." (extension-name extension))
            nil)
           (t
-           (open-web-extension-page extension (current-buffer))
+           (open-web-extension-page extension buffer)
            (extension-name extension))))
     (prompt-buffer-canceled ()
       nil)
@@ -1250,7 +1249,7 @@ for info in z.infolist():
                                 (nyxt/ps:lisp-eval
                                  (:title "Install web extension"
                                   :buffer buffer)
-                                 (install-web-extension)))
+                                 (install-web-extension buffer)))
                      "Install"))
       (if extensions
           (:ul :class "list"

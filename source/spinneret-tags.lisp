@@ -33,29 +33,27 @@ Forms in BODY can be:
 - Lists --- get processed by Parenscript's `ps:ps*' and then concatenated."
   `(:script ,@attrs (:raw (%nscript-body (list ,@body)))))
 
-(serapeum:-> %nselect-onchange (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
+(serapeum:-> %nselect-onchange (string nyxt:buffer (nyxt:list-of list)) t)
 (defun %nselect-onchange (id buffer clauses)
   "Compiles the CLAUSES body into Parenscript code.
 Parenscript fetches values from <select> with ID and evaluates the respective
 forms in BUFFER."
-  (alexandria:when-let ((buffer (or buffer (nyxt:current-buffer))))
-    (ps:ps*
-     (with-ps-gensyms (var inner-var)
-       `(nyxt/ps:lisp-eval
-         (:title ,(format nil "nselect ~a choice" id)
-                 ,@(when buffer
-                     `(:buffer ,buffer)))
-         (let ((,var (alexandria:ensure-list
-                      (nyxt:ps-eval
-                        (ps:chain *Array (from (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id)))
-                                                         selected-options))
-                                  (map (lambda (e) (ps:@ e value))))))))
-           (dolist (,inner-var ,var)
-             (str:string-case ,inner-var
-               ,@(loop for (clause . forms) in clauses
-                       for value = (first (uiop:ensure-list clause))
-                       collect (cons (nyxt:prini-to-string value)
-                                     forms))))))))))
+  (ps:ps*
+   (with-ps-gensyms (var inner-var)
+     `(nyxt/ps:lisp-eval
+       (:title ,(format nil "nselect ~a choice" id)
+        :buffer ,buffer)
+       (let ((,var (alexandria:ensure-list
+                    (nyxt:ps-eval :buffer ,buffer
+                      (ps:chain *Array (from (ps:chain (nyxt/ps:qs document (+ "#" (ps:lisp ,id)))
+                                                       selected-options))
+                                (map (lambda (e) (ps:@ e value))))))))
+         (dolist (,inner-var ,var)
+           (str:string-case ,inner-var
+             ,@(loop for (clause . forms) in clauses
+                     for value = (first (uiop:ensure-list clause))
+                     collect (cons (nyxt:prini-to-string value)
+                                   forms)))))))))
 
 (serapeum:-> %nselect-options ((nyxt:list-of list)) t)
 (defun %nselect-options (clauses)
@@ -104,16 +102,14 @@ Example:
               `((:option :selected t :disabled t ,default)))
           (:raw (%nselect-options ,body-var)))))))
 
-(serapeum:-> %nradio-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(serapeum:-> %nradio-onchange (list nyxt:buffer) t)
 (defun %nradio-onchange (onchange buffer)
   "Produce Parenscript to run ONCHANGE expression in BUFFER when :nradio is modified."
-  (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(nyxt/ps:lisp-eval
-       (:title "nradio onchange"
-               ,@(when buffer
-                   (list :buffer buffer)))
-       ,onchange))))
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "nradio onchange"
+      :buffer ,buffer)
+     ,onchange)))
 
 (serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) symbol boolean (nyxt:list-of list)) t)
 (defun %nradio-inputs (name buffer checked vertical clauses)
@@ -145,22 +141,19 @@ when a radio button is selected."
           :class "radio-div"
           (:raw (%nradio-inputs ,name ,buffer ,checked ,vertical ,body-var)))))))
 
-(serapeum:-> %ncheckbox-onchange (list list (nyxt:maybe nyxt:buffer)) t)
+(serapeum:-> %ncheckbox-onchange (list list nyxt:buffer) t)
 (defun %ncheckbox-onchange (checked-body unchecked-body buffer)
   "Produce Parenscript to run ONCHANGE expression in BUFFER when :ncheckbox is modified."
-  (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(if (ps:chain window event target checked)
-         (nyxt/ps:lisp-eval
-           (:title "ncheckbox checked"
-                   ,@(when buffer
-                       (list :buffer buffer)))
-           ,checked-body)
-         (nyxt/ps:lisp-eval
-           (:title "ncheckbox unchecked"
-                   ,@(when buffer
-                       (list :buffer buffer)))
-           ,unchecked-body)))))
+  (ps:ps*
+   `(if (ps:chain window event target checked)
+       (nyxt/ps:lisp-eval
+         (:title "ncheckbox checked"
+          :buffer ,buffer)
+         ,checked-body)
+       (nyxt/ps:lisp-eval
+         (:title "ncheckbox unchecked"
+          :buffer ,buffer)
+         ,unchecked-body))))
 
 (serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) boolean list) t)
 (defun %ncheckbox-inputs (name buffer checked body)
@@ -469,11 +462,9 @@ Most *-P arguments mandate whether to add the buttons for:
                (when copy-p
                  `(:button.button.code-select
                    :title "Copy the code to clipboard."
-                   :onclick (%nbutton-onclick "Copy code" nil
-                                              (list
-                                               `(funcall (read-from-string "nyxt:ffi-buffer-copy")
-                                                         (nyxt:current-buffer)
-                                                         ,,plaintext)))
+                   :onclick (ps:ps
+                              (ps:chain navigator clipboard
+                                        (write-text (ps:lisp ,plaintext))))
                    "Copy"))))
         `(let* ((,body-var (list ,@body))
                 (,first (first ,body-var))
@@ -565,19 +556,20 @@ by default."
                  (:a :class "link nsection-anchor" :href (uiop:strcat "#" ,id-var) "#"))))
          ,@body)))))
 
-(serapeum:-> %nbutton-onclick (string (nyxt:maybe nyxt:buffer) (nyxt:list-of list)) t)
-(defun %nbutton-onclick (title buffer clauses)
+(serapeum:-> %nbutton-onclick (string nyxt:buffer (nyxt:list-of list) &optional (nyxt:maybe string)) t)
+(defun %nbutton-onclick (title buffer clauses &optional callback-id)
   "Produce Parenscript to run Lisp CLAUSES in BUFFER.
 TITLE is the debuggable name for the callback."
-  (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(nyxt/ps:lisp-eval
-       (:title ,(format nil "nbutton ~a" title)
-               ,@(when buffer
-                   (list :buffer buffer)))
-       ,@clauses))))
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title ,(format nil "nbutton ~a" title)
+             ,@(when callback-id
+                 (list :id callback-id))
+             :buffer ,buffer)
+     ,@clauses)))
 
-(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title buffer
+(deftag :nbutton (body attrs &key (text (alexandria:required-argument 'text)) title
+                       (buffer (alexandria:required-argument 'buffer)) callback-id
                        &allow-other-keys)
   "A Lisp-invoking button with TEXT text and BODY action.
 Evaluates (via `nyxt/ps:lisp-eval') the BODY in BUFFER when clicked.
@@ -594,33 +586,29 @@ Example:
   (list 'foo)
   `(funcall ,(lambda () (do-something-with closed-over-value))))"
   `(:button.button
-    :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body))
+    :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body) ,callback-id)
     ,@(when title
         (list :title title))
-    ,@attrs
+    ,@(alexandria:remove-from-plist attrs :callback-id)
     ,text))
 
-(serapeum:-> %ninput-onfocus (list (nyxt:maybe nyxt:buffer)) t)
+(serapeum:-> %ninput-onfocus (list nyxt:buffer) t)
 (defun %ninput-onfocus (onfocus buffer)
   "Produce Parenscript to run ONFOCUS expression in BUFFER when :ninput is focused."
-  (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(nyxt/ps:lisp-eval
-       (:title "ninput onfocus"
-               ,@(when buffer
-                   (list :buffer buffer)))
-       ,onfocus))))
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onfocus"
+      :buffer ,buffer)
+     ,onfocus)))
 
-(serapeum:-> %ninput-onchange (list (nyxt:maybe nyxt:buffer)) t)
+(serapeum:-> %ninput-onchange (list nyxt:buffer) t)
 (defun %ninput-onchange (onchange buffer)
   "Produce Parenscript to run ONCHANGE expression in BUFFER when :ninput is modified."
-  (when (or buffer (nyxt:current-buffer))
-    (ps:ps*
-     `(nyxt/ps:lisp-eval
-       (:title "ninput onchange"
-               ,@(when buffer
-                   (list :buffer buffer)))
-       ,onchange))))
+  (ps:ps*
+   `(nyxt/ps:lisp-eval
+     (:title "ninput onchange"
+      :buffer ,buffer)
+     ,onchange)))
 
 (deftag :ninput (body attrs &key rows cols onfocus onchange buffer &allow-other-keys)
   "Nicely styled <textarea> with a reasonable number of ROWS/COLS to accommodate the BODY.

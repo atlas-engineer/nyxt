@@ -67,18 +67,18 @@ Position and size are set from the text line under the cursor.")))
       (when api
         (ps:chain api (move (ps:lisp direction)))))))
 
-(define-command jump-to-reading-line-cursor (&key (buffer (current-buffer)))
+(define-command jump-to-reading-line-cursor (buffer)
   "Center the view port on the reading line."
   (ps-eval :buffer buffer
     (let ((api (ps:@ window nyxt-reading-line)))
       (when api
         (ps:chain api (jump))))))
 
-(define-command reading-line-cursor-up (&key (buffer (current-buffer)))
+(define-command reading-line-cursor-up (buffer)
   "Move the reading line up to the previous line of text."
   (reading-line-move buffer -1))
 
-(define-command reading-line-cursor-down (&key (buffer (current-buffer)))
+(define-command reading-line-cursor-down (buffer)
   "Move the reading line down to the next line of text."
   (reading-line-move buffer 1))
 

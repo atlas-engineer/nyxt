@@ -13,13 +13,14 @@
     (nyxt:start :no-config t
                 :no-auto-config t
                 :socket "/tmp/nyxt-test.socket")
-    (with-current-buffer (nyxt:make-buffer-focus :url "test:test")
-      (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
+    (let ((buffer (nyxt:make-buffer-focus :url "test:test")))
+      (hooks:once-on (nyxt:buffer-loaded-hook buffer) (loaded)
         (lparallel.queue:push-queue t ready-channel))
       (lparallel.queue:pop-queue ready-channel)
       (sleep 1)
       (assert-equal "pass"
-                    (nyxt:ps-eval (ps:chain (nyxt/ps:qs document "p") inner-text))))
+                    (nyxt:ps-eval :buffer buffer
+                      (ps:chain (nyxt/ps:qs document "p") inner-text))))
     (nyxt:quit)))
 
 (nyxt:define-internal-scheme "iframe-embed"
@@ -51,13 +52,14 @@
     (nyxt:start :no-config t
                 :no-auto-config t
                 :socket "/tmp/nyxt-test.socket")
-    (with-current-buffer (nyxt:make-buffer-focus :url "test-other:page")
-      (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
+    (let ((buffer (nyxt:make-buffer-focus :url "test-other:page")))
+      (hooks:once-on (nyxt:buffer-loaded-hook buffer) (loaded)
         (lparallel.queue:push-queue t ready-channel))
       (lparallel.queue:pop-queue ready-channel)
       (sleep 1)
       (assert-equal "other"
-                    (nyxt:ps-eval (ps:chain (nyxt/ps:qs document "p") inner-text))))
+                    (nyxt:ps-eval :buffer buffer
+                      (ps:chain (nyxt/ps:qs document "p") inner-text))))
     (nyxt:quit)))
 
 (define-test nyxt-url-not-iframe-embeddable ()
@@ -65,12 +67,13 @@
     (nyxt:start :no-config t
                 :no-auto-config t
                 :socket "/tmp/nyxt-test.socket")
-    (with-current-buffer (nyxt:make-buffer-focus :url "iframe-embed:test")
-      (hooks:once-on (nyxt:buffer-loaded-hook (current-buffer)) (buffer)
+    (let ((buffer (nyxt:make-buffer-focus :url "iframe-embed:test")))
+      (hooks:once-on (nyxt:buffer-loaded-hook buffer) (loaded)
         (lparallel.queue:push-queue t ready-channel))
       (lparallel.queue:pop-queue ready-channel)
       ;; More than enough time for nyxt:new to load and check-iframe-loaded to fire.
       (sleep 1)
       (assert-equal ""
-                    (nyxt:ps-eval (ps:chain (nyxt/ps:qs document "#text-check") inner-text))))
+                    (nyxt:ps-eval :buffer buffer
+                      (ps:chain (nyxt/ps:qs document "#text-check") inner-text))))
     (nyxt:quit)))

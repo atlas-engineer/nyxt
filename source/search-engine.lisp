@@ -59,14 +59,15 @@ See configuration slots `search-engines' and `search-engine-suggestions-p'."))
    (prompter:filter-preprocessor #'prompter:filter-exact-matches))
   (:documentation "Source listing all the search engines."))
 
-(define-command query-selection-in-search-engine (&key (query-in-new-buffer-p t))
+(define-command query-selection-in-search-engine (buffer &key (query-in-new-buffer-p t))
   "Search selected text using the queried search engine.
 When QUERY-IN-NEW-BUFFER-P is non-nil, open the results in a new buffer."
-  (ffi-buffer-load
-   (if query-in-new-buffer-p (make-buffer-focus) (current-buffer))
-   (format-url (ffi-buffer-copy (current-buffer))
-               (prompt1 :prompt "Search engine"
-                        :sources 'search-engine-source))))
+  (let ((selection (ffi-buffer-copy buffer))
+        (engine (prompt1 :prompt "Search engine"
+                         :sources 'search-engine-source)))
+    (ffi-buffer-load
+     (if query-in-new-buffer-p (make-buffer-focus) buffer)
+     (format-url selection engine))))
 
 (define-class ddg-search-engine (search-engine)
   ((name "DuckDuckGo")

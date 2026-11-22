@@ -136,7 +136,8 @@ of arguments."
 Generic function lambda lists differ from ordinary lambda list in some ways;
 see HyperSpec '3.4.2 Generic Function Lambda Lists'."
     (multiple-value-bind (required optional rest keywords aok? aux key?)
-        (alex:parse-ordinary-lambda-list lambda-list)
+        (alex:parse-ordinary-lambda-list
+         (closer-mop:extract-lambda-list lambda-list))
       (declare (ignore aux))
       (sera:unparse-ordinary-lambda-list required (mapcar #'first optional) rest (mapcar #'cadar keywords) aok? nil key?))))
 
@@ -147,8 +148,8 @@ see HyperSpec '3.4.2 Generic Function Lambda Lists'."
 
 Example:
 
-\(define-command play-video-in-current-page (&optional (buffer (current-buffer)))
-  \"Play video in the currently open buffer.\"
+\(define-command play-video-in-current-page (buffer)
+  \"Play video in BUFFER.\"
   (uiop:run-program (list \"mpv\" (render-url (url buffer)))))"
   (let ((doc (or (nth-value 2 (alex:parse-body body :documentation t)) "")))
     `(progn
@@ -297,16 +298,98 @@ context of a mode are listed."
          (symbol-package mode-symbol)))
    *command-list*))
 
+(defun command-required-argument (command)
+  "Return COMMAND's first required argument symbol, or nil."
+  (when (typep command 'generic-function)
+    (first (closer-mop:generic-function-argument-precedence-order command))))
+
+(defun command-primary-method (command)
+  "Return COMMAND's primary method, or nil."
+  (when (typep command 'generic-function)
+    (let ((methods (closer-mop:generic-function-methods command)))
+      (or (find nil methods :key #'method-qualifiers)
+          (first methods)))))
+
+(defun command-first-specializer (command)
+  "Return the first specializer class of COMMAND's primary method, or nil."
+  (when-let ((method (command-primary-method command)))
+    (let ((specializer (first (closer-mop:method-specializers method))))
+      (when (typep specializer 'class)
+        specializer))))
+
+(defun mode-command-enabled-p (command buffer)
+  "Whether COMMAND's mode is enabled in BUFFER, or COMMAND is not mode-scoped."
+  (let ((cmd-pkg (and (command-p command)
+                      (eq :mode (visibility command))
+                      (symbol-package (name command)))))
+    (or (null cmd-pkg)
+        (eq cmd-pkg (find-package :nyxt))
+        (and (modable-buffer-p buffer)
+             (some (lambda (mode)
+                     (let ((mode-sym (sera:class-name-of mode)))
+                       (or (eq cmd-pkg (symbol-package mode-sym))
+                           (some (lambda (super)
+                                   (eq cmd-pkg (symbol-package (class-name super))))
+                                 (mopu:superclasses mode-sym)))))
+                   (enabled-modes buffer))))))
+
+(defun command-arguments (command buffer)
+  "Return the argument list to invoke COMMAND from BUFFER, and whether it can run."
+  (let ((argument (command-required-argument command))
+        (specializer (command-first-specializer command)))
+    (cond
+      ((and buffer (context-buffer-p buffer) (dead-buffer-p buffer))
+       (values nil nil))
+      ((null argument)
+       (if (or (null buffer) (mode-command-enabled-p command buffer))
+           (values nil t)
+           (values nil nil)))
+      ((and specializer (closer-mop:subclassp specializer (find-class 'mode)))
+       (if-let ((mode (or (and buffer
+                               (find-mode buffer (class-name specializer)))
+                          (when-let ((prompt (and buffer
+                                                  (not (prompt-buffer-p buffer))
+                                                  (window buffer)
+                                                  (current-prompt-buffer (window buffer)))))
+                            (find-mode prompt (class-name specializer))))))
+         (values (list mode) t)
+         (values nil nil)))
+      ((and specializer (closer-mop:subclassp specializer (find-class 'window)))
+       (if-let ((window (and buffer (window buffer))))
+         (values (list window) t)
+         (values nil nil)))
+      ((and specializer (closer-mop:subclassp specializer (find-class 'prompt-buffer)))
+       (if-let ((prompt-buffer (cond
+                                 ((typep buffer specializer) buffer)
+                                 ((and buffer (window buffer))
+                                  (let ((prompt (current-prompt-buffer (window buffer))))
+                                    (and (typep prompt specializer) prompt))))))
+         (if (mode-command-enabled-p command prompt-buffer)
+             (values (list prompt-buffer) t)
+             (values nil nil))
+         (values nil nil)))
+      ((and specializer (closer-mop:subclassp specializer (find-class 'panel-buffer)))
+       (if-let ((panel (cond
+                         ((typep buffer specializer) buffer)
+                         ((and buffer (window buffer))
+                          (let ((focused (focused-panel (window buffer))))
+                            (and (typep focused specializer) focused))))))
+         (if (mode-command-enabled-p command panel)
+             (values (list panel) t)
+             (values nil nil))
+         (values nil nil)))
+      ((and buffer
+            (or (null specializer) (typep buffer specializer))
+            (mode-command-enabled-p command buffer))
+       (values (list buffer) t))
+      (t
+       (values nil nil)))))
+
 (defun run-command (command &optional args)
-  ;; Bind current buffer for the duration of the command.  This
-  ;; way, if the user switches buffer after running a command
-  ;; but before command termination, `current-buffer' will
-  ;; return the buffer from which the command was invoked.
-  (with-current-buffer (current-buffer)
-    (handler-case (apply #'funcall command args)
-      (prompt-buffer-canceled ()
-        (log:debug "Prompt buffer interrupted")
-        nil))))
+  (handler-case (apply #'funcall command args)
+    (prompt-buffer-canceled ()
+      (log:debug "Prompt buffer interrupted")
+      nil)))
 
 (defun run (command &optional args)
   "Run COMMAND over ARGS and return its result.

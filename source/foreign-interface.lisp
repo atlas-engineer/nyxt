@@ -139,13 +139,17 @@ Key presses are delivered to that view."))
 
 (define-ffi-generic ffi-window-set-buffer (window buffer &key focus)
   (:method :around ((window window) (buffer buffer) &key focus &allow-other-keys)
+    (when (include-in-buffer-list-p buffer)
+      (when-let ((other-window (find buffer (remove window (window-list))
+                                     :key #'buffer)))
+        (ffi-window-set-buffer other-window (background-buffer) :focus nil)))
     (hooks:run-hook (window-set-buffer-hook window) window buffer)
     (when focus
       (setf (last-access buffer) (time:now)))
     (call-next-method)
     buffer)
   (:method :after ((window window) (buffer buffer) &key (focus t) &allow-other-keys)
-    (setf (active-buffer window) buffer)
+    (setf (buffer window) buffer)
     (when focus
       (on-signal-focus buffer)))
   (:documentation "Return BUFFER and display it in WINDOW as a side effect.
@@ -173,9 +177,9 @@ Create the foreign objects necessary for rendering the buffer."))
 (define-ffi-generic ffi-buffer-delete (buffer)
   (:method ((buffer buffer))
     (hooks:run-hook (buffer-delete-hook buffer) buffer)
-    (let ((parent-window (find buffer (window-list) :key 'active-buffer)))
+    (let ((parent-window (find buffer (window-list) :key 'buffer)))
       (when parent-window
-        (let ((replacement-buffer (get-inactive-buffer)))
+        (let ((replacement-buffer (background-buffer)))
           (ffi-window-set-buffer parent-window replacement-buffer))))
     (add-to-recent-buffers buffer)
     (buffer-delete (id buffer))
@@ -493,7 +497,7 @@ Example:
 
 \(ffi-add-context-menu-command
  (list (list 'reload-current-buffer \"Reload it\")
-       (list (lambda () (delete-buffer :buffers (current-buffer))) \"Delete it\"))
+       (list 'delete-current-buffer \"Delete it\"))
  \"Buffer actions\")"))
 
 
@@ -574,15 +578,16 @@ Dispatches on buffers and modes."))
         (alex:if-let ((internal-page (find-url-internal-page url)))
           (progn
             (enable-page-mode buffer (page-mode internal-page))
-            ;; `nbutton' registers its callback on `current-buffer'. This runs
-            ;; on a load thread, where that would be some other buffer, so the
-            ;; click would look up an id that has no callback.
             (html-write
-             (with-current-buffer buffer
-               (apply (form internal-page)
-                      (append
-                       (query-params->arglist (quri:uri-query-params url))
-                       (list :%buffer% buffer))))
+             (handler-case
+                 (apply (form internal-page)
+                        (append
+                         (query-params->arglist (quri:uri-query-params url))
+                         (list :%buffer% buffer)))
+               (error (condition)
+                 (values (error-help "Page error"
+                                     (princ-to-string condition)
+                                     buffer))))
              buffer))
           (warn "No internal page corresponds to URL ~a" url))
         (disable-page-mode buffer))

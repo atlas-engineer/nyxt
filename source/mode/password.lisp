@@ -43,7 +43,8 @@ Password interfaces are configurable through a `customize-instance' method.")))
   ((default-modes (cons 'password-mode %slot-value%))))
 
 (defmethod password-interface ((buffer buffer))
-  (password-interface (find-submode 'password-mode buffer)))
+  (when-let ((mode (find-mode buffer 'password-mode)))
+    (password-interface mode)))
 
 (defun make-password-interface-user-classes ()
   "Define classes with the `user-class' metaclass so that users may use
@@ -65,21 +66,25 @@ for which the `executable' slot is non-nil."
               instance)))
         password:*interfaces*))
 
-(defvar password-source-actions
-  (list (lambda-command clip-password (password-name)
-          (let ((buffer (buffer (current-source)))
-                (password-name (first password-name)))
-            (password:clip-password (password-interface buffer)
-                                    :password-name password-name)
-            (echo "Password saved to clipboard for ~a seconds."
-                  (password:sleep-timer (password-interface buffer)))))
-        (lambda-command clip-username (password-name)
-          (let ((buffer (buffer (current-source)))
-                (password-name (first password-name)))
-            (if (password:clip-username (password-interface buffer)
-                                        :password-name password-name)
-                (echo "Username saved to clipboard.")
-                (echo "No username found."))))))
+(defun clip-password-action (source)
+  (lambda-command clip-password (password-name)
+    "Save password to clipboard."
+    (let ((buffer (buffer source))
+          (password-name (first password-name)))
+      (password:clip-password (password-interface buffer)
+                              :password-name password-name)
+      (echo "Password saved to clipboard for ~a seconds."
+            (password:sleep-timer (password-interface buffer))))))
+
+(defun clip-username-action (source)
+  (lambda-command clip-username (password-name)
+    "Save username to clipboard."
+    (let ((buffer (buffer source))
+          (password-name (first password-name)))
+      (if (password:clip-username (password-interface buffer)
+                                  :password-name password-name)
+          (echo "Username saved to clipboard.")
+          (echo "No username found.")))))
 
 (define-class password-source (prompter:source)
   ((prompter:name "Passwords")
@@ -87,11 +92,19 @@ for which the `executable' slot is non-nil."
    (password-instance :accessor password-instance :initarg :password-instance)
    (prompter:constructor
     (lambda (source)
-      (password:list-passwords (password-instance source))))
-   (prompter:actions-on-return password-source-actions)))
+      (password:list-passwords (password-instance source))))))
 
-(defun password-debug-info ()
-  (when-let ((interface (password-interface (current-buffer))))
+(defmethod initialize-instance :after ((source password-source)
+                                       &key (actions-on-return nil actions-supplied-p)
+                                       &allow-other-keys)
+  (declare (ignore actions-on-return))
+  (unless actions-supplied-p
+    (setf (slot-value source 'prompter:actions-on-return)
+          (list (clip-password-action source)
+                (clip-username-action source)))))
+
+(defun password-debug-info (buffer)
+  (when-let ((interface (password-interface buffer)))
     (log:debug "Password interface ~a uses executable ~s."
                (class-name (class-of interface))
                (password:executable interface))))
@@ -103,35 +116,35 @@ for which the `executable' slot is non-nil."
          (password:complete-interface ,password-interface)
          ,@body)))
 
-(define-command save-new-password (&optional (buffer (current-buffer)))
+(define-command save-new-password ((mode password-mode))
   "Save password to password interface."
-  (password-debug-info)
-  (cond
-    ((and (password-interface buffer)
-          (nyxt:has-method-p (password-interface
-                              (find-submode 'password-mode buffer))
-                             #'password:save-password))
-     (with-password (password-interface buffer)
-       (let* ((password-name
-                (prompt1 :prompt "Name for new password"
-                         :input (or (quri:uri-domain (url (current-buffer)))
-                                    "")
-                         :sources 'prompter:raw-source))
-              (new-password
-                (prompt1 :prompt "New password (leave empty to generate)"
-                         :sources 'prompter:raw-source
-                         :invisible-input-p t))
-              (username (prompt1 :prompt "Username (can be empty)"
-                                 :sources 'prompter:raw-source)))
-         (password:save-password (password-interface buffer)
-                                 :username username
-                                 :password-name password-name
-                                 :password new-password))))
-    ((null (password-interface buffer))
-     (echo-warning "No password manager found."))
-    (t (echo-warning "Password manager ~s does not support saving passwords."
-                     (string-downcase
-                      (class-name (class-of (password-interface buffer))))))))
+  (let ((buffer (buffer mode))
+        (interface (password-interface mode)))
+    (password-debug-info buffer)
+    (cond
+      ((and interface
+            (nyxt:has-method-p interface #'password:save-password))
+       (with-password interface
+         (let* ((password-name
+                  (prompt1 :prompt "Name for new password"
+                           :input (or (quri:uri-domain (url buffer))
+                                      "")
+                           :sources 'prompter:raw-source))
+                (new-password
+                  (prompt1 :prompt "New password (leave empty to generate)"
+                           :sources 'prompter:raw-source
+                           :invisible-input-p t))
+                (username (prompt1 :prompt "Username (can be empty)"
+                                   :sources 'prompter:raw-source)))
+           (password:save-password interface
+                                   :username username
+                                   :password-name password-name
+                                   :password new-password))))
+      ((null interface)
+       (echo-warning "No password manager found."))
+      (t (echo-warning "Password manager ~s does not support saving passwords."
+                       (string-downcase
+                        (class-name (class-of interface))))))))
 
 (defmethod password::execute :before
     ((password-interface password:keepassxc-interface) (arguments list)
@@ -178,33 +191,36 @@ for which the `executable' slot is non-nil."
                           :height :fit-to-prompt
                           :invisible-input-p t))))
 
-(define-command copy-password (&optional (buffer (current-buffer)))
+(define-command copy-password ((mode password-mode))
   "Query password and save to clipboard.
 See also `copy-password-prompt-details'."
-  (password-debug-info)
-  (if (password-interface buffer)
-      (with-password (password-interface buffer)
-        (prompt1 :prompt "Password"
-                 :input (quri:uri-domain (url buffer))
-                 :sources (make-instance
-                           'password-source
-                           :buffer buffer
-                           :password-instance (password-interface buffer))))
-      (echo-warning "No password manager found.")))
+  (let ((buffer (buffer mode))
+        (interface (password-interface mode)))
+    (password-debug-info buffer)
+    (if interface
+        (with-password interface
+          (prompt1 :prompt "Password"
+                   :input (quri:uri-domain (url buffer))
+                   :sources (make-instance
+                             'password-source
+                             :buffer buffer
+                             :password-instance interface)))
+        (echo-warning "No password manager found."))))
 
-(define-command copy-username (&optional (buffer (current-buffer)))
+(define-command copy-username ((mode password-mode))
   "Query username and save to clipboard."
-  (password-debug-info)
-  (if (password-interface buffer)
-      (with-password (password-interface buffer)
-        (prompt :prompt "Username"
-                :input (quri:uri-domain (url buffer))
-                :sources (make-instance
-                          'password-source
-                          :buffer buffer
-                          :password-instance (password-interface buffer)
-                          :actions-on-return
-                          (sera:filter (sera:eqs 'clip-username)
-                                       password-source-actions
-                                       :key #'name))))
-      (echo-warning "No password manager found.")))
+  (let ((buffer (buffer mode))
+        (interface (password-interface mode)))
+    (password-debug-info buffer)
+    (if interface
+        (with-password interface
+          (let ((source (make-instance
+                         'password-source
+                         :buffer buffer
+                         :password-instance interface)))
+            (setf (slot-value source 'prompter:actions-on-return)
+                  (list (clip-username-action source)))
+            (prompt :prompt "Username"
+                    :input (quri:uri-domain (url buffer))
+                    :sources source)))
+        (echo-warning "No password manager found."))))
