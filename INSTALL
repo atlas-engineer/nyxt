@@ -15,8 +15,8 @@ Lisp dependencies are pinned in ocicl.csv and fetched by Ocicl into ./ocicl
 registry does not publish are pinned in ocicl.csv as Git repositories.
 
 NYXT_RENDERER sets the renderer, by default "cef". WebKitGTK remains available
-as "gtk" or "gi-gtk".  When using "cef", set CEF_ROOT to a directory containing
-a CEF distribution.
+as "gtk".  When using "cef", set CEF_ROOT to a directory containing a CEF
+distribution.
 
 NYXT_VERSION forces the version number, in the rare eventuality that it can't be
 fetched in another way.
