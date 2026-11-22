@@ -73,6 +73,19 @@ listed and chosen from with the command `set-action-on-return' (bound to
        "C-v" 'paste
        "C-x" 'cut
        "C-a" 'select-input-text)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-up" 'first-suggestion
+       "S-shift-up" 'first-suggestion-within-source
+       "S-down" 'last-suggestion
+       "S-shift-down" 'last-suggestion-within-source
+       "S-c" 'nyxt/mode/document:copy
+       "S-v" 'paste
+       "S-x" 'cut
+       "S-a" 'select-input-text
+       "S-z" 'nyxt/mode/document:undo
+       "S-Z" 'nyxt/mode/document:redo)
       keyscheme:emacs
       (list
        "C-p" 'previous-suggestion

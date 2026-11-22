@@ -28,6 +28,10 @@
        "C-f" 'search-buffer
        "f3" 'search-buffer
        "M-f" 'remove-search-marks)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-f" 'search-buffer)
       keyscheme:emacs
       (list
        "C-s s" 'search-buffer

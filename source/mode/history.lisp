@@ -21,6 +21,12 @@
        "M-right" 'history-forwards
        "M-]" 'history-forwards
        "M-[" 'history-backwards)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-[" 'history-backwards
+       "S-]" 'history-forwards
+       "S-y" 'list-history)
       keyscheme:emacs
       (list
        "C-b" 'history-backwards

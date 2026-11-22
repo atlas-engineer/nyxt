@@ -57,6 +57,23 @@ Important pieces of functionality are:
        "keypadprior" 'scroll-page-up
        "keypadnext" 'scroll-page-down
        "C-u C-o" 'edit-with-external-editor)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-c" 'copy
+       "S-v" 'paste
+       "S-x" 'cut
+       "S-a" 'select-all
+       "S-z" 'undo
+       "S-Z" 'redo
+       "S-p" 'print-buffer
+       "S-+" 'zoom-page
+       "S-=" 'zoom-page
+       "S-hyphen" 'unzoom-page
+       "S-0" 'reset-page-zoom
+       "S-M-c" 'open-inspector
+       "S-M-i" 'open-inspector
+       "S-M-u" 'view-source)
       keyscheme:emacs
       (list
        "C-c C-s" 'select-frame-new-buffer

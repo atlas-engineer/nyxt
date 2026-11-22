@@ -191,6 +191,11 @@ navigation bindings of `base-mode'."
       (list
        "f5" 'reload-current-buffer
        "C-w" 'delete-panel-buffer)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-r" 'reload-current-buffer
+       "S-w" 'delete-panel-buffer)
       keyscheme:emacs
       (list
        "C-x o" 'toggle-prompt-buffer-focus

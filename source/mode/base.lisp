@@ -55,6 +55,25 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-O" 'load-file
        "C-o" 'nyxt/mode/file-manager:open-file
        "C-q" 'quit)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-," 'common-settings
+       "S-l" 'set-url
+       "S-n" 'make-window
+       "S-o" 'nyxt/mode/file-manager:open-file
+       "S-O" 'load-file
+       "S-q" 'quit
+       "S-r" 'reload-current-buffer
+       "S-t" 'make-buffer-focus
+       "S-T" 'reopen-buffer
+       "S-w" 'delete-current-buffer
+       "S-W" 'delete-current-window
+       "S-Y" 'nyxt/mode/download:list-downloads
+       "S-{" 'switch-buffer-previous
+       "S-}" 'switch-buffer-next
+       "S-M-left" 'switch-buffer-previous
+       "S-M-right" 'switch-buffer-next)
       keyscheme:emacs
       (list
        "C-x left" 'switch-buffer-previous

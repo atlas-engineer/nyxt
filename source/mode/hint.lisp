@@ -66,6 +66,11 @@ A positive value shifts to the bottom.")
        "C-J" 'follow-hint-new-buffer
        "C-u C-j" 'follow-hint-new-buffer-focus
        "M-c h" 'copy-hint-url)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-j" 'follow-hint
+       "S-J" 'follow-hint-new-buffer)
       keyscheme:emacs
       (list
        "M-g" 'follow-hint

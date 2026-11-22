@@ -45,6 +45,11 @@ internal programming APIs."
        "C-m s" 'add-bookmark
        "C-d" 'add-bookmark
        "C-m k" 'delete-bookmark)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-d" 'add-bookmark
+       "S-M-b" 'list-bookmarks)
       keyscheme:emacs
       (list
        "C-x r j" 'set-url-from-bookmark

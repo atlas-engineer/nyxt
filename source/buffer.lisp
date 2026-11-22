@@ -722,7 +722,12 @@ The handlers take the buffer as argument.")
        "C-button1" 'request-resource-open-url
        "button2" 'request-resource-open-url
        "C-shift-button1" 'request-resource-open-url-focus
-       "shift-button2" 'request-resource-open-url-focus))
+       "shift-button2" 'request-resource-open-url-focus)
+      #+darwin keyscheme:cua
+      #+darwin
+      (list
+       "S-button1" 'request-resource-open-url
+       "S-shift-button1" 'request-resource-open-url-focus))
     :documentation "Looked up when `request-resource-hook' handlers run.  The
 keymap takes functions whose key arguments are `:url' and `:buffer'.")
    (request-resource-hook
