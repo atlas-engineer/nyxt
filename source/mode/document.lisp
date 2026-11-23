@@ -228,7 +228,7 @@ URL is a string."
             (:img :src (str:concat "data:image/png;base64,"
                                    (cl-base64:usb8-array-to-base64-string png-bytes))
                   :alt url))
-          (:p :class "url" "No URL to encode."))))
+          (:p :class "url" "No URL to encode.")))))
 
 (define-command-global show-url-qrcode (buffer)
   "Display the QR code containing the URL of BUFFER in a new page."

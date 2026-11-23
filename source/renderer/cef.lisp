@@ -644,13 +644,14 @@ view before those threads run, and a call into the missing view has no method."
                 (not (nyxt::dead-buffer-p ,buffer)))
        ,@body)))
 
-(defmacro with-web-contents ((contents buffer &key else) &body body)
-  "Run BODY with BUFFER's web contents bound to CONTENTS.
-Return ELSE when BUFFER has no web view."
-  (once-only (buffer)
-    `(if-let ((,contents (cef:web-contents ,buffer)))
-       (progn ,@body)
-       ,else)))
+(defmacro with-web-contents ((contents buffer-form &key else) &body body)
+  "Run BODY with BUFFER-FORM's web contents bound to CONTENTS.
+Return ELSE when that buffer has no web view."
+  (let ((buffer (gensym "BUFFER")))
+    `(let ((,buffer ,buffer-form))
+       (if-let ((,contents (cef:web-contents ,buffer)))
+         (progn ,@body)
+         ,else))))
 
 (defmethod initialize-listeners ((buffer cef-buffer))
   (cef:add-listener buffer :focus
