@@ -146,7 +146,7 @@ named-readtables, ghcr.io/ocicl/named-readtables@sha256:9c467a5a6d7b4e928d4ca489
 named-readtables-test, ghcr.io/ocicl/named-readtables@sha256:9c467a5a6d7b4e928d4ca48986e14312cf29cd5a71347be0ebb515ebb964ced2, named-readtables-20260701-9b774b5/named-readtables-test.asd
 nasdf, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/libraries/nasdf/nasdf.asd
 nclasses, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/nclasses/nclasses.asd
-nfiles, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/nfiles/nfiles.asd
+nfiles, git+https://github.com/atlas-engineer/nfiles@34ce2a1ece3a6ec67b07e0d48a866edc0a95b2fa#ref=34ce2a1ece3a6ec67b07e0d48a866edc0a95b2fa, nfiles-34ce2a1/nfiles.asd
 nhooks, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/nhooks/nhooks.asd
 njson, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/njson/njson.asd
 nkeymaps, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/nkeymaps/nkeymaps.asd

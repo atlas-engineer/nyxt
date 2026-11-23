@@ -15,6 +15,8 @@ standard locations."))
 (define-class nyxt-file (files:gpg-file)
   ((files:profile *nyxt-profile*)
    (files:on-external-modification 'files:reload)
+   (files:on-read-error 'files:backup)
+   (files:on-deserialization-error 'files:backup)
    (editable-p
     t
     :type boolean
@@ -67,12 +69,16 @@ If the file is modified externally, Nyxt automatically reloads it."))
         (log:info "Loading ~s." path)
         (if *run-from-repl-p*
             (call-next-method)
-            (handler-case (call-next-method)
+            (handler-case
+                (handler-bind ((error (lambda (c)
+                                        (log:info "Failed to load ~s: ~a" path c))))
+                  (call-next-method))
               (error (c)
                 (log:info "Failed to load ~s: ~a" path c)
                 (handler-case
-                    (let ((backup (files:backup path)))
-                      (log:info "Erroring file backed up at ~s." backup))
+                    (when (uiop:file-exists-p path)
+                      (let ((backup (files:back-up path)))
+                        (log:info "Erroring file backed up at ~s." backup)))
                   (error (c)
                     (log:info "Failed to back up file: ~a" c)
                     nil))
@@ -92,14 +98,17 @@ If the file is modified externally, Nyxt automatically reloads it."))
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
   (let ((*package* (find-package :nyxt))
-        (*print-length* nil))
+        (*print-length* nil)
+        (*print-level* nil)
+        (*print-pretty* nil))
     (s-serialization:serialize-sexp (files:content file) stream)))
 
 (defmethod files:deserialize ((profile nyxt-profile)
                               (file nyxt-lisp-file) raw-content &key)
   ;; We need to make sure current package is :nyxt so that symbols are printed
   ;; with consistent namespaces.
-  (let ((*package* (find-package :nyxt)))
+  (let ((*package* (find-package :nyxt))
+        (*read-eval* nil))
     (s-serialization:deserialize-sexp raw-content)))
 
 (defmethod prompter:object-attributes ((file files:file)

@@ -167,6 +167,11 @@ prompt buffer.")
     (make-array 0 :fill-pointer t :adjustable t)
     :type vector
     :documentation "A vector holding `history-entry' objects.")
+   (history-lock
+    (bt:make-recursive-lock "browser-history")
+    :export nil
+    :initarg nil
+    :documentation "Recursive lock serializing access to `history-vector'.")
    (default-cookie-policy
     :no-third-party
     :type cookie-policy
@@ -266,34 +271,52 @@ A typical Nyxt session encompasses a single instance of this class, but nothing
 prevents otherwise.")
   (:metaclass user-class))
 
+(export-always 'ensure-history-loaded)
+(defun ensure-history-loaded (browser)
+  "Replace BROWSER's `history-vector' with the contents of `history-file'."
+  (let ((stored (or (files:content (history-file browser)) '())))
+    (bt:with-recursive-lock-held ((history-lock browser))
+      (setf (history-vector browser)
+            (make-array (length stored)
+                        :fill-pointer t
+                        :adjustable t
+                        :initial-contents stored))))
+  browser)
+
 (export-always 'recent-history-entries)
 (defmethod recent-history-entries (n (browser browser) &key deduplicate-p)
   "Return the N most recent browsing history entries as a list.
 
 When DEDUPLICATE-P is non-nil, remove duplicated entries."
-  (nreverse (coerce (let ((recent-entries (sera:slice (history-vector browser) (- n))))
-                      (if deduplicate-p
+  (let ((recent-entries
+          (bt:with-recursive-lock-held ((history-lock browser))
+            (let* ((vector (history-vector browser))
+                   (len (length vector))
+                   (start (max 0 (- len (max n 0)))))
+              (subseq vector start len)))))
+    (nreverse (coerce (if deduplicate-p
                           (remove-duplicates recent-entries :test #'equals)
-                          recent-entries))
-                    'list)))
+                          recent-entries)
+                      'list))))
 
 (export-always 'recent-distinct-history-entries)
 (defmethod recent-distinct-history-entries (n (browser browser))
   "Return up to N distinct history entries, newest first.
 A URL that was visited more than once contributes its latest visit."
-  (let ((seen (make-hash-table :test 'equal))
-        (result '())
-        (count 0)
-        (vector (history-vector browser)))
-    (loop for index from (1- (length vector)) downto 0
-          while (< count n)
-          for entry = (aref vector index)
-          for key = (render-url (url entry))
-          unless (gethash key seen)
-            do (setf (gethash key seen) t)
-               (incf count)
-               (push entry result))
-    (nreverse result)))
+  (bt:with-recursive-lock-held ((history-lock browser))
+    (let ((seen (make-hash-table :test 'equal))
+          (result '())
+          (count 0)
+          (vector (history-vector browser)))
+      (loop for index from (1- (length vector)) downto 0
+            while (< count n)
+            for entry = (aref vector index)
+            for key = (render-url (url entry))
+            unless (gethash key seen)
+              do (setf (gethash key seen) t)
+                 (incf count)
+                 (push entry result))
+      (nreverse result))))
 
 (defmethod theme ((ignored (eql nil)))
   "Fallback theme in case `*browser*' is NIL."
@@ -333,12 +356,7 @@ idle, so it should do the job."
   ;; there.
   (on-renderer-ready "finalize-startup"
     (window-make browser)
-    (let ((history-file-contents (files:content (history-file browser))))
-      (setf (history-vector browser)
-            (make-array (length history-file-contents)
-                        :fill-pointer t
-                        :adjustable t
-                        :initial-contents history-file-contents)))
+    (ensure-history-loaded browser)
     (open-urls (or urls (list (default-new-buffer-url browser))))
     (lpara:fulfill (slot-value browser 'startup-promise))
     (hooks:run-hook (after-startup-hook browser) browser)

@@ -56,31 +56,35 @@
 (define-internal-page-command-global list-history (&key (limit 100))
     (buffer "*History list*")
   "Display the most recent browsing history entries up to LIMIT."
-  (spinneret:with-html-string
-    (:nstyle (style buffer))
-    (render-menu 'history-mode buffer)
-    (:h1 "History")
-    (:ul :class "list"
-         (loop for entry in (recent-history-entries limit *browser*)
-               for title = (title entry)
-               for url = (quri:render-uri (url entry))
-               for heading = (if (str:emptyp title) url title)
-               collect (:li (:a :href url :title url
-                                (:span heading)
-                                (:span (unless (string= heading url)
-                                         url))))))))
+  (let ((limit (handler-case (if (integerp limit) limit (parse-integer limit))
+                             (error () 100))))
+    (spinneret:with-html-string
+      (:nstyle (style buffer))
+      (render-menu 'history-mode buffer)
+      (:h1 "History")
+      (:ul :class "list"
+           (loop for entry in (recent-history-entries limit *browser*)
+                 for title = (title entry)
+                 for url = (quri:render-uri (url entry))
+                 for heading = (if (str:emptyp title) url title)
+                 collect (:li (:a :href url :title url
+                                  (:span heading)
+                                  (:span (unless (string= heading url)
+                                           url)))))))))
 
 (defmethod add-url-to-history (url (mode history-mode) &key (title ""))
   "Push URL to `history-vector'."
   (unless (blocked-p url mode)
-    (with-slots (history-vector history-file) *browser*
-        (vector-push-extend (make-instance 'history-entry
-                                       :url (quri:uri url)
-                                       :title title)
-                        history-vector)
-    (files:with-file-content (history history-file)
-      (setf history history-vector))
-    url)))
+    (let ((parsed (url url)))
+      (unless (url-empty-p parsed)
+        (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
+          (with-slots (history-vector history-file) *browser*
+            (vector-push-extend (make-instance 'history-entry
+                                               :url parsed
+                                               :title (or title ""))
+                                history-vector)
+            (setf (files:content history-file) history-vector)))
+        url))))
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
   (add-url-to-history url mode :title title)

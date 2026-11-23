@@ -56,22 +56,39 @@ when deserializing a `history-entry')."
 
 (defmethod files:serialize
     ((profile nyxt-profile) (file history-file) stream &key)
-  (let ((*package* (find-package :nyxt))
-        (*print-length* nil))
-    (write-string "(" stream)
-    (loop for entry across (history-vector *browser*)
-          do (write-string +newline+ stream)
-             (serialize-history-entry entry stream))
-    (write-string +newline+ stream)
-    (write-string ")" stream)))
+  (let ((entries
+          (let ((content (files:content file)))
+            (cond
+              (*browser*
+               (bt:with-recursive-lock-held ((history-lock *browser*))
+                 (copy-seq (if (and (zerop (length (history-vector *browser*)))
+                                    content)
+                               content
+                               (history-vector *browser*)))))
+              (content (copy-seq content))
+              (t #())))))
+    (uiop:with-safe-io-syntax (:package :nyxt)
+      (write-string "(" stream)
+      (sera:do-each (entry entries)
+        (write-string +newline+ stream)
+        (serialize-history-entry entry stream))
+      (write-string +newline+ stream)
+      (write-string ")" stream))))
 
 (defmethod files:deserialize
     ((profile nyxt-profile) (path history-file) raw-content &key)
-  (let ((*package* (find-package :nyxt))
-        (entries (safe-read raw-content)))
-    (mapcar (lambda (entry)
-              (when (getf entry :url)
-                (setf (getf entry :url)
-                      (quri:uri (getf entry :url))))
-              (apply #'make-instance 'history-entry entry))
-            entries)))
+  (let* ((*package* (find-package :nyxt))
+         (entries (safe-read raw-content nil nil)))
+    (when (listp entries)
+      (delete nil
+              (mapcar (lambda (entry)
+                        (when (and (listp entry) (getf entry :url))
+                          (let ((parsed-url (handler-case (quri:uri (getf entry :url))
+                                              (quri:uri-error () nil))))
+                            (when (and parsed-url (not (url-empty-p parsed-url)))
+                              (make-instance 'history-entry
+                                             :url parsed-url
+                                             :title (if (stringp (getf entry :title))
+                                                        (getf entry :title)
+                                                        ""))))))
+                      entries)))))

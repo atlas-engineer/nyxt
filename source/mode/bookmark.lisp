@@ -551,6 +551,9 @@ The list element keeps a row it has already built."
             (render-bookmarks mode)))))
     (render-bookmarks mode)))
 
+(defmethod disable ((mode bookmark-listing-mode) &key)
+  (user-interface:disconnect (listing mode)))
+
 (export-always 'list-bookmarks)
 (define-internal-page-command-global list-bookmarks ()
     (bookmarks-buffer "*Bookmarks*" 'nyxt/mode/bookmark:bookmark-listing-mode)
@@ -663,28 +666,42 @@ Splits bookmarks into groups by tags."
          ;; user tries to remove just few.
          (sera:sort-new (files:content file)
                         #'url< :key #'url)))
-    (write-string "(" stream)
-    (sera:do-each (entry content)
-      (write-string +newline+ stream)
-      (serialize-object entry stream))
-    (format stream "~%)~%")
+    (uiop:with-safe-io-syntax (:package :nyxt)
+      (write-string "(" stream)
+      (sera:do-each (entry content)
+        (write-string +newline+ stream)
+        (serialize-object entry stream))
+      (format stream "~%)~%"))
     (echo "Saved ~a bookmarks to ~s."
           (length content)
           (files:expand file))))
 
 (defmethod files:deserialize ((profile nyxt-profile) (path bookmarks-file) raw-content &key)
-  (let ((*package* (find-package :nyxt))
-        (entries (safe-read raw-content)))
-    (mapcar (lambda (entry)
-              (when (getf entry :url)
-                (setf (getf entry :url)
-                      (quri:uri (getf entry :url))))
-              (when (getf entry :date)
-                (setf (getf entry :date)
-                      (time:parse-timestring (getf entry :date))))
-              (apply #'make-instance 'bookmark-entry
-                     entry))
-            entries)))
+  (let* ((*package* (find-package :nyxt))
+         (entries (safe-read raw-content nil nil)))
+    (when (listp entries)
+      (delete nil
+              (mapcar (lambda (entry)
+                        (when (and (listp entry) (getf entry :url))
+                          (let ((parsed-url (handler-case (quri:uri (getf entry :url))
+                                              (quri:uri-error () nil)))
+                                (parsed-date (when (getf entry :date)
+                                               (handler-case (time:parse-timestring (getf entry :date))
+                                                 (error () nil)))))
+                            (when (and parsed-url (not (url-empty-p parsed-url)))
+                              (make-instance 'bookmark-entry
+                                             :url parsed-url
+                                             :title (if (stringp (getf entry :title))
+                                                        (getf entry :title)
+                                                        "")
+                                             :annotation (if (stringp (getf entry :annotation))
+                                                             (getf entry :annotation)
+                                                             "")
+                                             :date (or parsed-date (time:now))
+                                             :tags (if (listp (getf entry :tags))
+                                                       (remove-if-not #'stringp (getf entry :tags))
+                                                       '()))))))
+                      entries)))))
 
 (define-command import-bookmarks-from-html
     (buffer &key (html-file (prompt1

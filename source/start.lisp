@@ -125,6 +125,7 @@ The remote instance must be listening on a socket which you can specify with
             (log:info "Deleting socket ~s." socket)
             (uiop:delete-file-if-exists socket))))
       (ffi-kill-browser *browser*)
+      (files:join-workers)
       ;; Reset global state.
       (setf *browser* nil
             *options* nil)
