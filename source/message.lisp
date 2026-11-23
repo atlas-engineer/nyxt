@@ -110,6 +110,9 @@
     (setf (ffi-height message-buffer) height
           (slot-value message-buffer 'height) height)))
 
+(defvar *maximum-messages-count* 1000
+  "Maximum number of log entries retained in `messages-content'.")
+
 (defclass messages-appender (log4cl-impl:appender) ())
 
 (defmethod log4cl-impl:appender-do-append ((appender messages-appender)
@@ -119,14 +122,16 @@
                       log4cl:+log-level-error+))
     (uiop:print-backtrace))
   (when *browser*
-    (push
-     ;; TODO: Include time in *Messages* entries.
-     ;; (make-instance 'log4cl:pattern-layout :conversion-pattern "<%p>
-     ;; [%D{%H:%M:%S}] %m%n" )
-     (with-output-to-string (s)
-       (log4cl-impl:layout-to-stream
-        (slot-value appender 'log4cl-impl:layout) s logger level log-func))
-     (messages-content *browser*))))
+    (sera:synchronized (appender)
+      (push
+       (with-output-to-string (s)
+         (log4cl-impl:layout-to-stream
+          (slot-value appender 'log4cl-impl:layout) s logger level log-func))
+       (messages-content *browser*))
+      (when (and (plusp *maximum-messages-count*)
+                 (> (length (messages-content *browser*)) *maximum-messages-count*))
+        (setf (cdr (nthcdr (1- *maximum-messages-count*) (messages-content *browser*)))
+              nil)))))
 
 (defmacro %echo (text &key (logger 'log:info))
   "Echo TEXT in the message buffer.

@@ -613,6 +613,7 @@ The value is saved to clipboard."
                      "Bindings for this buffer"
                      "List all keyboard shortcuts for the current buffer."
                      (nyxt-url 'describe-bindings :buffer-id (id buffer)))
+           #+(and unix (not darwin))
            (when (appimage-p)
              (command-row "Install desktop shortcut"
                           nil

@@ -466,6 +466,9 @@ a group it has already built."
             (render-annotations mode)))))
     (render-annotations mode)))
 
+(defmethod disable ((mode annotation-listing-mode) &key)
+  (user-interface:disconnect (listing mode)))
+
 (-> annotation-page (buffer) string)
 (defun annotation-page (buffer)
   "Return the annotations page for BUFFER."

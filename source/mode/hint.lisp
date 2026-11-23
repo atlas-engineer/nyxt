@@ -807,7 +807,7 @@ The badge itself stays opaque so the remaining characters stay readable."
                      (ps:chain span class-list (remove "nyxt-match-hint"))))))))
 
 (defvar *hint-follow-lock* (bt:make-lock "hint-follow"))
-(defvar *hint-follow-input* (make-hash-table :test 'eq)
+(defvar *hint-follow-input* (tg:make-weak-hash-table :test 'eq :weakness :key)
   "Prompt to the input that should follow once the pause elapses.")
 
 (defun hint-follow-pending (prompt input)
@@ -842,8 +842,10 @@ A finished hint such as \"ap\" may be the start of a longer query such as
             (unless (and (hint-follow-pending prompt input)
                          (string-equal input (prompter:input prompt))
                          (not (prompter:returned-p prompt)))
+              (when (prompter:returned-p prompt)
+                (remhash prompt *hint-follow-input*))
               (return-from hint-follow nil))
-            (setf (gethash prompt *hint-follow-input*) nil)
+            (remhash prompt *hint-follow-input*)
             (setf (prompter:returned-p prompt) t))
           (prompter:run-action-on-return prompt))))))
 

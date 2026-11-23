@@ -307,7 +307,8 @@ Return nil if mode is not found."
         (when (< 1 (length results))
           ;; TODO: What's the best action on multiple mode match?
           (log:debug "Found multiple matching modes: ~a" results))
-        (values (first results)
+        (values (or (find mode-symbol results :key #'sera:class-name-of)
+                    (first results))
                 results))
       ;; CCL catches the error at compile time but not all implementations do,
       ;; hence the redundant error report here.

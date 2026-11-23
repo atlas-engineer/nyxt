@@ -16,6 +16,7 @@
     (ffi-buffer-initialize-foreign-object buffer)
     (add-to-recent-buffers buffer)
     (buffer-set (id buffer) buffer)
+    (mapc #'enable (reverse (enabled-modes buffer)))
     (ffi-buffer-load buffer (url buffer))))
 
 (define-class recent-buffer-source (prompter:source)

@@ -352,6 +352,9 @@ The list element keeps a row it has already built."
       (render-downloads mode)))
   (render-downloads mode))
 
+(defmethod disable ((mode download-mode) &key)
+  (user-interface:disconnect (listing mode)))
+
 (define-internal-page-command-global list-downloads ()
     (buffer "*Downloads*" 'download-mode)
   "Display a list of downloads for this session."

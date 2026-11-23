@@ -36,7 +36,8 @@
 If it wasn't, add it to inspected values and return its new ID."
   (maphash
    (lambda (id object)
-     (when (equal value object)
+     (when (or (eql value object)
+               (and (scalar-p value) (scalar-p object) (equal value object)))
        (return-from ensure-inspected-id id)))
    *inspected-values*)
   (sera:lret ((id (new-id)))
@@ -49,13 +50,22 @@ If it wasn't, add it to inspected values and return its new ID."
 
 Can cause a renderer to choke when set to a high value. Use with caution!")
 
+(defvar *inspector-max-depth* 8
+  "Maximum nesting depth rendered inline by `value->html' before collapsing to a link.")
+
+(defvar *inspector-visited* nil
+  "Table of compound objects currently on the `value->html' call stack.")
+
+(defvar *inspector-depth* 0
+  "Current recursion depth of `value->html'.")
+
 (defun escaped-literal-print (value)
   "Print the constant/literal/`scalar-p' VALUE to HTML-escaped string."
   (spinneret:with-html-string
     (:code (:raw (spinneret:escape-string
                   (let ((*print-lines* 2)
                         (*print-length* *inspector-print-length*))
-                    (prini-to-string value)))))))
+                    (prini-to-string value :circle t)))))))
 
 (defun link-to (object)
   "Convert the OBJECT to a `describe-value' link inspecting it.
@@ -84,8 +94,25 @@ In case it's `scalar-p', simply print it."
 (export-always 'value->html)
 (defgeneric value->html (value &optional compact-p)
   (:method :around (value &optional compact-p)
-    (let ((spinneret:*html-style* :tree))
-      (call-next-method value compact-p)))
+    (let ((spinneret:*html-style* :tree)
+          (compound-p (and (not (null value))
+                           (not (scalar-p value))
+                           (not (functionp value))
+                           (not (pathnamep value))))
+          (*inspector-visited* (or *inspector-visited*
+                                   (make-hash-table :test 'eq))))
+      (cond
+        ((not compound-p)
+         (call-next-method value compact-p))
+        ((or (gethash value *inspector-visited*)
+             (>= *inspector-depth* *inspector-max-depth*))
+         (link-to value))
+        (t
+         (setf (gethash value *inspector-visited*) t)
+         (unwind-protect
+              (let ((*inspector-depth* (1+ *inspector-depth*)))
+                (call-next-method value compact-p))
+           (remhash value *inspector-visited*))))))
   (:method (value &optional compact-p)
     (declare (ignore compact-p))
     (escaped-literal-print value))
@@ -110,7 +137,8 @@ values in help buffers, REPL and elsewhere."))
     (:div
      :style "overflow-x: auto"
      (cond
-       ((not (null (cdr (last value))))
+       ((or (alex:circular-list-p value)
+            (not (types:proper-list-p value)))
         (:raw (escaped-literal-print value)))
        (compact-p
         (:raw (compact-listing value :table-p t)))
@@ -147,13 +175,10 @@ values in help buffers, REPL and elsewhere."))
           (:tr
            (loop for val in (rest value) by #'cddr
                  collect (:td (:raw (value->html val t))))))))
-       ((and (types:proper-list-p value)
-             (not (alex:circular-list-p value))
-             (not (alex:circular-tree-p value)))
+       (t
         (:ul
          (dotimes (i (length value))
-           (:li (:raw (value->html (elt value i) t))))))
-       (t (:raw (escaped-literal-print value)))))))
+           (:li (:raw (value->html (elt value i) t))))))))))
 
 (defmethod value->html ((value array) &optional compact-p)
   (spinneret:with-html-string
@@ -227,13 +252,14 @@ values in help buffers, REPL and elsewhere."))
                          mime)
               (cond
                 ((and (uiop:directory-pathname-p value)
+                      (uiop:directory-exists-p value)
                       (not compact-p))
                  ;; REVIEW: This should use
                  ;; `nyxt/mode/file-manager:directory-elements' (not accessible
                  ;; at the time this is loaded) or an NFiles equivalent (should
                  ;; we abstract most of File Manager to Nfiles?)
-                 (dolist (element (append (uiop:subdirectories value)
-                                          (uiop:directory-files value)))
+                 (dolist (element (append (ignore-errors (uiop:subdirectories value))
+                                          (ignore-errors (uiop:directory-files value))))
                    (:li (:raw (value->html element t)))))
                 ((and (str:starts-with-p "image/" mime)
                       (not compact-p))
@@ -264,7 +290,9 @@ values in help buffers, REPL and elsewhere."))
           (:dl
            (dolist (slot-name slot-names)
              (:dt (prini-to-string slot-name))
-             (:dd (:raw (value->html (slot-value value slot-name) t)))))
+             (:dd (:raw (if (slot-boundp value slot-name)
+                            (value->html (slot-value value slot-name) t)
+                            (spinneret:with-html-string (:code "#<unbound>")))))))
           (:raw (escaped-literal-print value))))))
 
 (defmethod value->html ((value standard-object) &optional compact-p)

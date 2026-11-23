@@ -72,7 +72,7 @@ cl-webkit2, git+https://github.com/atlas-engineer/cl-webkit@81621c88d5a061c760b0
 cl_plus_ssl, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.asd
 cl_plus_ssl.test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-plus-ssl/cl+ssl.test.asd
 closer-mop, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/closer-mop/closer-mop.asd
-clss, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/clss/clss.asd
+clss, ghcr.io/ocicl/clss@sha256:be439e8c90b3070c98206448a7ee867af9aecef97c1faf698e09fa3be4c0025a, CLSS-20260218-cd5f603/clss.asd
 cluffer, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cluffer/cluffer.asd
 cluffer-base, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cluffer/Base/cluffer-base.asd
 cluffer-simple-buffer, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cluffer/Simple-buffer/cluffer-simple-buffer.asd
@@ -166,7 +166,7 @@ plump-lexer, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c143
 plump-parser, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/plump/plump-parser.asd
 proc-parse, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/proc-parse/proc-parse.asd
 proc-parse-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/proc-parse/proc-parse-test.asd
-prompter, git+https://github.com/atlas-engineer/prompter@2fcdf1561f13db98b0b3f63e605c4ef394ee4e64#ref=2fcdf1561f13db98b0b3f63e605c4ef394ee4e64, prompter-2fcdf15/prompter.asd
+prompter, git+https://github.com/atlas-engineer/prompter@394074de0b52f1245499959b60b66caaa86d9b28#ref=394074de0b52f1245499959b60b66caaa86d9b28, prompter-394074d/prompter.asd
 puri, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/puri/puri.asd
 quri, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/quri/quri.asd
 quri-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/quri/quri-test.asd

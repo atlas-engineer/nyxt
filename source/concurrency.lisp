@@ -36,19 +36,17 @@ raised condition."
                    (if *restart-on-error*
                        (restart-browser ,c)
                        ,(let ((condition-index (position :condition args)))
-                          (flet ((new-args (condition condition-index &optional escaped-p)
+                          (flet ((new-args (condition condition-index)
                                    (if condition-index
                                        (append (subseq args 0 condition-index)
-                                               (list (if escaped-p
-                                                         `(plump:encode-entities (princ-to-string ,condition))
-                                                         `,condition))
+                                               (list condition)
                                                (subseq args (1+ condition-index)))
                                        'args)))
                             `(handler-bind ((t (lambda (,sub-c)
                                                  (declare (ignore ,sub-c))
                                                  (log:error ,format-string ,@(new-args c condition-index))
                                                  (invoke-restart 'continue))))
-                               (echo-warning ,format-string ,@(new-args c condition-index :escaped-p)))))))))
+                               (echo-warning ,format-string ,@(new-args c condition-index)))))))))
             ,@body)))))
 
 (defun make-channel (&optional size)

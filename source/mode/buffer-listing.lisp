@@ -102,6 +102,9 @@ The handlers are the ones `status-buffer' uses for its tabs."
       (render-buffers mode)))
   (render-buffers mode))
 
+(defmethod disable ((mode buffer-listing-mode) &key)
+  (user-interface:disconnect (listing mode)))
+
 (define-internal-page-command-global list-buffers ()
     (listing-buffer "*Buffers*" 'nyxt/mode/buffer-listing:buffer-listing-mode)
   "Show all buffers."

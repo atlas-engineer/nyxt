@@ -202,6 +202,15 @@ The binding on this mode stays available in both states.")
                      "/bin/sh")))
     (list program "-i")))
 
+(defun detach-terminal-handlers (mode)
+  "Remove MODE's buffer-delete and browser-exit hook handlers."
+  (when (delete-handler mode)
+    (hooks:remove-hook (buffer-delete-hook (buffer mode)) (delete-handler mode))
+    (setf (delete-handler mode) nil))
+  (when (exit-handler mode)
+    (hooks:remove-hook (before-exit-hook *browser*) (exit-handler mode))
+    (setf (exit-handler mode) nil)))
+
 (defun ensure-delete-handler (mode)
   "Close MODE's shell when its buffer is deleted."
   (unless (delete-handler mode)
@@ -210,6 +219,7 @@ The binding on this mode stays available in both states.")
                          :name (gensym "TERMINAL-DELETE")
                          :fn (lambda (buffer)
                                (declare (ignore buffer))
+                               (detach-terminal-handlers mode)
                                (stop-terminal mode))))
     (hooks:add-hook (buffer-delete-hook (buffer mode))
                     (delete-handler mode))))
@@ -251,9 +261,7 @@ The shell is its own session, so it outlives the process unless it is reaped."
         (echo-warning "Terminal failed to start: ~a" condition)))))
 
 (defmethod disable ((mode terminal-mode) &key)
-  (when (and *browser* (exit-handler mode))
-    (hooks:remove-hook (before-exit-hook *browser*) (exit-handler mode))
-    (setf (exit-handler mode) nil))
+  (detach-terminal-handlers mode)
   (stop-terminal mode))
 
 (defmethod on-signal-load-finished ((mode terminal-mode) url title)

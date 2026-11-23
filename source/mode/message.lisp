@@ -97,6 +97,9 @@ The list element keeps a row it has already built."
       (render-messages mode browser)))
   (render-messages mode *browser*))
 
+(defmethod disable ((mode message-mode) &key)
+  (user-interface:disconnect (messages mode)))
+
 (define-internal-page-command-global list-messages ()
     (buffer "*Messages*" 'nyxt/mode/message:message-mode)
   "Show the *Messages* buffer."

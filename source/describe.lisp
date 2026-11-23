@@ -208,75 +208,75 @@ See `sym:package-functions' for an example of LISTER."
 When input exists, list all the symbols that may match it.
 Otherwise prompt for matches."
   (when (symbolp input)
-    (labels ((doc-line (object doc-type)
-               "Return the first documentation line of OBJECT, or an empty string."
-               (alex:if-let ((doc (documentation object doc-type)))
-                 (or (first-line doc) "")
-                 ""))
-             (sense-row (kind url detail &optional title)
-               "Present one meaning of the name as a row."
-               (let ((caption (or title detail)))
-                 (spinneret:with-html
-                   (:li
-                    (:a :href url
-                        :title (unless (uiop:emptyp caption) caption)
-                        (:span kind)
-                        (:span detail)))))
-               nil))
-      (spinneret:with-html-string
-        (:nstyle
-          '(h1
-            :margin "0"
-            :overflow "hidden"
-            :text-overflow "ellipsis"
-            :white-space "nowrap")
-          '(.summary
-            :max-width "80ch"
-            :margin "17px 0"
-            :font-size "17px"
-            :line-height "24px"))
-        (:h1 (variable-display-name input))
-        (:p :class "summary" "This name refers to more than one thing.")
-        (:ul :class "list"
-             (when (boundp input)
-               (sense-row "Variable"
-                          (nyxt-url 'describe-variable :variable input)
-                          (doc-line input 'variable)))
-             (cond
-               ((sym:mode-symbol-p input)
-                (sense-row "Mode"
-                           (nyxt-url 'describe-class :class input)
-                           (doc-line input 'type)))
-               ((sym:class-symbol-p input)
-                (sense-row "Class"
-                           (nyxt-url 'describe-class :class input)
-                           (doc-line input 'type)))
-               (t nil))
-             (cond
-               ((sym:command-symbol-p input)
-                (sense-row "Command"
-                           (nyxt-url 'describe-function :fn input)
-                           (doc-line input 'function)))
-               ((sym:macro-symbol-p input)
-                (sense-row "Macro"
-                           (nyxt-url 'describe-function :fn input)
-                           (doc-line input 'function)))
-               ((sym:function-symbol-p input)
-                (sense-row "Function"
-                           (nyxt-url 'describe-function :fn input)
-                           (doc-line input 'function)))
-               (t nil))
-             (alex:when-let ((package (find-package input)))
-               (sense-row "Package"
-                          (nyxt-url 'describe-package :package (package-name package))
-                          (doc-line package t)))
-             (dolist (class (sym:package-classes
-                             (union (nyxt-packages) (list (symbol-package input)))
-                             :external))
-               (when (find input (class-slots class))
-                 (sense-row "Slot"
-                            (nyxt-url 'describe-slot :class class :name input)
-                            (variable-display-name class)))))))))
+      (labels ((doc-line (object doc-type)
+                 "Return the first documentation line of OBJECT, or an empty string."
+                 (alex:if-let ((doc (documentation object doc-type)))
+                   (or (first-line doc) "")
+                   ""))
+               (sense-row (kind url detail &optional title)
+                 "Present one meaning of the name as a row."
+                 (let ((caption (or title detail)))
+                   (spinneret:with-html
+                     (:li
+                      (:a :href url
+                          :title (unless (uiop:emptyp caption) caption)
+                          (:span kind)
+                          (:span detail)))))
+                 nil))
+        (spinneret:with-html-string
+          (:nstyle
+            '(h1
+              :margin "0"
+              :overflow "hidden"
+              :text-overflow "ellipsis"
+              :white-space "nowrap")
+            '(.summary
+              :max-width "80ch"
+              :margin "17px 0"
+              :font-size "17px"
+              :line-height "24px"))
+          (:h1 (variable-display-name input))
+          (:p :class "summary" "This name refers to more than one thing.")
+          (:ul :class "list"
+               (when (boundp input)
+                 (sense-row "Variable"
+                            (nyxt-url 'describe-variable :variable input)
+                            (doc-line input 'variable)))
+               (cond
+                 ((sym:mode-symbol-p input)
+                  (sense-row "Mode"
+                             (nyxt-url 'describe-class :class input)
+                             (doc-line input 'type)))
+                 ((sym:class-symbol-p input)
+                  (sense-row "Class"
+                             (nyxt-url 'describe-class :class input)
+                             (doc-line input 'type)))
+                 (t nil))
+               (cond
+                 ((sym:command-symbol-p input)
+                  (sense-row "Command"
+                             (nyxt-url 'describe-function :fn input)
+                             (doc-line input 'function)))
+                 ((sym:macro-symbol-p input)
+                  (sense-row "Macro"
+                             (nyxt-url 'describe-function :fn input)
+                             (doc-line input 'function)))
+                 ((sym:function-symbol-p input)
+                  (sense-row "Function"
+                             (nyxt-url 'describe-function :fn input)
+                             (doc-line input 'function)))
+                 (t nil))
+               (alex:when-let ((package (find-package input)))
+                 (sense-row "Package"
+                            (nyxt-url 'describe-package :package (package-name package))
+                            (doc-line package t)))
+               (dolist (class (sym:package-classes
+                               (union (nyxt-packages) (list (symbol-package input)))
+                               :external))
+                 (when (find input (class-slots class))
+                   (sense-row "Slot"
+                              (nyxt-url 'describe-slot :class class :name input)
+                              (variable-display-name class)))))))))
 
 (defmethod describe-any :around (&key (input nil input-supplied-p)
                                    %buffer%)
@@ -676,7 +676,7 @@ PRIMARY, ON-BACKGROUND, ACTION, and BACKGROUND- are the theme colors."
     (t
      "function")))
 
-(-> function-lambda-list (symbol) (values list boolean &optional))
+(-> function-lambda-list (t) (values list boolean &optional))
 (defun function-lambda-list (symbol)
   "Return SYMBOL's lambda list.
 The second value is NIL when the lambda list is unknown."
@@ -692,7 +692,7 @@ The second value is NIL when the lambda list is unknown."
       (prini-to-string lambda-list :pretty nil :package (or package *package*))
       "()"))
 
-(-> function-type-parts (symbol) (values (maybe list) &optional))
+(-> function-type-parts (t) (values (maybe list) &optional))
 (defun function-type-parts (symbol)
   "Return (ARGUMENT-TYPES RETURN-TYPE) for an ordinary function SYMBOL.
 Generic functions, macros, and unknown types return NIL."
@@ -719,7 +719,7 @@ Generic functions, macros, and unknown types return NIL."
       (t
        (string-downcase (format nil "~a.~a" name type))))))
 
-(-> function-source-name (symbol) (values (maybe string) &optional))
+(-> function-source-name (t) (values (maybe string) &optional))
 (defun function-source-name (symbol)
   "Return the file name where SYMBOL's function is defined."
   #-sbcl
@@ -1022,90 +1022,91 @@ FONT and MONO are the theme's text and monospace families."
     (buffer (str:concat "*Help-" (symbol-name function) "*") 'nyxt/mode/help:help-mode)
   "Inspect a function and show it in a help buffer.
 For generic functions, describe all the methods."
-  (if function
-      (let* ((input function)
-             (package (symbol-package input))
-             (bound (fboundp input))
-             (kind (function-kind input))
-             (source (function-source-name input))
-             (type-parts (when bound (function-type-parts input))))
-        (multiple-value-bind (lambda-list lambda-list-p)
-            (if bound
-                (function-lambda-list input)
-                (values nil nil))
-          (let ((bindings (when (and bound (sym:command-symbol-p input))
-                            (function-bindings input buffer)))
-                (methods (when (and bound
-                                    (not (sym:command-symbol-p input))
-                                    (typep (symbol-function input) 'generic-function))
-                           (safe-sort (mopu:generic-function-methods
-                                       (symbol-function input))
-                                      :key #'method-sort-key
-                                      :predicate #'string-lessp))))
-            (spinneret:with-html-string
-              (:nstyle
-                (describe-function-css theme:primary-color
-                                       theme:on-background-color
-                                       theme:action-color
-                                       theme:background-color
-                                       theme:background-color-
-                                       theme:font-family
-                                       theme:monospace-font-family))
-              (:h1 (variable-display-name input))
-              (when package
-                (:p :class "package"
-                    (package-display-name (package-name package))))
-              (dolist (paragraph (documentation-paragraphs
-                                  (documentation input 'function)))
-                (:p :class "summary"
-                    (:raw (resolve-backtick-quote-links paragraph package))))
-              (:p :class "facts"
-                  (:span kind)
-                  (when source
-                    (:span source)))
-              (when (or lambda-list-p type-parts)
-                (:h2 "Arguments")
-                (when lambda-list-p
-                  (:p :class "signature"
-                      (lambda-list-string lambda-list package)))
-                (when type-parts
-                  (destructuring-bind (argument-types return-type) type-parts
-                    (when (or argument-types (not (eq return-type '*)))
-                      (:div :class "types"
-                            (when argument-types
-                              (:div
-                               (:span :class "label" "Argument types")
-                               (:span (lambda-list-string argument-types package))))
-                            (unless (eq return-type '*)
-                              (:div
-                               (:span :class "label" "Return types")
-                               (:span (if (listp return-type)
-                                          (lambda-list-string return-type package)
-                                          (prini-to-string return-type
-                                                           :pretty nil
-                                                           :package (or package *package*)))))))))))
-              (when bindings
-                (:h2 "Bindings")
-                (:table :class "bindings"
-                        (:thead
-                         (:tr
-                          (:th "Shortcut")
-                          (:th "Keymap")))
-                        (:tbody
-                         (dolist (binding bindings)
-                           (:tr
-                            (:td :class "shortcut" (first binding))
-                            (:td :class "keymap" (second binding)))))))
-              (when methods
-                (:h2 "Methods")
-                (dolist (method methods)
-                  (write-method method input buffer)))))))
-      (prompt :prompt "Describe function"
-              :sources 'function-source)))
+  (let* ((input function)
+         (base-symbol (if (consp input) (second input) input))
+         (package (symbol-package base-symbol))
+         (bound (fboundp input))
+         (kind (function-kind input))
+         (source (function-source-name input))
+         (type-parts (when bound (function-type-parts input))))
+    (multiple-value-bind (lambda-list lambda-list-p)
+        (if bound
+            (function-lambda-list input)
+            (values nil nil))
+      (let ((bindings (when (and bound (sym:command-symbol-p input))
+                        (function-bindings input buffer)))
+            (methods (when (and bound
+                                (not (sym:command-symbol-p input))
+                                (typep (fdefinition input) 'generic-function))
+                       (safe-sort (mopu:generic-function-methods
+                                   (fdefinition input))
+                                  :key #'method-sort-key
+                                  :predicate #'string-lessp))))
+        (spinneret:with-html-string
+          (:nstyle
+            (describe-function-css theme:primary-color
+                                   theme:on-background-color
+                                   theme:action-color
+                                   theme:background-color
+                                   theme:background-color-
+                                   theme:font-family
+                                   theme:monospace-font-family))
+          (:h1 (if (consp input)
+                   (format nil "(setf ~a)" (variable-display-name base-symbol))
+                   (variable-display-name input)))
+          (when package
+            (:p :class "package"
+                (package-display-name (package-name package))))
+          (dolist (paragraph (documentation-paragraphs
+                              (documentation input 'function)))
+            (:p :class "summary"
+                (:raw (resolve-backtick-quote-links paragraph package))))
+          (:p :class "facts"
+              (:span kind)
+              (when source
+                (:span source)))
+          (when (or lambda-list-p type-parts)
+            (:h2 "Arguments")
+            (when lambda-list-p
+              (:p :class "signature"
+                  (lambda-list-string lambda-list package)))
+            (when type-parts
+              (destructuring-bind (argument-types return-type) type-parts
+                (when (or argument-types (not (eq return-type '*)))
+                  (:div :class "types"
+                        (when argument-types
+                          (:div
+                           (:span :class "label" "Argument types")
+                           (:span (lambda-list-string argument-types package))))
+                        (unless (eq return-type '*)
+                          (:div
+                           (:span :class "label" "Return types")
+                           (:span (if (listp return-type)
+                                      (lambda-list-string return-type package)
+                                      (prini-to-string return-type
+                                                       :pretty nil
+                                                       :package (or package *package*)))))))))))
+          (when bindings
+            (:h2 "Bindings")
+            (:table :class "bindings"
+                    (:thead
+                     (:tr
+                      (:th "Shortcut")
+                      (:th "Keymap")))
+                    (:tbody
+                     (dolist (binding bindings)
+                       (:tr
+                        (:td :class "shortcut" (first binding))
+                        (:td :class "keymap" (second binding)))))))
+          (when methods
+            (:h2 "Methods")
+            (dolist (method methods)
+              (write-method method base-symbol buffer))))))))
 
 (define-command-global describe-command
-    (&key (command (name (prompt1 :prompt "Describe command"
-                                  :sources 'command-source))))
+    (&key (command (when-let ((choice (prompt1 :prompt "Describe command"
+                                               :sources 'command-source)))
+                     (name choice))))
   "Inspect a command and show it in a help buffer.
 A command is a special kind of function that can be called with
 `execute-command' and can be bound to a key."
@@ -1129,78 +1130,83 @@ Return NIL when CLASS and NAME do not name a slot."
     (buffer (str:concat "*Help-" (if name (symbol-name name) "slot") "*")
             'nyxt/mode/help:help-mode)
   "Inspect a slot and show it in a help buffer."
-  (if (and class name)
-      (let* ((definition (class-slot class name))
-             (package (when (symbolp name) (symbol-package name)))
-             (home (or package *package*))
-             (type (when definition (closer-mop:slot-definition-type definition)))
-             (type-text (unless (member type '(t nil))
-                          (prini-to-string type :pretty nil :package home))))
-        (spinneret:with-html-string
-          (:nstyle
-            '(h1
-              :margin "0")
-            `(.package
-              :margin "7px 0 0"
-              :font-size "11px"
-              :line-height "17px"
-              :color ,theme:primary-color)
-            '(.summary
-              :max-width "80ch"
-              :margin "17px 0 0"
-              :font-size "17px"
-              :line-height "24px")
-            (describe-value-css theme:primary-color
-                                theme:on-background-color
-                                theme:action-color
-                                theme:background-color-)
-            `(.signature
-              :margin "0"
-              :font-family ,theme:monospace-font-family
-              :font-size "17px"
-              :font-weight "400"
-              :line-height "24px"
-              :color ,theme:on-background-color
-              :white-space "pre-wrap"
-              :overflow-wrap "anywhere"))
-          (if definition
-              (progn
-                (:h1 (variable-display-name name))
-                (when package
-                  (:p :class "package"
-                      (package-display-name (package-name package))))
-                (dolist (paragraph (documentation-paragraphs
-                                    (documentation definition t)))
-                  (:p :class "summary"
-                      (:raw (resolve-backtick-quote-links paragraph home))))
-                (:p :class "facts"
-                    (:span
-                     (:a :href (nyxt-url 'describe-class :class class)
-                         (variable-display-name class)))
-                    (when type-text
-                      (:span
-                       (if (and (symbolp type) (find-class type nil))
-                           (:a :href (nyxt-url 'describe-class :class type)
-                               type-text)
-                           type-text))))
-                (when (closer-mop:slot-definition-initfunction definition)
-                  (:h2 "Default")
-                  (:p :class "signature"
-                      (let ((*print-right-margin* 80))
-                        (prini-to-string
-                         (closer-mop:slot-definition-initform definition)
-                         :pretty t
-                         :package home)))))
-              (progn
-                (:h1 (if (symbolp name) (variable-display-name name) "Slot"))
-                (:p :class "summary" "This slot is not available.")))))
+  (let* ((definition (class-slot class name))
+         (package (when (symbolp name) (symbol-package name)))
+         (home (or package *package*))
+         (type (when definition (closer-mop:slot-definition-type definition)))
+         (type-text (unless (member type '(t nil))
+                      (prini-to-string type :pretty nil :package home))))
+    (spinneret:with-html-string
+      (:nstyle
+        '(h1
+          :margin "0")
+        `(.package
+          :margin "7px 0 0"
+          :font-size "11px"
+          :line-height "17px"
+          :color ,theme:primary-color)
+        '(.summary
+          :max-width "80ch"
+          :margin "17px 0 0"
+          :font-size "17px"
+          :line-height "24px")
+        (describe-value-css theme:primary-color
+                            theme:on-background-color
+                            theme:action-color
+                            theme:background-color-)
+        `(.signature
+          :margin "0"
+          :font-family ,theme:monospace-font-family
+          :font-size "17px"
+          :font-weight "400"
+          :line-height "24px"
+          :color ,theme:on-background-color
+          :white-space "pre-wrap"
+          :overflow-wrap "anywhere"))
+      (if definition
+          (progn
+            (:h1 (variable-display-name name))
+            (when package
+              (:p :class "package"
+                  (package-display-name (package-name package))))
+            (dolist (paragraph (documentation-paragraphs
+                                (documentation definition t)))
+              (:p :class "summary"
+                  (:raw (resolve-backtick-quote-links paragraph home))))
+            (:p :class "facts"
+                (:span
+                 (:a :href (nyxt-url 'describe-class :class class)
+                     (variable-display-name class)))
+                (when type-text
+                  (:span
+                   (if (and (symbolp type) (find-class type nil))
+                       (:a :href (nyxt-url 'describe-class :class type)
+                           type-text)
+                       type-text))))
+            (when (closer-mop:slot-definition-initfunction definition)
+              (:h2 "Default")
+              (:p :class "signature"
+                  (let ((*print-right-margin* 80))
+                    (prini-to-string
+                     (closer-mop:slot-definition-initform definition)
+                     :pretty t
+                     :package home)))))
+          (progn
+            (:h1 (variable-display-name name))
+            (:p :class "summary" "This slot is not available."))))))
+
+(defmethod describe-slot :around (&key (class nil class-supplied-p)
+                                       (name nil name-supplied-p)
+                                       %buffer%)
+  (declare (ignorable class name %buffer%))
+  (if (or class-supplied-p name-supplied-p)
+      (call-next-method)
       (let ((slot (prompt1
                    :prompt "Describe slot"
                    :sources '(slot-source
                               slot-non-nyxt-source
                               slot-internal-source))))
-        (describe-slot :class (class-sym slot) :name (name slot))
-        "")))
+        (describe-slot :class (class-sym slot) :name (name slot)))))
 
 (-> documentation-first-line (t symbol) (values (maybe string) &optional))
 (defun documentation-first-line (object doc-type)

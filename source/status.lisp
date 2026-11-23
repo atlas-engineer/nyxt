@@ -581,10 +581,10 @@ override it, redefine methods such as `format-status-url',
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
 
-(defmethod customize-instance :after ((status-buffer status-buffer) &key)
-  "Add handlers to redraw STATUS-BUFFER.
+(defun install-status-handlers (window)
+  "Redraw WINDOW's status buffer when the page it shows changes.
 See `define-setf-handler'."
-  (with-slots (window) status-buffer
+  (let ((status-buffer (status-buffer window)))
     (define-setf-handler modable-buffer modes status-buffer
       (lambda (buffer) (when (eq buffer (buffer window))
                          (print-status status-buffer))))

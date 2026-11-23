@@ -309,18 +309,24 @@ Please, check URL correctness and try again.")))
     (:br)))
 
 (export-always 'gemtext-render)
-(defun gemtext-render (gemtext buffer)
-  "Renders the Gemtext (Gemini markup format) to HTML in BUFFER.
+(defgeneric gemtext-render (gemtext object)
+  (:documentation "Render GEMTEXT to HTML.
+OBJECT is a buffer or a `small-web-mode'.
+A buffer must have `small-web-mode' enabled.
+Return the HTML string and the MIME type."))
 
-Implies that `small-web-mode' is enabled."
-  (let ((mode (find-mode buffer 'small-web-mode))
-        (elements (phos/gemtext:parse-string gemtext))
+(defmethod gemtext-render (gemtext (buffer buffer))
+  (gemtext-render gemtext (find-mode buffer 'small-web-mode)))
+
+(defmethod gemtext-render (gemtext (mode small-web-mode))
+  "Render GEMTEXT for MODE and store the parsed elements in MODE."
+  (let ((elements (phos/gemtext:parse-string gemtext))
+        (buffer (buffer mode))
         (spinneret::*html-style* :tree))
     (setf (model mode) elements)
     (values (spinneret:with-html-string
               (:nstyle (style buffer))
-              (when mode
-                (:nstyle (style mode)))
+              (:nstyle (style mode))
               (loop for element in elements
                     collect (:raw (nyxt/mode/small-web:line->html element))))
             "text/html;charset=utf8")))
@@ -347,7 +353,7 @@ Implies that `small-web-mode' is enabled."
                      nil))
                   (:success
                    (if (str:starts-with-p "text/gemini" meta)
-                       (gemtext-render body buffer)
+                       (gemtext-render body mode)
                        (values body meta)))
                   ((:redirect :permanent-redirect)
                    (push url (nyxt/mode/small-web:redirections mode))

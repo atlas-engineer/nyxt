@@ -25,6 +25,11 @@ Should be redefined by the renderer."))
     '()
     :export nil
     :documentation "The stack of current prompt buffers.")
+   (prompt-lock
+    (bt:make-recursive-lock "window-prompt")
+    :export nil
+    :initarg nil
+    :documentation "Recursive lock serializing prompt stack transitions in this window.")
    (keyboard-buffer
     nil
     :type (or null buffer)
@@ -92,6 +97,7 @@ The handlers take the window as argument."))
 (defmethod initialize-instance :after ((window window) &key (browser *browser*)
                                        &allow-other-keys)
   (setf (window (status-buffer window)) window)
+  (install-status-handlers window)
   (setf (window (message-buffer window)) window)
   (when browser
     (setf (id window) (new-id))

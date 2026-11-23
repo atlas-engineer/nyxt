@@ -47,6 +47,7 @@ If the user file is GPG-encrypted, the editor must be capable of decrypting it."
   "View the current page source using `external-editor-program'."
   (run-thread "source viewer"
     (%edit-with-external-editor (if (web-buffer-p buffer)
-                                    (plump:serialize (document-model buffer) nil)
+                                    (handler-bind ((plump:invalid-xml-character #'abort))
+                                      (plump:serialize (document-model buffer) nil))
                                     (ffi-buffer-get-document buffer))
                                 :read-only t)))
