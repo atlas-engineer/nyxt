@@ -195,3 +195,71 @@
              (assert-true (search "row-9" html))
              (assert-true (search "selection" html))))
       (prompter:destroy prompt))))
+
+(define-test literal-search-source-is-ready-before-slower-sources ()
+  (let* ((*browser* (make-instance 'browser))
+         (buffer (make-instance 'buffer))
+         (default-sources (url-sources buffer
+                                       (lambda (urls)
+                                         (buffer-load* urls buffer))))
+         (search (first default-sources))
+         (completions (second default-sources))
+         (history (make-instance 'prompter:source
+                                 :name "History"
+                                 :filter nil
+                                 :constructor '("https://example.com/nyxt-quick")))
+         (delayed (make-instance 'prompter:source
+                                 :name "Delayed"
+                                 :filter nil
+                                 :constructor '("late")
+                                 :filter-postprocessor
+                                 (lambda (suggestions source input)
+                                   (declare (ignore source input))
+                                   (sleep 1)
+                                   suggestions)))
+         (sources (nyxt::add-composite-source (list search history delayed)))
+         (composite (first sources))
+         (prompt (prompter:make :input "nyxt-quick" :sources sources)))
+    (unwind-protect
+         (let ((preprocessor (prompter:filter-preprocessor search)))
+           (assert-true (bordeaux-threads:with-timeout (1)
+                          (loop until (and (prompter:ready-p search)
+                                           (prompter:ready-p history)
+                                           (prompter:suggestions composite))
+                                do (sleep 0.01)
+                                finally (return t))))
+           (assert-false (prompter:ready-p delayed))
+           (let ((first (prompter:value (first (prompter:suggestions composite)))))
+             (assert-eq :search-query (kind first))
+             (assert-string= "nyxt-quick" (search-query first))
+             (assert-string= "https://duckduckgo.com/?q=nyxt-quick"
+                             (render-url (url first))))
+           (assert-string= "https://example.com/nyxt-quick"
+                           (prompter:value (second (prompter:suggestions composite))))
+           (assert-eq nil (funcall preprocessor nil search "  "))
+           (assert-eq :url (kind (first (funcall preprocessor
+                                                 nil search "https://nyxt.atlas.engineer"))))
+           (assert-equal '() (funcall (prompter:filter-postprocessor completions)
+                                      nil completions "https://nyxt.atlas.engineer")))
+      (prompter:destroy prompt))))
+
+(define-test prompt-row-selection-targets-exact-source-instance ()
+  (let* ((*browser* (make-instance 'browser))
+         (first-source (make-instance 'prompter:source
+                                      :name "First"
+                                      :filter nil
+                                      :constructor '("alpha")))
+         (second-source (make-instance 'prompter:source
+                                       :name "Second"
+                                       :filter nil
+                                       :constructor '("beta")))
+         (prompt (make-instance 'prompt-buffer
+                                :sources (list first-source second-source))))
+    (unwind-protect
+         (progn
+           (assert-true (bordeaux-threads:with-timeout (5)
+                          (prompter:all-ready-p prompt)))
+           (assert-true (nyxt::select-prompt-source-suggestion prompt second-source 0))
+           (assert-string= "beta" (current-suggestion-value prompt))
+           (assert-false (nyxt::select-prompt-source-suggestion prompt second-source 9)))
+      (prompter:destroy prompt))))

@@ -790,33 +790,37 @@ The list is fresh, so later changes to a suggestion do not rewrite it."
                     (prompt-row-stamp prompt-buffer source row))
                   rows))))
 
+(defun select-prompt-source-suggestion (prompt-buffer source index)
+  "Select INDEX in SOURCE of PROMPT-BUFFER when it is still in range."
+  (when (and (member source (prompter:sources prompt-buffer))
+             (<= 0 index)
+             (< index (length (prompter:suggestions source))))
+    (setf (prompter::current-suggestion prompt-buffer) (list source index))
+    t))
+
 (-> prompt-row-scripts (prompt-buffer prompter:source integer)
     (values string string string &optional))
 (defun prompt-row-scripts (prompt-buffer source index)
   "Return the click, control-click, and mark scripts for SOURCE at INDEX."
-  (let ((class-name (class-name (class-of source))))
-    (values
-     (ps:ps
-       (nyxt/ps:lisp-eval
-        (:title "return-this-suggestion"
-         :buffer prompt-buffer)
-        (prompter::set-current-suggestion-by-class-and-index
-         prompt-buffer class-name index)
-        (prompter:run-action-on-return prompt-buffer)))
-     (ps:ps
-       (nyxt/ps:lisp-eval
-        (:title "mark-this-suggestion"
-         :buffer prompt-buffer)
-        (prompter::set-current-suggestion-by-class-and-index
-         prompt-buffer class-name index)
+  (values
+   (ps:ps
+     (nyxt/ps:lisp-eval
+      (:title "return-this-suggestion"
+       :buffer prompt-buffer)
+      (when (select-prompt-source-suggestion prompt-buffer source index)
+        (prompter:run-action-on-return prompt-buffer))))
+   (ps:ps
+     (nyxt/ps:lisp-eval
+      (:title "mark-this-suggestion"
+       :buffer prompt-buffer)
+      (when (select-prompt-source-suggestion prompt-buffer source index)
         (prompter:toggle-mark prompt-buffer)
-        (prompt-render-suggestions prompt-buffer)))
-     (ps:ps
-       (nyxt/ps:lisp-eval
-        (:title "unmark-this-suggestion"
-         :buffer prompt-buffer)
-        (prompter::set-current-suggestion-by-class-and-index
-         prompt-buffer class-name index)
+        (prompt-render-suggestions prompt-buffer))))
+   (ps:ps
+     (nyxt/ps:lisp-eval
+      (:title "unmark-this-suggestion"
+       :buffer prompt-buffer)
+      (when (select-prompt-source-suggestion prompt-buffer source index)
         (prompter:toggle-mark prompt-buffer)
         (prompt-render-suggestions prompt-buffer))))))
 
