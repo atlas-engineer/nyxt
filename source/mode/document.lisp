@@ -197,12 +197,13 @@ Only includes the strings that were pasted/copied inside Nyxt."))
 (define-internal-page show-url-qrcode (&key (url ""))
     (:title "*Buffer URL QR code*")
   "Display the QR code containing URL.
-Warning: URL is a string."
-  (let* ((url (quri:render-uri (url (or url ""))))
-         (stream (when (plusp (length url))
-                   (flex:make-in-memory-output-stream))))
-    (when stream
-      (cl-qrencode:encode-png-stream url stream))
+URL is a string."
+  (unless (stringp url)
+    (error "Expected a URL string, got ~s." url))
+  (let ((png-bytes (when (plusp (length url))
+                     (let ((stream (flex:make-in-memory-output-stream)))
+                       (cl-qrencode:encode-png-stream url stream)
+                       (flex:get-output-stream-sequence stream)))))
     (spinneret:with-html-string
       (:nstyle
         '(h1
@@ -221,14 +222,13 @@ Warning: URL is a string."
           :border-radius "7px"
           :image-rendering "pixelated"))
       (:h1 "QR code")
-      (if stream
+      (if png-bytes
           (progn
             (:p :class "url" url)
             (:img :src (str:concat "data:image/png;base64,"
-                                   (cl-base64:usb8-array-to-base64-string
-                                    (flex:get-output-stream-sequence stream)))
+                                   (cl-base64:usb8-array-to-base64-string png-bytes))
                   :alt url))
-          (:p :class "url" "No URL to encode.")))))
+          (:p :class "url" "No URL to encode."))))
 
 (define-command-global show-url-qrcode (buffer)
   "Display the QR code containing the URL of BUFFER in a new page."
@@ -255,7 +255,8 @@ Warning: URL is a string."
       (loop for e across (clss:select "[nyxt-identifier]" dom)
             do (plump:remove-attribute e "nyxt-identifier"))
       (map nil #'plump:remove-child (reverse (clss:select ".nyxt-hint" dom)))
-      (plump:serialize dom nil))))
+      (handler-bind ((plump:invalid-xml-character #'abort))
+        (plump:serialize dom nil)))))
 
 (-> source-url (t) (values string &optional))
 (defun source-url (url)

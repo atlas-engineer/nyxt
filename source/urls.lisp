@@ -221,9 +221,14 @@ When CHECK-TLD-P is non-nil, check if the host is a known TLD."
   (let ((%url (ignore-errors (quri:uri url))))
     (and %url
          (valid-scheme-p (quri:uri-scheme %url))
-         (if (and check-tld-p (quri:uri-http-p %url))
-             (or (quri:ip-addr-p (quri:uri-host %url))
-                 (valid-tld-p (quri:uri-domain %url)))
+         (if (quri:uri-http-p %url)
+             (let ((host (quri:uri-host %url)))
+               (and (stringp host)
+                    (plusp (length host))
+                    (if check-tld-p
+                        (or (quri:ip-addr-p host)
+                            (valid-tld-p (quri:uri-domain %url)))
+                        t)))
              t))))
 
 (-> url-empty-p ((or quri:uri string null)) boolean)
@@ -356,36 +361,63 @@ is resolved against the page that contains it."
         url
         (error "URL ~a is undefined." url))))
 
+(-> find-existing-symbol (string (or package symbol string)) (values symbol &optional t))
+(defun find-existing-symbol (text default-package)
+  "Resolve TEXT to an already-interned symbol without interning new symbols."
+  (let* ((upcased (str:upcase text))
+         (colon (position #\: upcased)))
+    (cond
+      ((zerop (length upcased))
+       (values nil nil))
+      ((null colon)
+       (let ((pkg (find-package default-package)))
+         (if pkg
+             (find-symbol upcased pkg)
+             (values nil nil))))
+      ((zerop colon)
+       (let ((sym-name (subseq upcased 1)))
+         (if (or (zerop (length sym-name)) (find #\: sym-name))
+             (values nil nil)
+             (find-symbol sym-name :keyword))))
+      (t
+       (let* ((pkg-name (subseq upcased 0 colon))
+              (rest (subseq upcased (1+ colon)))
+              (sym-name (if (and (plusp (length rest)) (char= (char rest 0) #\:))
+                            (subseq rest 1)
+                            rest))
+              (pkg (find-package pkg-name)))
+         (if (or (null pkg) (zerop (length sym-name)) (find #\: sym-name))
+             (values nil nil)
+             (find-symbol sym-name pkg)))))))
+
 (export-always 'internal-page-name)
 (-> internal-page-name (t) t)
 (defun internal-page-name (url)
   "Return the symbol naming the internal page at URL, or NIL."
-  (when-let* ((_ (has-url-method-p url))
-              (%url (handler-case (url url)
-                      (error () nil)))
-              (_ (string= "nyxt" (quri:uri-scheme %url))))
-    (let* ((raw-path (quri:uri-path %url))
-           (path (and raw-path (string-trim '(#\/) raw-path)))
-           (host (quri:uri-host %url))
-           ;; `nyxt://page/<name>' holds a name that is not a hostname.
-           ;; A standard parser also splits `nyxt:package/name' into a host and
-           ;; a path. Join that pair so the page name stays one symbol.
-           (name (cond
-                   ((and host
-                         (string-equal host +nyxt-page-host+)
-                         path
-                         (plusp (length path)))
-                    path)
-                   ((and host path (plusp (length path)))
-                    (format nil "~a/~a" host path))
-                   ((and path (plusp (length path)))
-                    path)
-                   (t host))))
-      ;; A link resolved against the current page can name a package that does
-      ;; not exist. That URL is not a page.
-      (when name
-        (ignore-errors
-          (uiop:safe-read-from-string (str:upcase name) :package :nyxt))))))
+  (when (has-url-method-p url)
+    (when-let ((%url (url url)))
+      (when (equal "nyxt" (quri:uri-scheme %url))
+        (let* ((raw-path (quri:uri-path %url))
+               (path (and raw-path (string-trim '(#\/) raw-path)))
+               (host (quri:uri-host %url))
+               ;; `nyxt://page/<name>' holds a name that is not a hostname.
+               ;; A standard parser also splits `nyxt:package/name' into a host and
+               ;; a path. Join that pair so the page name stays one symbol.
+               (name (cond
+                       ((and host
+                             (string-equal host +nyxt-page-host+)
+                             path
+                             (plusp (length path)))
+                        path)
+                       ((and host path (plusp (length path)))
+                        (format nil "~a/~a" host path))
+                       ((and path (plusp (length path)))
+                        path)
+                       (t host))))
+          ;; A link resolved against the current page can name a package that does
+          ;; not exist. That URL is not a page.
+          (when name
+            (values (find-existing-symbol name :nyxt))))))))
 
 (export-always 'internal-url-p)
 (defun internal-url-p (url)
@@ -396,16 +428,26 @@ is resolved against the page that contains it."
                                   (error () nil))))
                     (and parsed (string= "nyxt" (quri:uri-scheme parsed))))))))
 
-(-> query-params->arglist ((types:association-list string string)) (values list &optional))
+(-> query-params->arglist (list) (values list &optional))
 (defun query-params->arglist (params)
   "Process the PARAMS (an alist of strings, as returned by QURI) to a regular Lisp argument plist."
   (mappend (lambda (pair)
-             (let* ((key (intern (str:upcase (first pair)) :keyword))
-                    (value (if (str:starts-with-p +escape+ (rest pair))
-                               (uiop:safe-read-from-string (subseq (rest pair) 1)
-                                                           :package (find-package :nyxt))
-                               (rest pair))))
-               (list key value)))
+             (let* ((raw-key (first pair))
+                    (raw-val (rest pair))
+                    (key (and (stringp raw-key)
+                              (plusp (length raw-key))
+                              (not (string-equal raw-key "%buffer%"))
+                              (find-symbol (str:upcase raw-key) :keyword))))
+               (when key
+                 (let ((value (if (and (stringp raw-val)
+                                       (str:starts-with-p +escape+ raw-val))
+                                  (handler-case
+                                      (uiop:safe-read-from-string
+                                       (subseq raw-val 1)
+                                       :package (find-package :nyxt))
+                                    ((or reader-error end-of-file) () nil))
+                                  raw-val)))
+                   (list key value)))))
            params))
 
 (define-internal-scheme "nyxt"
@@ -583,7 +625,9 @@ HTTP and HTTPS belong to the same equivalence class."
 (-> domain= (quri:uri quri:uri) boolean)
 (defun domain= (url1 url2)
   "Return non-nil when URL1 and URL2 have the same domain."
-  (equalp (quri:uri-domain url1) (quri:uri-domain url2)))
+  (not (null (and (quri:uri-host url1)
+                  (quri:uri-host url2)
+                  (equalp (quri:uri-domain url1) (quri:uri-domain url2))))))
 
 (-> host= (quri:uri quri:uri) boolean)
 (defun host= (url1 url2)
@@ -618,13 +662,16 @@ return a boolean.  It defines an equivalence relation induced by EQ-FN-LIST.
     (some (curry #'string= (quri:uri-host (url url-designator)))
           (cons host other-hosts))))
 
-(-> match-domain (string &rest string) (function (quri:uri) boolean))
+(-> match-domain (string &rest string) (function (url-designator) boolean))
 (export-always 'match-domain)
 (defun match-domain (domain &rest other-domains)
   "Return a predicate for URL designators matching one of DOMAIN or OTHER-DOMAINS."
   (lambda (url-designator)
-    (some (curry #'string= (quri:uri-domain (url url-designator)))
-          (cons domain other-domains))))
+    (let* ((parsed (url url-designator))
+           (parsed-domain (and (quri:uri-host parsed) (quri:uri-domain parsed))))
+      (not (null (and parsed-domain
+                      (some (curry #'string= parsed-domain)
+                            (cons domain other-domains))))))))
 
 (-> match-port (integer &rest integer) (function (quri:uri) boolean))
 (export-always 'match-port)

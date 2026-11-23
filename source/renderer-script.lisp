@@ -202,6 +202,7 @@ is loaded.")
     :initarg nil
     :writer nil
     :reader t
+    :export t
     :type (maybe function)
     :documentation "Function that returns HTML content when a nyxt:// URL is
 invoked.
@@ -239,17 +240,22 @@ See `find-internal-page-buffer'."))
       (setf (slot-value page 'form)
             (lambda (&rest args)
               (let ((*print-pretty* nil)
-                    (%buffer% (getf args :%buffer%))
-                    (contents (apply (compile nil lambda-expression) args)))
-                (spinneret:with-html-string
-                  (:doctype)
-                  (:html
-                   (:head
-                    (:title (apply #'dynamic-title
-                                   (gethash (name page) *nyxt-url-commands*)
-                                   args))
-                    (:style (:raw (style %buffer%))))
-                   (:body (:raw contents))))))))))
+                    (%buffer% (getf args :%buffer%)))
+                (unless (buffer-p %buffer%)
+                  (error "Expected a buffer for internal page ~a, got ~s."
+                         (name page) %buffer%))
+                (when (modable-buffer-p %buffer%)
+                  (enable-page-mode %buffer% (page-mode page)))
+                (let ((contents (apply (compile nil lambda-expression) args)))
+                  (spinneret:with-html-string
+                    (:doctype)
+                    (:html
+                     (:head
+                      (:title (apply #'dynamic-title
+                                     (gethash (name page) *nyxt-url-commands*)
+                                     args))
+                      (:style (:raw (style %buffer%))))
+                     (:body (:raw contents)))))))))))
 
 (defmethod set-internal-page-method ((page internal-page) form)
   (when form
@@ -311,12 +317,13 @@ ARGS are passed as internal page parameters."
     buffer))
 
 (defun ensure-keyword-argument (lambda-list keyword)
-  (unless (member keyword lambda-list)
-    (if (member '&key lambda-list)
-        ;; If &key exists, add the keyword argument at the end
-        (append lambda-list (list keyword))
-        ;; If &key doesn't exist, add it with the keyword
-        (append lambda-list (list '&key keyword)))))
+  (let* ((without-aok (remove '&allow-other-keys lambda-list))
+         (with-key (if (member keyword without-aok)
+                       without-aok
+                       (if (member '&key without-aok)
+                           (append without-aok (list keyword))
+                           (append without-aok (list '&key keyword))))))
+    (append with-key '(&allow-other-keys))))
 
 (-> symbol-named (t string) (values (maybe symbol) &optional))
 (defun symbol-named (tree symbol-name)
@@ -364,38 +371,64 @@ Example:
                              ,@wrapped-body))
               (list ,@initargs)))))
 
+(defun non-interactive-page-arglist (lambda-list)
+  "Return LAMBDA-LIST with interactive `&key' initforms replaced by NIL."
+  (multiple-value-bind (required optional rest keywords allow-other-keys-p aux key-p)
+      (alex:parse-ordinary-lambda-list lambda-list)
+    (sera:unparse-ordinary-lambda-list
+     required
+     optional
+     rest
+     (mapcar (lambda (spec)
+               (destructuring-bind ((keyword-name var) initform supplied-p) spec
+                 (let ((page-init (if (or (constantp initform) (symbolp initform))
+                                      initform
+                                      nil)))
+                   (list (list keyword-name var) page-init supplied-p))))
+             keywords)
+     allow-other-keys-p
+     aux
+     key-p)))
+
 (export-always 'define-internal-page-command)
 (defmacro define-internal-page-command
     (name (&rest arglist) (buffer-var title &optional mode) &body body)
   "Define a command called NAME creating an `internal-page'."
   (multiple-value-bind (stripped-body declarations documentation)
       (alex:parse-body body :documentation t)
-    (let ((arglist-with-buffer (ensure-keyword-argument arglist '%buffer%)))
+    (let* ((arglist-with-buffer (ensure-keyword-argument arglist '%buffer%))
+           (page-arglist (non-interactive-page-arglist arglist-with-buffer)))
       `(progn
          (export-always ',name (symbol-package ',name))
          (sera:lret ((gf (defgeneric ,name (,@(generalize-lambda-list arglist-with-buffer))
                            (:documentation ,documentation)
                            (:generic-function-class internal-page))))
-           (let ((wrapped-body '(lambda (,@arglist-with-buffer)
-                                 ,@(when documentation (list documentation))
-                                 ,@declarations
-                                 (let ((,buffer-var %buffer%))
-                                   (declare (ignorable ,buffer-var))
-                                   ,@stripped-body))))
-             (set-internal-page-method gf wrapped-body)
+           (let ((command-body '(lambda (,@arglist-with-buffer)
+                                  ,@(when documentation (list documentation))
+                                  ,@declarations
+                                  (let ((,buffer-var %buffer%))
+                                    (declare (ignorable ,buffer-var))
+                                    ,@stripped-body)))
+                 (page-body '(lambda (,@page-arglist)
+                               ,@(when documentation (list documentation))
+                               ,@declarations
+                               (let ((,buffer-var %buffer%))
+                                 (declare (ignorable ,buffer-var))
+                                 ,@stripped-body))))
+             (set-internal-page-method gf command-body)
              (setf (slot-value #',name 'visibility) :mode)
              (setf (page-mode #',name) ,mode)
              (setf (slot-value #',name 'dynamic-title)
                  ,(if (stringp title)
                       title
-                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list arglist-with-buffer)))
-                            (rest (nth-value 2 (alex:parse-ordinary-lambda-list arglist-with-buffer))))
-                        `(lambda (,@(unless (member '&rest arglist-with-buffer)
+                      (let ((keywords (nth-value 3 (alex:parse-ordinary-lambda-list page-arglist)))
+                            (rest (nth-value 2 (alex:parse-ordinary-lambda-list page-arglist))))
+                        `(lambda (,@(unless (member '&rest page-arglist)
                                       '(&rest args))
-                                  ,@arglist-with-buffer)
+                                  ,@page-arglist)
                            (declare (ignorable ,@(mappend #'cdar keywords) ,(or rest 'args)))
                            ,title))))
-             (setf (form gf) wrapped-body)))))))
+             (setf (form gf) page-body)))))))
 
 
 (export-always 'define-internal-page-command-global)

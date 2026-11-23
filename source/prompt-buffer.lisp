@@ -525,34 +525,64 @@ To access the suggestion instead, see `prompter:%current-suggestion'."
                            (find source (prompter:sources prompt)))
                          (active-prompt-buffers window))))
 
+(defun cleanup-prompt-buffer (prompt-buffer)
+  "Release hooks, handlers, modes, callbacks, and UI views of PROMPT-BUFFER."
+  (hooks:run-hook (buffer-delete-hook prompt-buffer) prompt-buffer)
+  (dolist (mode (copy-list (enabled-modes prompt-buffer)))
+    (with-protect ("Error while disabling ~a: ~a" mode :condition)
+      (disable mode)))
+  (setf (modes prompt-buffer) '())
+  (drop-buffer-setf-handlers prompt-buffer)
+  (sera:synchronized ((lisp-url-callbacks prompt-buffer))
+    (clrhash (lisp-url-callbacks prompt-buffer)))
+  (dolist (view (list (prompt-count-view prompt-buffer)
+                      (prompt-modes-view prompt-buffer)
+                      (suggestions-view prompt-buffer)))
+    (when view
+      (user-interface:disconnect view)))
+  (setf (prompt-count-view prompt-buffer) nil
+        (prompt-modes-view prompt-buffer) nil
+        (suggestions-view prompt-buffer) nil))
+
 (defmethod show-prompt-buffer ((prompt-buffer prompt-buffer))
   (with-slots (window) prompt-buffer
-    (unless (find prompt-buffer (active-prompt-buffers window))
-      (push prompt-buffer (active-prompt-buffers window)))
-    (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window)))
-  ;; Height attachment can replace the document, so draw the skeleton after
-  ;; the view is in the window. On CEF a write before that has no HTML element.
-  (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
-  (prompt-render-skeleton prompt-buffer)
-  (prompt-render-focus prompt-buffer)
-  (ffi-focus-buffer prompt-buffer)
-  (update-prompt-input prompt-buffer)
-  (prompt-render-suggestions prompt-buffer)
-  (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))
+    (when window
+      (bt:with-recursive-lock-held ((prompt-lock window))
+        (unless (find prompt-buffer (active-prompt-buffers window))
+          (push prompt-buffer (active-prompt-buffers window)))
+        (lparallel.queue:push-queue prompt-buffer (prompt-buffer-ready-channel window))
+        (setf (height prompt-buffer) (slot-value prompt-buffer 'height))
+        (prompt-render-skeleton prompt-buffer)
+        (prompt-render-focus prompt-buffer)
+        (ffi-focus-buffer prompt-buffer))
+      (update-prompt-input prompt-buffer)
+      (prompt-render-suggestions prompt-buffer)
+      (hooks:run-hook (prompt-buffer-ready-hook *browser*) prompt-buffer))))
 
 (defmethod hide-prompt-buffer ((prompt-buffer prompt-buffer))
   "Hide PROMPT-BUFFER and display the next active one, if any."
   (with-slots (window) prompt-buffer
-    (let ((was-current-p (prompt-current-p prompt-buffer)))
-      (alex:deletef (active-prompt-buffers window) prompt-buffer)
-      ;; The channel values are irrelevant, so is the element order:
-      (lparallel.queue:try-pop-queue (prompt-buffer-ready-channel window) :timeout 0)
-      (ffi-buffer-delete prompt-buffer)
-      (cond
-        ((not (active-prompt-buffers window))
-         (ffi-window-set-buffer window (buffer window) :focus t))
-        (was-current-p
-         (show-prompt-buffer (first (active-prompt-buffers window))))))))
+    (let ((next-prompt nil))
+      (when window
+        (bt:with-recursive-lock-held ((prompt-lock window))
+          (let ((was-current-p (prompt-current-p prompt-buffer)))
+            (alex:deletef (active-prompt-buffers window) prompt-buffer)
+            (lparallel.queue:try-pop-queue (prompt-buffer-ready-channel window) :timeout 0)
+            (ffi-buffer-delete prompt-buffer)
+            (cond
+              ((not (active-prompt-buffers window))
+               (let ((page (buffer window)))
+                 (ffi-window-set-buffer
+                  window
+                  (if (and page (not (dead-buffer-p page)))
+                      page
+                      (background-buffer))
+                  :focus t)))
+              (was-current-p
+               (setf next-prompt (first (active-prompt-buffers window))))))))
+      (cleanup-prompt-buffer prompt-buffer)
+      (when next-prompt
+        (show-prompt-buffer next-prompt)))))
 
 (-> suggestion-and-mark-count
     (prompt-buffer list list &key (:enable-marks-p boolean) (:loading-p boolean))
@@ -1255,6 +1285,8 @@ Leave the prompt stack when waiting ends, including when the prompt fails."
                    (if result-received-p
                        (return results)
                        (error 'prompt-buffer-canceled)))))))
+      (unless (input-finished-p prompt-buffer)
+        (ignore-errors (prompter:destroy prompt-buffer)))
       (when (and (window prompt-buffer)
                  (find prompt-buffer
                        (active-prompt-buffers (window prompt-buffer))))

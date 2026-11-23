@@ -745,21 +745,27 @@ Return a list of (extension status) lists."
 
 (-> write-zip-payload (pathname integer) pathname)
 (defun write-zip-payload (archive offset)
-  (let ((zip (uiop:tmpize-pathname
-              (uiop:merge-pathnames* #p"nyxt-webext.zip"
-                                     (uiop:temporary-directory)))))
-    (with-open-file (in archive :element-type '(unsigned-byte 8))
-      (unless (file-position in offset)
-        (error "The file ~a is not a .zip or a .crx." archive))
-      (with-open-file (out zip :direction :output
-                               :element-type '(unsigned-byte 8)
-                               :if-exists :supersede
-                               :if-does-not-exist :create)
-        (let ((buffer (make-array 65536 :element-type '(unsigned-byte 8))))
-          (loop for read = (read-sequence buffer in)
-                until (zerop read)
-                do (write-sequence buffer out :end read)))))
-    zip))
+  (with-open-file (in archive :element-type '(unsigned-byte 8))
+    (unless (file-position in offset)
+      (error "The file ~a is not a .zip or a .crx." archive))
+    (let ((zip (uiop:tmpize-pathname
+                (uiop:merge-pathnames* #p"nyxt-webext.zip"
+                                       (uiop:temporary-directory))))
+          (completed nil))
+      (unwind-protect
+           (progn
+             (with-open-file (out zip :direction :output
+                                      :element-type '(unsigned-byte 8)
+                                      :if-exists :supersede
+                                      :if-does-not-exist :create)
+               (let ((buffer (make-array 65536 :element-type '(unsigned-byte 8))))
+                 (loop for read = (read-sequence buffer in)
+                       until (zerop read)
+                       do (write-sequence buffer out :end read))))
+             (setf completed t)
+             zip)
+        (unless completed
+          (uiop:delete-file-if-exists zip))))))
 
 (-> temporary-directory (string) pathname)
 (defun temporary-directory (name)
@@ -812,12 +818,14 @@ for info in z.infolist():
 
 (-> install-archive (pathname integer) list)
 (defun install-archive (archive offset)
-  (let ((zip (if (zerop offset)
-                 archive
-                 (write-zip-payload archive offset)))
-        (directory (temporary-directory "archive")))
+  (let ((zip nil)
+        (directory nil))
     (unwind-protect
          (progn
+           (setf zip (if (zerop offset)
+                         archive
+                         (write-zip-payload archive offset))
+                 directory (temporary-directory "archive"))
            (unpack-zip zip directory)
            (install-directories
             (or (extension-roots directory)
@@ -826,7 +834,7 @@ for info in z.infolist():
                  (not (uiop:pathname-equal zip archive))
                  (uiop:file-exists-p zip))
         (delete-file zip))
-      (when (uiop:directory-exists-p directory)
+      (when (and directory (uiop:directory-exists-p directory))
         (delete-tree directory)))))
 
 (-> archive-type-p (t) boolean)
@@ -872,19 +880,23 @@ for info in z.infolist():
 (defun download-archive (url)
   (let* ((uri (quri:uri url))
          (type (string-downcase (or (pathname-type (or (quri:uri-path uri) "")) "bin")))
+         (body (dex:get url :force-binary t))
          (path (uiop:tmpize-pathname
                 (uiop:merge-pathnames*
                  (format nil "nyxt-webext.~a" type)
                  (uiop:temporary-directory))))
-         (body (dex:get url :force-binary t)))
-    (unless (typep body '(vector (unsigned-byte 8)))
-      (error "The page ~a is not an extension package." url))
-    (with-open-file (out path :direction :output
-                              :element-type '(unsigned-byte 8)
-                              :if-exists :supersede
-                              :if-does-not-exist :create)
-      (write-sequence body out))
-    path))
+         (completed nil))
+    (unwind-protect
+         (progn
+           (with-open-file (out path :direction :output
+                                     :element-type '(unsigned-byte 8)
+                                     :if-exists :supersede
+                                     :if-does-not-exist :create)
+             (write-sequence body out))
+           (setf completed t)
+           path)
+      (unless completed
+        (uiop:delete-file-if-exists path)))))
 
 (-> install-web-extensions (t) list)
 (defun install-web-extensions (source)

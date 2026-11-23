@@ -502,13 +502,30 @@ away from the internal page, this mode is disabled.")
   (:documentation "A buffer whose behavior can be modified with `mode's."))
 
 (defmethod enable-page-mode ((modable-buffer modable-buffer) mode)
-  (enable-modes* mode modable-buffer)
-  (setf (page-mode modable-buffer) mode))
+  (unless (eq mode (page-mode modable-buffer))
+    (disable-page-mode modable-buffer))
+  (when mode
+    (enable-modes* mode modable-buffer)
+    (setf (page-mode modable-buffer) mode)))
 
 (defmethod disable-page-mode ((modable-buffer modable-buffer))
-  (when (page-mode modable-buffer)
-    (disable-modes* (page-mode modable-buffer) modable-buffer)
+  (when-let ((old-mode (page-mode modable-buffer)))
+    (disable-modes* old-mode modable-buffer)
+    (setf (modes modable-buffer)
+          (remove old-mode (modes modable-buffer) :key #'name))
     (setf (page-mode modable-buffer) nil)))
+
+(defmethod keyscheme ((buffer buffer))
+  keyscheme:cua)
+
+(defmethod (setf keyscheme) (value (buffer buffer))
+  value)
+
+(defmethod forward-input-events-p ((buffer buffer))
+  nil)
+
+(defmethod (setf forward-input-events-p) (value (buffer buffer))
+  value)
 
 (defmethod modes ((buffer buffer))
   "Return the modes active in BUFFER.
@@ -1090,9 +1107,7 @@ buffer currently chosen as suggestion."))
 (defun buffer-keyword-line (buffer)
   "Return BUFFER's stored keywords on one line, or the empty string."
   (format nil "~{~a~^ ~}"
-          (mapcar #'first (if (web-buffer-p buffer)
-                              (or (keywords buffer) '())
-                              '()))))
+          (mapcar #'first (keywords buffer))))
 
 (defmethod prompter:object-attributes ((buffer buffer) (source prompter:source))
   (declare (ignore source))
@@ -1141,6 +1156,7 @@ buffer currently chosen as suggestion."))
          :sources (make-instance
                    'buffer-source
                    :enable-marks-p t
+                   :actions-on-current-suggestion-enabled-p nil
                    :actions-on-return
                    (list
                     (lambda-mapped-command ffi-buffer-delete)
@@ -1265,7 +1281,10 @@ requested.  When the first word of `data' matches the `shortcut' of a
                                        :check-tld-p t))
            (setf kind :url
                  data (str:concat "https://" data)))
-          ((uiop:file-exists-p data)
+          ((let ((path (ignore-errors (uiop:parse-native-namestring data))))
+             (and path
+                  (not (wild-pathname-p path))
+                  (ignore-errors (uiop:file-exists-p path))))
            (setf kind :url
                  data (str:concat "file://" (uiop:native-namestring data))))
           (t
@@ -1275,12 +1294,13 @@ requested.  When the first word of `data' matches the `shortcut' of a
                           :key #'shortcut :test #'string-equal))
                   (engine (or explicit-engine
                               (default-search-engine *browser*))))
-             (setf kind :search-query
-                   search-engine engine)
-             (if explicit-engine
-                 (setf search-query (str:join " " (rest terms)))
-                 (setf search-query data
-                       data (format-query data engine))))))))
+             (when engine
+               (setf kind :search-query
+                     search-engine engine)
+               (if explicit-engine
+                   (setf search-query (str:join " " (rest terms)))
+                   (setf search-query data
+                         data (format-query data engine)))))))))
 
 (export-always 'search-suggestions)
 (defmethod search-suggestions ((query url-or-query))
@@ -1297,7 +1317,7 @@ requested.  When the first word of `data' matches the `shortcut' of a
 
 (defmethod url ((query url-or-query))
   (with-slots (data kind search-engine search-query) query
-    (quri:uri (if (eq :search-query kind)
+    (quri:uri (if (and (eq :search-query kind) search-engine)
                   (format-url search-query search-engine)
                   data))))
 
@@ -1341,7 +1361,8 @@ The typed URL or search is a separate source. See `url-or-query'."))
   (with-slots (data kind search-engine search-query) query
     `(("Input" ,(or search-query data) (:width 5))
       ("Type" ,(cond ((null kind) "")
-                     ((eq kind :search-query) (name search-engine))
+                     ((eq kind :search-query)
+                      (if search-engine (name search-engine) ""))
                      (t kind))
               (:width 2)))))
 
