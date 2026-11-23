@@ -357,10 +357,12 @@ is resolved against the page that contains it."
         (error "URL ~a is undefined." url))))
 
 (export-always 'internal-page-name)
-(-> internal-page-name ((or string quri:uri)) t)
+(-> internal-page-name (t) t)
 (defun internal-page-name (url)
   "Return the symbol naming the internal page at URL, or NIL."
-  (when-let* ((%url (quri:uri url))
+  (when-let* ((_ (has-url-method-p url))
+              (%url (handler-case (url url)
+                      (error () nil)))
               (_ (string= "nyxt" (quri:uri-scheme %url))))
     (let* ((raw-path (quri:uri-path %url))
            (path (and raw-path (string-trim '(#\/) raw-path)))
@@ -389,7 +391,10 @@ is resolved against the page that contains it."
 (defun internal-url-p (url)
   "Whether the URL is the `internal-page' one."
   ;; FIXME: Too simple. Maybe check for command presence too?
-  (string= "nyxt" (quri:uri-scheme (url url))))
+  (not (null (and (has-url-method-p url)
+                  (let ((parsed (handler-case (url url)
+                                  (error () nil))))
+                    (and parsed (string= "nyxt" (quri:uri-scheme parsed))))))))
 
 (-> query-params->arglist ((types:association-list string string)) (values list &optional))
 (defun query-params->arglist (params)
@@ -409,21 +414,23 @@ is resolved against the page that contains it."
       (declare (ignore url))
       ""))
 
-(-> nyxt-resource-name ((or quri:uri string)) (values (maybe string) &optional))
+(-> nyxt-resource-name (t) (values (maybe string) &optional))
 (defun nyxt-resource-name (url)
   "Return the static asset name encoded in URL.
 For standard URL parsers, `nyxt-resource:asset.ext' can end up in host instead
 of path."
-  (let* ((%url (quri:uri url))
-         (raw-path (quri:uri-path %url))
-         (path (and raw-path (string-trim '(#\/) raw-path)))
-         (host (quri:uri-host %url)))
-    (cond
-      ((and path (plusp (length path)))
-       path)
-      ((and host (plusp (length host)))
-       host)
-      (t nil))))
+  (when-let* ((_ (has-url-method-p url))
+              (%url (handler-case (url url)
+                      (error () nil))))
+    (let* ((raw-path (quri:uri-path %url))
+           (path (and raw-path (string-trim '(#\/) raw-path)))
+           (host (quri:uri-host %url)))
+      (cond
+        ((and path (plusp (length path)))
+         path)
+        ((and host (plusp (length host)))
+         host)
+        (t nil)))))
 
 (-> nyxt-resource-mime-type ((maybe string)) (values (maybe string) &optional))
 (defun nyxt-resource-mime-type (resource-name)
@@ -504,7 +511,8 @@ IPv4 rewrite of a numeric host."
   (quri:make-uri :scheme "lisp"
                  :host "callback"
                  :path (uiop:strcat "/" id)
-                 :query `(("title" . ,title) ("buffer" . ,(id buffer)))))
+                 :query `(,@(when title `(("title" . ,title)))
+                          ("buffer" . ,(id buffer)))))
 
 (export-always 'nyxt/ps::lisp-eval :nyxt/ps)
 (ps:defpsmacro nyxt/ps::lisp-eval ((&key buffer title id) &body body)
@@ -540,13 +548,13 @@ requests."
                           (quri:uri-error () nil)))
                   (request-id (lisp-request-id %url))
                   (query (quri:uri-query-params %url))
-                  (title (assoc-value query "title" :test 'equal))
                   (buffer-id (parse-buffer-id (assoc-value query "buffer" :test 'equal)))
                   (buffer (find buffer-id
                                 (internal-buffer-list :all t)
                                 :key 'id)))
-        (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a"
-                   request-id buffer title)
+        (let ((title (assoc-value query "title" :test 'equal)))
+          (log:debug "Evaluate Lisp callback ~a in buffer ~a: ~a"
+                     request-id buffer title))
         (if-let ((callback (sera:synchronized ((lisp-url-callbacks buffer))
                              (gethash request-id (lisp-url-callbacks buffer)))))
           (run-thread "lisp-url"

@@ -94,3 +94,66 @@
   ;; "comparing different URLs (HTTP first)"
   (assert-true (nyxt::url< (quri:uri "http://example.org/a")
                            (quri:uri "https://example.org/b"))))
+
+(define-test internal-buffer-lisp-callbacks-and-tags ()
+  (let* ((*browser* (make-instance 'browser))
+         (internal-buf (make-instance 'web-buffer :url (quri:uri (nyxt-url 'new))))
+         (web-buf (make-instance 'web-buffer :url (quri:uri "https://example.org/"))))
+    (unwind-protect
+         (progn
+           (assert-true (internal-url-p internal-buf))
+           (assert-false (internal-url-p web-buf))
+           (assert-false (internal-url-p nil))
+           (assert-false (internal-url-p 42))
+           (assert-eq 'new (internal-page-name internal-buf))
+           (assert-true (funcall (match-internal-page 'new) internal-buf))
+           (assert-false (funcall (match-internal-page 'new) web-buf))
+           (assert-true (find internal-buf (nyxt::internal-buffer-list :all t)))
+           (assert-false (find web-buf (nyxt::internal-buffer-list :all t)))
+           (let* ((ran '())
+                  (titled (nyxt::lisp-url :id "cb-titled"
+                                          :buffer internal-buf
+                                          :title "titled"
+                                          :callback (lambda () (push :titled ran))))
+                  (untitled (nyxt::lisp-url :id "cb-untitled"
+                                            :buffer internal-buf
+                                            :callback (lambda () (push :untitled ran))))
+                  (scheme-fn (first (gethash "lisp" nyxt::*schemes*))))
+             (funcall scheme-fn (quri:render-uri titled))
+             (funcall scheme-fn (quri:render-uri untitled))
+             (assert-true (bordeaux-threads:with-timeout (2)
+                            (loop until (= 2 (length ran))
+                                  do (sleep 0.02)
+                                  finally (return t))))
+             (assert-true (member :titled ran))
+             (assert-true (member :untitled ran)))
+           (let* ((nil-title nil)
+                  (html (spinneret:with-html-string
+                          (:nbutton :buffer internal-buf
+                                    :text (:raw "<span>Icon</span>")
+                                    '(values))
+                          (:nbutton :buffer internal-buf
+                                    :title nil-title
+                                    :text "Plain"
+                                    '(values))
+                          (:nselect :id "sel"
+                                    :buffer internal-buf
+                                    :default "Choose"
+                                    '(one (values))
+                                    '(two (values)))
+                          (:nradio :name "rad"
+                                   :buffer internal-buf
+                                   :checked 'a
+                                   '(a "A" (values) (values)))
+                          (:ncheckbox :name "chk-group"
+                                      :buffer internal-buf
+                                      :checked 1
+                                      '("chk-id" "Check" (values) (values))))))
+             (assert-true (search "<select" html))
+             (assert-true (or (search "for=chk-id" html)
+                              (search "for=\"chk-id\"" html)))
+             (assert-true (or (search "id=chk-id" html)
+                              (search "id=\"chk-id\"" html)))
+             (assert-true (plusp (hash-table-count (nyxt::lisp-url-callbacks internal-buf))))))
+      (nyxt::buffer-delete (id internal-buf))
+      (nyxt::buffer-delete (id web-buf)))))

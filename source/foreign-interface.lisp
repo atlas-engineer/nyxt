@@ -208,7 +208,8 @@ Create the foreign objects necessary for rendering the buffer."))
          (ffi-buffer-evaluate-javascript
           buffer (quri:url-decode (quri:uri-path url))))
         (t
-         (clrhash (lisp-url-callbacks buffer))
+         (sera:synchronized ((lisp-url-callbacks buffer))
+           (clrhash (lisp-url-callbacks buffer)))
          (call-next-method))))
     buffer)
   (:documentation "Load URL into BUFFER through the renderer."))
@@ -620,6 +621,10 @@ Dispatches on buffers and modes."))
 
 (define-ffi-generic on-signal-load-finished (object url title)
   (:method ((buffer buffer) url title)
+    (unless (or (auxiliary-buffer-p buffer)
+                (string= (quri:uri-scheme url) "about"))
+      (sera:synchronized ((lisp-url-callbacks buffer))
+        (clrhash (lisp-url-callbacks buffer))))
     (if (equal (quri:uri-scheme url) "nyxt")
         (alex:if-let ((internal-page (find-url-internal-page url)))
           (progn

@@ -535,6 +535,7 @@ or in the path under `page'."
     (:nbutton
       :buffer status
       :id "new-buffer"
+      :callback-id "status-new-buffer"
       :text (:raw (glyph-plus status))
       :title "New buffer"
       '(nyxt:make-buffer-focus))))
@@ -575,6 +576,8 @@ override it, redefine methods such as `format-status-url',
                                                  behavior "smooth")))))))
 
 (defmethod print-status ((status-buffer status-buffer))
+  (sera:synchronized ((lisp-url-callbacks status-buffer))
+    (clrhash (lisp-url-callbacks status-buffer)))
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
 

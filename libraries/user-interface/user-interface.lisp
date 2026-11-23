@@ -35,6 +35,14 @@ A form suitable to be compiled by Spinneret."))
 (defmethod connect ((element ui-element) buffer)
   (setf (buffer element) buffer))
 
+(export-always 'disconnect)
+(defgeneric disconnect (element)
+  (:documentation "Detach ELEMENT and its descendants from their buffer."))
+
+(defmethod disconnect ((element ui-element))
+  (slot-makunbound element 'buffer)
+  element)
+
 (export-always 'update)
 (defgeneric update (ui-element)
   (:documentation "Propagate changes to the buffer."))
@@ -64,22 +72,28 @@ already record it. Writes inside BODY do not update on their own."
   (let ((element-var (gensym "ELEMENT"))
         (pending-var (gensym "PENDING"))
         (item-var (gensym "ITEM")))
-    `(let ((,element-var ,element)
-           (*defer-update* t)
-           (*pending-updates* '()))
-       (unwind-protect
-            (progn ,@body)
-         (let ((,pending-var (nreverse *pending-updates*))
-               (*defer-update* nil)
-               (*pending-updates* nil))
-           (dolist (,item-var ,pending-var)
-             (when (slot-boundp ,item-var 'buffer)
-               (update ,item-var)))
-           (when (and ,element-var
-                      (slot-boundp ,element-var 'buffer)
-                      (not (member ,element-var ,pending-var)))
-             (update ,element-var)))))))
+    `(let ((,element-var ,element))
+       (if *defer-update*
+           (multiple-value-prog1
+               (progn ,@body)
+             (when ,element-var
+               (queue-update ,element-var)))
+           (let ((*defer-update* t)
+                 (*pending-updates* '()))
+             (unwind-protect
+                  (progn ,@body)
+               (let ((,pending-var (nreverse *pending-updates*))
+                     (*defer-update* nil)
+                     (*pending-updates* nil))
+                 (dolist (,item-var ,pending-var)
+                   (when (slot-boundp ,item-var 'buffer)
+                     (update ,item-var)))
+                 (when (and ,element-var
+                            (slot-boundp ,element-var 'buffer)
+                            (not (member ,element-var ,pending-var)))
+                   (update ,element-var)))))))))
 
+(export-always 'display-text)
 (defun display-text (value)
   "Return VALUE as text. Nil is the empty string."
   (cond
@@ -205,13 +219,24 @@ The body is `children', then `raw', then `text'."))
   "Connect ELEMENT's child elements to its buffer."
   (when (slot-boundp element 'buffer)
     (let ((buffer (buffer element)))
-      (dolist (child (children element))
-        (when (typep child 'ui-element)
-          (connect child buffer))))))
+      (each-child (children element)
+                  (lambda (child)
+                    (when (typep child 'ui-element)
+                      (connect child buffer)))))))
+
+(defun disconnect-children (element)
+  "Disconnect ELEMENT's child elements from its buffer."
+  (each-child (children element)
+              (lambda (child)
+                (when (typep child 'ui-element)
+                  (disconnect child)))))
 
 (defmethod connect :after ((button button) buffer)
   (declare (ignorable buffer))
   (connect-children button))
+
+(defmethod disconnect :after ((button button))
+  (disconnect-children button))
 
 (export-always 'element)
 (export-always 'tag)
@@ -276,6 +301,9 @@ The body is `children', then `raw', then `text'."))
 (defmethod connect :after ((element element) buffer)
   (declare (ignorable buffer))
   (connect-children element))
+
+(defmethod disconnect :after ((element element))
+  (disconnect-children element))
 
 (defun tag-name (tag)
   "Return TAG as a name Spinneret can draw."
@@ -412,9 +440,25 @@ A changed `item-key' builds that item again. The other nodes stay.
   (connect-items element)
   (queue-update element))
 
+(defun clear-dynamic-nodes (element)
+  "Disconnect and drop all cached item nodes of ELEMENT."
+  (maphash (lambda (item record)
+             (declare (ignore item))
+             (when (typep (car record) 'ui-element)
+               (disconnect (car record))))
+           (nodes element))
+  (clrhash (nodes element)))
+
+(defmethod connect :before ((element dynamic-element) buffer)
+  (declare (ignore buffer))
+  (clear-dynamic-nodes element))
+
 (defmethod connect :after ((element dynamic-element) buffer)
   (declare (ignorable buffer))
   (connect-items element))
+
+(defmethod disconnect :after ((element dynamic-element))
+  (clear-dynamic-nodes element))
 
 (defun item (element index)
   "Return the item of ELEMENT at INDEX."
@@ -460,19 +504,23 @@ An item already drawn is kept. A connected element redraws."
                :documentation "The percentage the progress bar is
 filled up, use a number between 0 and 100.")))
 
-(defmethod to-html ((progress-bar progress-bar))
+(export-always 'valid-percentage)
+(defun valid-percentage (progress-bar)
+  "Return PROGRESS-BAR's clamped percentage in [0, 100], or 0."
   (let ((percentage (percentage progress-bar)))
-    (spinneret:with-html
-      (:div :class "progress-bar-base"
-            (:div :class "progress-bar-fill"
-                  :id (id progress-bar)
-                  :style (format nil "width: ~,1f%;"
-                                 (if (and (realp percentage)
-                                          (<= 0 percentage 100))
-                                     percentage
-                                     0))
-                  ;; empty string to force markup to make closing :div tag
-                  "")))))
+    (if (and (realp percentage) (<= 0 percentage 100))
+        percentage
+        0)))
+
+(defmethod to-html ((progress-bar progress-bar))
+  (spinneret:with-html
+    (:div :class "progress-bar-base"
+          (:div :class "progress-bar-fill"
+                :id (id progress-bar)
+                :style (format nil "width: ~,1f%;"
+                               (valid-percentage progress-bar))
+                ;; empty string to force markup to make closing :div tag
+                ""))))
 
 (defmethod (setf percentage) :after (percentage (progress-bar progress-bar))
   (declare (ignorable percentage))
@@ -764,6 +812,10 @@ row's `action', and a control-click runs its `control-action'."))
   (dolist (row (rows table))
     (setf (table row) table)
     (connect row buffer)))
+
+(defmethod disconnect :after ((table table))
+  (dolist (row (rows table))
+    (disconnect row)))
 
 (export-always 'table-inner-html)
 (defun table-inner-html (table)

@@ -67,8 +67,20 @@ forms in BUFFER."
                    (when title (list :title title))
                    (string-capitalize (or display (nyxt:prini-to-string value)))))))
 
+(defun %nselect-clauses (clauses)
+  (cond
+    ((null clauses) '())
+    ((atom (first clauses)) (list clauses))
+    ((and (consp (first clauses))
+          (atom (caar clauses))
+          (consp (cdar clauses))
+          (every (lambda (x) (or (stringp x) (null x))) (cdar clauses)))
+     (list clauses))
+    (t clauses)))
+
 (deftag :nselect (body attrs &key default (id (alexandria:required-argument 'id))
-                       buffer &allow-other-keys)
+                       (buffer (alexandria:required-argument 'buffer))
+                       &allow-other-keys)
   "Generate <select> tag from the BODY resembling cond clauses.
 
 BODY is a list of forms, each given by ((VALUE DISPLAY TITLE) . FORMS).
@@ -93,7 +105,9 @@ Example:
   `(3 (funcall ,(lambda () (nyxt:echo \"Too high!\")))))"
   (once-only (id)
     (with-gensyms (body-var)
-      `(let ((,body-var ,@body))
+      `(let ((,body-var ,(if (serapeum:single body)
+                             `(%nselect-clauses ,(first body))
+                             `(list ,@body))))
          (:select.button
           ,@attrs
           :id ,id
@@ -109,24 +123,30 @@ Example:
    `(nyxt/ps:lisp-eval
      (:title "nradio onchange"
       :buffer ,buffer)
-     ,onchange)))
+     ,@onchange)))
 
-(serapeum:-> %nradio-inputs (string (nyxt:maybe nyxt:buffer) symbol boolean (nyxt:list-of list)) t)
+(serapeum:-> %nradio-inputs (string nyxt:buffer t t list) t)
 (defun %nradio-inputs (name buffer checked vertical clauses)
-  (spinneret:with-html-string
-          (loop for (id label body) in (mapcar #'uiop:ensure-list clauses)
-                collect (:label
-                         :class "radio-label"
-                         (:input
-                          :class "radio-input"
-                          :type "radio"
-                          :id (nyxt:prini-to-string id)
-                          :onchange (%nradio-onchange body buffer)
-                          :name name
-                          :checked (equal id checked))
-                         label (when vertical (:br))))))
+  (let ((normalized (if (and (consp clauses) (not (listp (first clauses))))
+                        (list clauses)
+                        clauses)))
+    (spinneret:with-html-string
+      (loop for (id label . forms) in (mapcar #'uiop:ensure-list normalized)
+            collect (:label
+                     :class "radio-label"
+                     (:input
+                      :class "radio-input"
+                      :type "radio"
+                      :id (if (stringp id) id (nyxt:prini-to-string id))
+                      :onchange (%nradio-onchange forms buffer)
+                      :name name
+                      :checked (equal id checked))
+                     label (when vertical (:br)))))))
 
-(deftag :nradio (body attrs &key (name (alexandria:required-argument 'name)) checked vertical buffer &allow-other-keys)
+(deftag :nradio (body attrs &key (name (alexandria:required-argument 'name))
+                      checked vertical
+                      (buffer (alexandria:required-argument 'buffer))
+                      &allow-other-keys)
   "Generate radio buttons corresponding to clauses in BODY.
 Clauses should be of the form (ID LABEL . FORM), where FORM is evaluated
 when a radio button is selected."
@@ -155,24 +175,32 @@ when a radio button is selected."
           :buffer ,buffer)
          ,unchecked-body))))
 
-(serapeum:-> %ncheckbox-inputs (string (nyxt:maybe nyxt:buffer) boolean list) t)
+(serapeum:-> %ncheckbox-inputs (string nyxt:buffer t list) t)
 (defun %ncheckbox-inputs (name buffer checked body)
-  (destructuring-bind ((id label) checked-body unchecked-body)
-      (mapcar #'uiop:ensure-list body)
-    (spinneret:with-html-string
-      (:input
-       :class "checkbox-input"
-       :type "checkbox"
-       :id (nyxt:prini-to-string id)
-       :onchange (%ncheckbox-onchange checked-body unchecked-body buffer)
-       :name name
-       :checked checked)
-      (:label
-       :class "checkbox-label"
-       :for name
-       label))))
+  (multiple-value-bind (id label checked-body unchecked-body)
+      (if (consp (first body))
+          (destructuring-bind ((id label) &optional checked-body unchecked-body) body
+            (values id label (uiop:ensure-list checked-body) (uiop:ensure-list unchecked-body)))
+          (destructuring-bind (id label &optional checked-body unchecked-body) body
+            (values id label (uiop:ensure-list checked-body) (uiop:ensure-list unchecked-body))))
+    (let ((id-str (if (stringp id) id (nyxt:prini-to-string id))))
+      (spinneret:with-html-string
+        (:input
+         :class "checkbox-input"
+         :type "checkbox"
+         :id id-str
+         :onchange (%ncheckbox-onchange checked-body unchecked-body buffer)
+         :name name
+         :checked (and checked t))
+        (:label
+         :class "checkbox-label"
+         :for id-str
+         label)))))
 
-(deftag :ncheckbox (body attrs &key (name (alexandria:required-argument 'name)) checked buffer &allow-other-keys)
+(deftag :ncheckbox (body attrs &key (name (alexandria:required-argument 'name))
+                         checked
+                         (buffer (alexandria:required-argument 'buffer))
+                         &allow-other-keys)
   "Generate a checkbox corresponding to BODY.
 BODY should be of the form (ID LABEL FORM-CHECKED . FORM-UNCHECKED), where FORM-CHECKED is evaluated
 when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
@@ -195,7 +223,8 @@ when the checkbox is checked and FORM-UNCHECKED when it is unchecked."
               (format nil "SLOT of ~a" class-name)
               type)
           (when-let ((doc (case type
-                            (:package (documentation (find-package symbol) t))
+                            (:package (when-let ((pkg (find-package symbol)))
+                                        (documentation pkg t)))
                             (:variable (documentation symbol 'variable))
                             ((:slot   ; KLUDGE: Any simple way to get slot docs?
                               :macro :function :command)
@@ -267,8 +296,12 @@ non-overridable."
        ,@(when (and command command-key-p)
            `(" ("
              (funcall (read-from-string "nyxt::binding-keys")
-                      ,command ,@(when mode
-                                   `(:modes (cl:list (make-instance ,mode)))))
+                      ,command
+                      ,@(when mode
+                          `(:modes (let ((mode-sym ,mode))
+                                     (when (and (find-class mode-sym nil)
+                                                (not (eq mode-sym 'nyxt:mode)))
+                                       (cl:list (make-instance mode-sym)))))))
              ")"))))))
 
 (defun %ncode-resolve-linkable-symbols (form)
@@ -489,13 +522,13 @@ Most *-P arguments mandate whether to add the buttons for:
                                (str:join
                                 (make-string 2 :initial-element #\newline)
                                 (mapcar (lambda (f) (%ncode-htmlize-unless-string f ,package)) ,body-var)))))
-           (declare (ignorable ,inline-var ,plaintext ,file-var))
-           ,(if inline-p
-                `(:span (:code ,@attrs (:raw ,htmlized)) ,copy-button)
-                `(:div :style "position: relative"
-                       ,copy-button
-                       (:pre ,@attrs
-                             (:raw ,htmlized)))))))))
+           (declare (ignorable ,plaintext ,file-var))
+           (if ,inline-var
+               (:span (:code ,@attrs (:raw ,htmlized)) ,copy-button)
+               (:div :style "position: relative"
+                     ,copy-button
+                     (:pre ,@attrs
+                           (:raw ,htmlized)))))))))
 
 (defun %nsection-id (title)
   (if (stringp title)
@@ -556,13 +589,13 @@ by default."
                  (:a :class "link nsection-anchor" :href (uiop:strcat "#" ,id-var) "#"))))
          ,@body)))))
 
-(serapeum:-> %nbutton-onclick (string nyxt:buffer (nyxt:list-of list) &optional (nyxt:maybe string)) t)
+(serapeum:-> %nbutton-onclick (t nyxt:buffer (nyxt:list-of list) &optional (nyxt:maybe string)) t)
 (defun %nbutton-onclick (title buffer clauses &optional callback-id)
   "Produce Parenscript to run Lisp CLAUSES in BUFFER.
 TITLE is the debuggable name for the callback."
   (ps:ps*
    `(nyxt/ps:lisp-eval
-     (:title ,(format nil "nbutton ~a" title)
+     (:title ,(format nil "nbutton ~a" (or title ""))
              ,@(when callback-id
                  (list :id callback-id))
              :buffer ,buffer)
@@ -586,7 +619,11 @@ Example:
   (list 'foo)
   `(funcall ,(lambda () (do-something-with closed-over-value))))"
   `(:button.button
-    :onclick (%nbutton-onclick ,(or title text) ,buffer (list ,@body) ,callback-id)
+    :onclick (%nbutton-onclick ,(or title
+                                    (unless (and (consp text) (keywordp (first text)))
+                                      text)
+                                    "")
+                               ,buffer (list ,@body) ,callback-id)
     ,@(when title
         (list :title title))
     ,@(alexandria:remove-from-plist attrs :callback-id)
