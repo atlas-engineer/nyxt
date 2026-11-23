@@ -118,6 +118,8 @@ The handlers are the ones `status-buffer' uses for its tabs."
       (:nstyle
         '("ul.list > li > a"
           :padding-right "62px")
+        '("ul.list a span:first-of-type"
+          :font-size "13px")
         `("ul.list > li:hover > a"
           :background-color ,theme:background-color-
           :opacity "1")
