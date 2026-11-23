@@ -16,7 +16,7 @@
 #
 # CEF_ROOT may point at an unpacked CEF binary distribution (the directory
 # that contains include/, Release/, and cmake/). When unset, this downloads
-# the CEF 150 build Nyxt is developed against.
+# the CEF 150 build from the atlas-engineer/cef release.
 
 set -eu
 
@@ -24,7 +24,7 @@ root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 cd "$root"
 
 CEF_VERSION="${CEF_VERSION:-150.0.22+gc1a097e+chromium-150.0.7871.256}"
-CEF_SHA1="${CEF_SHA1:-7e7ca1e73e5d5e6317ca53dc1302fd180a3e1222}"
+CEF_SHA1="${CEF_SHA1:-00f5a3278faa74570026f34216087248831078ba}"
 jobs=$(nproc 2>/dev/null || echo 2)
 export CMAKE_BUILD_PARALLEL_LEVEL="$jobs"
 
@@ -33,8 +33,10 @@ if [ -z "${CEF_ROOT:-}" ]; then
     archive="$root/build/appimage/${name}.tar.bz2"
     mkdir -p "$root/build/appimage"
     if [ ! -f "$archive" ]; then
+        tag=$(printf '%s' "$CEF_VERSION" | sed 's/+/%2B/g')
+        file=$(printf '%s' "${name}.tar.bz2" | sed 's/+/%2B/g')
         curl -fL --retry 3 -o "$archive" \
-            "https://cef-builds.spotifycdn.com/${name}.tar.bz2"
+            "https://github.com/atlas-engineer/cef/releases/download/${tag}/${file}"
     fi
     echo "$CEF_SHA1  $archive" | sha1sum -c -
     tar -xjf "$archive" -C "$root/build/appimage"
