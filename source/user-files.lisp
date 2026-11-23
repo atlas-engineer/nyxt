@@ -62,6 +62,13 @@ If the file is modified externally, Nyxt automatically reloads it."))
   (sera:path-join (uiop:ensure-directory-pathname (files:name profile))
                   (call-next-method)))
 
+(defmethod files:resolve ((profile nyxt-profile) (file files:runtime-file))
+  (let ((path (call-next-method)))
+    (if (or (files:nil-pathname-p path)
+            (uiop:absolute-pathname-p path))
+        path
+        (uiop:xdg-cache-home path))))
+
 (defmethod files:read-file :around ((profile nyxt-profile) (file nyxt-file) &key)
   (unless (typep file 'files:virtual-file)
     (let ((path (files:expand file)))

@@ -284,11 +284,27 @@ This is the expanded `download-directory'."
       (setf path (xdg-download-dir)))
     (ensure-directories-exist (uiop:ensure-directory-pathname path))))
 
+(defun cleanup-isolated-view-caches (interface)
+  "Remove leftover isolated `view-*' profile directories under INTERFACE's cache."
+  (let ((cache-dir (uiop:ensure-directory-pathname
+                    (or (and interface (cef:cache-path interface))
+                        (uiop:xdg-cache-home "cl-cef/")))))
+    (when (uiop:directory-exists-p cache-dir)
+      (dolist (subdir (ignore-errors (uiop:subdirectories cache-dir)))
+        (let ((leaf (first (last (pathname-directory subdir)))))
+          (when (and (stringp leaf)
+                     (> (length leaf) 5)
+                     (str:starts-with-p "view-" leaf)
+                     (every #'digit-char-p (subseq leaf 5)))
+            (ignore-errors
+              (uiop:delete-directory-tree subdir :validate t :if-does-not-exist :ignore))))))))
+
 (defmethod ffi-initialize ((browser cef-browser) urls startup-timestamp)
   (declare (ignore urls startup-timestamp))
   (log:debug "Initializing CEF Interface")
   (let ((interface (make-instance 'cef:interface)))
     (setf cef:*interface* interface)
+    (cleanup-isolated-view-caches interface)
     (configure-appimage-cef interface)
     (configure-flatpak-cef interface)
     (configure-macos-cef interface)
@@ -323,9 +339,12 @@ This is the expanded `download-directory'."
     (install-window-icon)
     (configure-web-extensions browser interface)
     (setf (cef:launch-options interface)
-          (add-csv-switch (cef:launch-options interface)
-                          "enable-features"
-                          "OverlayScrollbar,OverlayScrollbarFlashWhenMouseEnter"))
+          (add-csv-switch
+           (add-csv-switch (cef:launch-options interface)
+                           "enable-features"
+                           "OverlayScrollbar,OverlayScrollbarFlashWhenMouseEnter")
+           "disable-features"
+           "AllowSwiftShaderFallback"))
     (when-let ((color (canvas-color browser)))
       (when (plusp color)
         (cef:set-default-background-color color)))
@@ -361,6 +380,7 @@ This is the expanded `download-directory'."
                 (request-exit))))
           :name "nyxt cef startup")
          (cef:join)
+         (cleanup-isolated-view-caches interface)
          ;; `finish-output' nil makes SBCL abort instead of waiting for other
          ;; threads. A worker blocked in a CEF call, or a Chromium pool thread,
          ;; would otherwise keep this process and its helpers alive after shutdown.
@@ -415,40 +435,77 @@ SIGTERM takes the process down in the kernel and leaves them running."
   ((remote-object))
   (:documentation "CEF download class."))
 
+(defvar *download-lock* (bt:make-lock "nyxt-cef-download"))
+(defvar *download-updates* '())
+(defvar *download-worker-running-p* nil)
+
+(defun download-status-keyword (state)
+  (match state
+    ("completed" :finished)
+    ("progressing" :loading)
+    ("cancelled" :canceled)
+    ("interrupted" :failed)))
+
 (defmethod update-status ((download cef-download))
   (setf (nyxt/mode/download:status download)
-        (match (cef:state (remote-object download))
-          ("completed" :finished)
-          ("progressing" :loading)
-          ("cancelled" :canceled)
-          ("interrupted" :failed))))
+        (download-status-keyword (cef:state (remote-object download)))))
+
+(defun apply-download-update (download-item url state received-bytes percent-complete save-path)
+  (let ((download (find download-item (downloads *browser*) :key #'remote-object)))
+    (unless download
+      (setf download (make-instance 'nyxt/mode/download:download
+                                    :remote-object download-item
+                                    :url url))
+      (push download (downloads *browser*))
+      (setf (nyxt/mode/download::cancel-function download)
+            (lambda ()
+              (cef:cancel (remote-object download)))))
+    (setf (url download) url
+          (nyxt/mode/download:bytes-downloaded download) received-bytes
+          (nyxt/mode/download:completion-percentage download) (float percent-complete 1.0)
+          (nyxt/mode/download:destination-path download)
+          (uiop:parse-native-namestring (or save-path ""))
+          (nyxt/mode/download:status download) (download-status-keyword state))))
+
+(defun drain-download-updates ()
+  (loop
+    (let ((entry (bt:with-lock-held (*download-lock*)
+                   (if *download-updates*
+                       (pop *download-updates*)
+                       (progn
+                         (setf *download-worker-running-p* nil)
+                         nil)))))
+      (unless entry
+        (return))
+      (with-protect ("Error updating CEF download: ~a" :condition)
+        (apply #'apply-download-update entry)))))
 
 (defun download-item-updated (download-item)
-  (let ((download (find download-item (downloads *browser*) :key #'remote-object)))
-    (if download
-        (progn
-          (setf (url download) (cef:url (remote-object download))
-                (nyxt/mode/download:bytes-downloaded download)
-                (cef:received-bytes (remote-object download))
-                (nyxt/mode/download:completion-percentage download)
-                (float (cef:percent-complete (remote-object download)) 1.0)
-                (nyxt/mode/download:destination-path download)
-                (uiop:parse-native-namestring
-                 (or (cef:save-path (remote-object download)) "")))
-          (update-status download))
-        (let ((download (make-instance 'nyxt/mode/download:download
-                                       :remote-object download-item
-                                       :url (cef:url download-item))))
-          (push download (downloads *browser*))
-          (setf (nyxt/mode/download::cancel-function download)
-                (lambda ()
-                  (cef:cancel (remote-object download))))
-          (update-status download)))))
+  (let ((entry (list download-item
+                     (cef:url download-item)
+                     (cef:state download-item)
+                     (cef:received-bytes download-item)
+                     (cef:percent-complete download-item)
+                     (cef:save-path download-item)))
+        (start-worker-p nil))
+    (bt:with-lock-held (*download-lock*)
+      (setf *download-updates* (nconc *download-updates* (list entry)))
+      (unless *download-worker-running-p*
+        (setf *download-worker-running-p* t
+              start-worker-p t)))
+    (when start-worker-p
+      (run-thread "CEF download updater"
+        (drain-download-updates)))))
 
 (define-class cef-user-style ()
   ((style-id
     nil
-    :documentation "Identifier returned by `cef:insert-css'."))
+    :documentation "Identifier returned by `cef:insert-css'.")
+   (style-ids
+    (tg:make-weak-hash-table :test 'eq :weakness :key)
+    :export nil
+    :initarg nil
+    :documentation "Per-buffer map from `cef-buffer' to inserted CSS identifier."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "CEF user style sheet."))
@@ -456,7 +513,12 @@ SIGTERM takes the process down in the kernel and leaves them running."
 (define-class cef-user-script ()
   ((script-id
     nil
-    :documentation "Identifier returned by `cef:add-user-script'."))
+    :documentation "Identifier returned by `cef:add-user-script'.")
+   (script-ids
+    (tg:make-weak-hash-table :test 'eq :weakness :key)
+    :export nil
+    :initarg nil
+    :documentation "Per-buffer map from `cef-buffer' to registered user-script identifier."))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:documentation "CEF user script. Scripts run in the page world."))
@@ -546,6 +608,11 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
 ;; The native view is already created at about:blank. Loading that URL again
 ;; before the view is in a window re-enters CEF and exits the message loop.
 
+(defun safe-cef-uri (url-string)
+  "Parse URL-STRING as a `quri:uri', returning an empty URI when malformed."
+  (handler-case (quri:uri (or url-string ""))
+    (quri:uri-error () (quri:uri ""))))
+
 (defmethod initialize-window-open-handler ((buffer cef-buffer))
   ;; target=_blank and window.open become a Nyxt buffer. The popup itself is
   ;; cancelled on the UI thread; the buffer is created afterwards so view
@@ -554,9 +621,10 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
    (cef:web-contents buffer)
    (lambda (object data)
      (declare (ignore object))
-     (let ((url (assoc-value data :url)))
-       (run-thread "window-open"
-         (make-buffer-focus :url (quri:uri url)))))))
+     (let ((url (safe-cef-uri (assoc-value data :url))))
+       (unless (url-empty-p url)
+         (run-thread "window-open"
+           (make-buffer-focus :url url)))))))
 
 (defun event-modifiers (event)
   (delete nil (list (when (assoc-value event :shift) :shift)
@@ -565,7 +633,7 @@ A prompt adopts the window's view. A web buffer's canvas color depends on
                     (when (assoc-value event :meta) :meta))))
 
 (defun event-url (data)
-  (quri:uri (or (assoc-value data :url) "")))
+  (safe-cef-uri (assoc-value data :url)))
 
 (defmacro run-buffer-thread (name buffer &body body)
   "Run BODY when BUFFER's page view is still alive.
@@ -575,6 +643,14 @@ view before those threads run, and a call into the missing view has no method."
      (when (and (cef:web-contents ,buffer)
                 (not (nyxt::dead-buffer-p ,buffer)))
        ,@body)))
+
+(defmacro with-web-contents ((contents buffer &key else) &body body)
+  "Run BODY with BUFFER's web contents bound to CONTENTS.
+Return ELSE when BUFFER has no web view."
+  (once-only (buffer)
+    `(if-let ((,contents (cef:web-contents ,buffer)))
+       (progn ,@body)
+       ,else)))
 
 (defmethod initialize-listeners ((buffer cef-buffer))
   (cef:add-listener buffer :focus
@@ -702,17 +778,16 @@ view before those threads run, and a call into the missing view has no method."
   (cef:load-html buffer html-content))
 
 (defmethod ffi-buffer-zoom-ratio ((buffer cef-buffer))
-  (if-let ((contents (cef:web-contents buffer)))
-    (cef:get-zoom-factor contents)
-    (or (zoom-ratio buffer) 1.0)))
+  (with-web-contents (contents buffer :else (or (zoom-ratio buffer) 1.0))
+    (cef:get-zoom-factor contents)))
 
 (defmethod (setf ffi-buffer-zoom-ratio) (value (buffer cef-buffer))
   (cond
-    ((not (and (floatp value) (or (zerop value) (plusp value))))
-     (echo-warning "Zoom ratio must be a non-negative floating point number."))
+    ((not (and (realp value) (plusp value)))
+     (echo-warning "Zoom ratio must be a positive number."))
     (t
-     (when-let ((contents (cef:web-contents buffer)))
-       (cef:set-zoom-factor contents value)))))
+     (with-web-contents (contents buffer)
+       (cef:set-zoom-factor contents (float value 1.0))))))
 
 (defmethod ffi-buffer-set-background-color ((view cef:view) color)
   (when (plusp (cef:id view))
@@ -767,16 +842,18 @@ view before those threads run, and a call into the missing view has no method."
 (defmethod ffi-buffer-evaluate-javascript ((buffer cef-buffer) javascript
                                            &optional world-name)
   (declare (ignore world-name))
-  (if-let ((contents (cef:web-contents buffer)))
-    (cef:execute-javascript-synchronous contents javascript)
-    (warn "CEF buffer ~a has no web view; skipping JavaScript." buffer)))
+  (with-web-contents (contents buffer
+                      :else (warn "CEF buffer ~a has no web view; skipping JavaScript."
+                                  buffer))
+    (cef:execute-javascript-synchronous contents javascript)))
 
 (defmethod ffi-buffer-evaluate-javascript-async ((buffer cef-buffer) javascript
                                                  &optional world-name)
   (declare (ignore world-name))
-  (if-let ((contents (cef:web-contents buffer)))
-    (cef:execute-javascript contents javascript)
-    (warn "CEF buffer ~a has no web view; skipping JavaScript." buffer)))
+  (with-web-contents (contents buffer
+                      :else (warn "CEF buffer ~a has no web view; skipping JavaScript."
+                                  buffer))
+    (cef:execute-javascript contents javascript)))
 
 (defmethod ffi-inspector-show ((buffer cef-buffer))
   (cef:open-dev-tools buffer))
@@ -787,42 +864,50 @@ view before those threads run, and a call into the missing view has no method."
 (defmethod ffi-buffer-copy ((buffer cef-buffer) &optional (text nil text-provided-p))
   (if text-provided-p
       (setf (clipboard-text) text)
-      (let ((selection (nyxt::buffer-selection-text buffer)))
-        ;; Copy runs first so the page sees the event. CEF does not export a
-        ;; clipboard of its own, so the text is published here afterwards.
-        (cef:copy (cef:web-contents buffer))
-        (if (and (stringp selection) (not (uiop:emptyp selection)))
-            (setf (clipboard-text) selection)
-            (clipboard-text)))))
+      (with-web-contents (contents buffer)
+        (let ((selection (nyxt::buffer-selection-text buffer)))
+          ;; Copy runs first so the page sees the event. CEF does not export a
+          ;; clipboard of its own, so the text is published here afterwards.
+          (cef:copy contents)
+          (if (and (stringp selection) (not (uiop:emptyp selection)))
+              (setf (clipboard-text) selection)
+              (clipboard-text))))))
 
 (defmethod ffi-buffer-paste ((buffer cef-buffer) &optional (text nil text-provided-p))
   (let ((text (if text-provided-p text (clipboard-text))))
-    (if text
-        (cef:insert-text (cef:web-contents buffer) text)
-        (cef:paste (cef:web-contents buffer)))
+    (with-web-contents (contents buffer)
+      (if text
+          (cef:insert-text contents text)
+          (cef:paste contents)))
     text))
 
 (defmethod ffi-buffer-cut ((buffer cef-buffer))
-  (let ((selection (nyxt::buffer-selection-text buffer)))
-    (cef:cut (cef:web-contents buffer))
-    (when (and (stringp selection) (not (uiop:emptyp selection)))
-      (setf (clipboard-text) selection))
-    selection))
+  (with-web-contents (contents buffer)
+    (let ((selection (nyxt::buffer-selection-text buffer)))
+      (cef:cut contents)
+      (when (and (stringp selection) (not (uiop:emptyp selection)))
+        (setf (clipboard-text) selection))
+      selection)))
 
 (defmethod ffi-buffer-select-all ((buffer cef-buffer))
-  (cef:select-all (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
+    (cef:select-all contents)))
 
 (defmethod ffi-buffer-undo ((buffer cef-buffer))
-  (cef:undo (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
+    (cef:undo contents)))
 
 (defmethod ffi-buffer-redo ((buffer cef-buffer))
-  (cef:redo (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
+    (cef:redo contents)))
 
 (defmethod ffi-buffer-navigate-backwards ((buffer cef-buffer))
-  (cef:go-back (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
+    (cef:go-back contents)))
 
 (defmethod ffi-buffer-navigate-forwards ((buffer cef-buffer))
-  (cef:go-forward (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
+    (cef:go-forward contents)))
 
 (defun update-window-buffer-bounds (window delta)
   "Recalculate the bounds of WINDOW's buffer to match WINDOW."
@@ -917,23 +1002,36 @@ view before those threads run, and a call into the missing view has no method."
                     :height (assoc-value bounds :height))))
 
 (defmethod ffi-buffer-sound-enabled-p ((buffer cef-buffer))
-  (not (cef:muted-p (cef:web-contents buffer))))
+  (with-web-contents (contents buffer :else t)
+    (not (cef:muted-p contents))))
 (defmethod (setf ffi-buffer-sound-enabled-p) (value (buffer cef-buffer))
-  (cef:set-audio-muted (cef:web-contents buffer) (not value)))
+  (with-web-contents (contents buffer)
+    (cef:set-audio-muted contents (not value)))
+  value)
 
 (defmethod ffi-buffer-download ((buffer cef-buffer) url)
-  (cef:download-url (cef:web-contents buffer) url))
+  (with-web-contents (contents buffer)
+    (cef:download-url contents url)))
 
 (defmethod ffi-buffer-add-user-style ((buffer cef-buffer) (style cef-user-style))
-  (when-let ((code (nyxt/mode/user-script:code style)))
-    (setf (style-id style)
-          (cef:insert-css (cef:web-contents buffer) code)))
+  (with-web-contents (contents buffer)
+    (when-let ((existing (gethash buffer (style-ids style))))
+      (cef:remove-inserted-css contents existing))
+    (when-let ((code (nyxt/mode/user-script:code style)))
+      (let ((id (cef:insert-css contents code)))
+        (setf (gethash buffer (style-ids style)) id
+              (style-id style) id))))
   style)
 
 (defmethod ffi-buffer-remove-user-style ((buffer cef-buffer) (style cef-user-style))
-  (when (style-id style)
-    (cef:remove-inserted-css (cef:web-contents buffer) (style-id style))
-    (setf (style-id style) nil)))
+  (let ((id (or (gethash buffer (style-ids style))
+                (style-id style))))
+    (remhash buffer (style-ids style))
+    (when (equal id (style-id style))
+      (setf (style-id style) nil))
+    (when id
+      (with-web-contents (contents buffer)
+        (cef:remove-inserted-css contents id)))))
 
 (defun user-script-body (script)
   "Wrap SCRIPT so include and exclude patterns are honored in the page world.
@@ -968,18 +1066,27 @@ if (exclude.some(match)) return;
 
 (defmethod ffi-buffer-add-user-script ((buffer cef-buffer) (script cef-user-script))
   (if-let ((code (nyxt/mode/user-script:code script)))
-    (setf (script-id script)
-          (cef:add-user-script (cef:web-contents buffer)
-                               (user-script-body script)
-                               :run-at (nyxt/mode/user-script:run-at script)
-                               :all-frames-p (nyxt/mode/user-script:all-frames-p script)))
+    (with-web-contents (contents buffer)
+      (when-let ((existing (gethash buffer (script-ids script))))
+        (cef:remove-user-script contents existing))
+      (let ((id (cef:add-user-script contents
+                                     (user-script-body script)
+                                     :run-at (nyxt/mode/user-script:run-at script)
+                                     :all-frames-p (nyxt/mode/user-script:all-frames-p script))))
+        (setf (gethash buffer (script-ids script)) id
+              (script-id script) id)))
     (echo-warning "User script ~a is empty." script))
   script)
 
 (defmethod ffi-buffer-remove-user-script ((buffer cef-buffer) (script cef-user-script))
-  (when (script-id script)
-    (cef:remove-user-script (cef:web-contents buffer) (script-id script))
-    (setf (script-id script) nil)))
+  (let ((id (or (gethash buffer (script-ids script))
+                (script-id script))))
+    (remhash buffer (script-ids script))
+    (when (eql id (script-id script))
+      (setf (script-id script) nil))
+    (when id
+      (with-web-contents (contents buffer)
+        (cef:remove-user-script contents id)))))
 
 (defmethod ffi-buffer-smooth-scrolling-enabled-p ((buffer cef-buffer))
   (smooth-scrolling-p buffer))
@@ -992,22 +1099,28 @@ if (exclude.some(match)) return;
   (setf (media-enabled-p buffer) value))
 
 (defmethod ffi-buffer-auto-load-image-enabled-p ((buffer cef-buffer))
-  (cef:images-enabled-p (cef:web-contents buffer)))
+  (with-web-contents (contents buffer :else t)
+    (cef:images-enabled-p contents)))
 (defmethod (setf ffi-buffer-auto-load-image-enabled-p) (value (buffer cef-buffer))
-  (cef:set-images-enabled (cef:web-contents buffer) value))
+  (with-web-contents (contents buffer)
+    (cef:set-images-enabled contents value))
+  value)
 
 (defmethod ffi-buffer-blocked-hosts ((buffer cef-buffer))
   (blocked-hosts buffer))
 (defmethod (setf ffi-buffer-blocked-hosts) (hosts (buffer cef-buffer))
   (setf (blocked-hosts buffer) hosts)
-  (when-let ((contents (cef:web-contents buffer)))
+  (with-web-contents (contents buffer)
     (cef:set-blocked-hosts contents (format nil "~{~a~^~%~}" hosts)))
   hosts)
 
 (defmethod ffi-buffer-cookie-policy ((buffer cef-buffer))
-  (cef:cookie-policy (cef:web-contents buffer)))
+  (with-web-contents (contents buffer :else (default-cookie-policy *browser*))
+    (cef:cookie-policy contents)))
 (defmethod (setf ffi-buffer-cookie-policy) (value (buffer cef-buffer))
-  (cef:set-cookie-policy (cef:web-contents buffer) value))
+  (with-web-contents (contents buffer)
+    (cef:set-cookie-policy contents value))
+  value)
 
 (define-class cef-window (cef:window)
   ((current-view)
@@ -1405,16 +1518,17 @@ The buffer is created off the UI thread. Creating a view from this callback
 re-enters CEF."
   (let ((url-string (or (assoc-value data :url) ""))
         (disposition (assoc-value data :disposition)))
-    (when (and (not (uiop:emptyp url-string))
+    (when (and (network-buffer-p buffer)
+               (not (uiop:emptyp url-string))
                (member disposition '("background-tab" "foreground-tab") :test #'string=))
-      (let ((handler (nyxt::request-resource-handler
+      (let ((url (safe-cef-uri url-string))
+            (handler (nyxt::request-resource-handler
                       buffer
                       :modifiers (when (string= disposition "foreground-tab")
                                    (input-modifier-translator buffer '(:shift))))))
-        (when handler
-          (let ((url (quri:uri url-string)))
-            (run-thread "open-url-from-tab"
-              (funcall handler :url url :buffer buffer)))
+        (when (and handler (not (url-empty-p url)))
+          (run-thread "open-url-from-tab"
+            (funcall handler :url url :buffer buffer))
           t)))))
 
 (defun on-signal-hover (buffer data)
@@ -1428,7 +1542,7 @@ re-enters CEF."
           (progn
             (when-let ((window (window buffer)))
               (nyxt::print-message (str:concat "→ " url) window))
-            (setf (url-at-point buffer) (quri:uri url)))))))
+            (setf (url-at-point buffer) (safe-cef-uri url)))))))
 
 (defvar *context-menu-commands-by-id* (make-hash-table)
   "Command id assigned while a context menu is open, to the command it runs.")

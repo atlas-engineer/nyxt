@@ -12,8 +12,10 @@
 
 (defmethod files:resolve ((profile nyxt-profile) (socket socket-file))
   "Return finalized path for socket files."
-  (uiop:ensure-pathname (or (getf *options* :socket) (call-next-method))
-                        :truenamize t))
+  (let ((path (or (getf *options* :socket) (call-next-method))))
+    (if (files:nil-pathname-p path)
+        #p""
+        (uiop:ensure-pathname path :truenamize t))))
 
 (export-always '*socket-file*)
 (defvar *socket-file* (make-instance 'socket-file)
@@ -177,24 +179,41 @@ again from that path when it still exists, or from the AppImage or Flatpak.")
                   (uiop:ensure-directory-pathname
                    (uiop:merge-pathnames* directory root))))
                 candidates))))
+    (when sb-ext:*runtime-pathname*
+      (let ((runtime-dir (uiop:pathname-directory-pathname sb-ext:*runtime-pathname*)))
+        (dolist (directory (list runtime-dir
+                                 (uiop:merge-pathnames* #p"../Frameworks/" runtime-dir)))
+          (push (uiop:native-namestring (uiop:merge-pathnames* base directory))
+                candidates))))
     (push namestring candidates)
     (push base candidates)
     (nreverse candidates)))
 
 (defun reload-relocatable-libraries ()
   "Load the shared libraries recorded by `prepare-relocatable-libraries'."
-  (dolist (namestring *relocatable-foreign-libraries*)
-    (let ((path (find-if (lambda (candidate)
-                           (and candidate
-                                (plusp (length candidate))
-                                (or (not (position #\/ candidate))
-                                    (uiop:file-exists-p candidate))))
-                         (foreign-library-candidates namestring))))
-      (when path
-        (handler-case (sb-alien:load-shared-object path :dont-save t)
-          (error (condition)
-            (format t "~&Could not load ~a from ~a: ~a~%" namestring path condition)
-            (finish-output)))))))
+  (let ((loaded-ssl-p nil)
+        (loaded-crypto-p nil))
+    (dolist (namestring *relocatable-foreign-libraries*)
+      (let ((path (find-if (lambda (candidate)
+                             (and candidate
+                                  (plusp (length candidate))
+                                  (or (not (position #\/ candidate))
+                                      (uiop:file-exists-p candidate))))
+                           (foreign-library-candidates namestring))))
+        (when path
+          (handler-case
+              (progn
+                (sb-alien:load-shared-object path :dont-save t)
+                (when (search "libssl" path)
+                  (setf loaded-ssl-p t))
+                (when (search "libcrypto" path)
+                  (setf loaded-crypto-p t)))
+            (error (condition)
+              (format t "~&Could not load ~a from ~a: ~a~%" namestring path condition)
+              (finish-output))))))
+    (when (and loaded-ssl-p loaded-crypto-p)
+      (pushnew :cl+ssl-foreign-libs-already-loaded *features*))
+    (sb-sys:update-alien-linkage-table t)))
 
 (export-always 'prepare-relocatable-libraries)
 (defun prepare-relocatable-libraries ()
@@ -220,6 +239,12 @@ usual distribution locations, then the copy shipped in an AppImage."
                       (uiop:file-exists-p path))
              path)))
     (or (existing (uiop:getenv "SSL_CERT_FILE"))
+        (when sb-ext:*runtime-pathname*
+          (existing
+           (uiop:native-namestring
+            (uiop:merge-pathnames*
+             #p"../Resources/cert.pem"
+             (uiop:pathname-directory-pathname sb-ext:*runtime-pathname*)))))
         (some #'existing
               '("/etc/ssl/certs/ca-certificates.crt"
                 "/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem"
@@ -244,6 +269,65 @@ download fails verification."
       (require :sb-posix)
       (uiop:symbol-call :sb-posix :setenv "SSL_CERT_FILE" ca-file 1))))
 
+#+(and darwin sbcl)
+(cffi:defcstruct darwin-pollfd
+  (fd :int)
+  (events :short)
+  (revents :short))
+
+#+(and darwin sbcl)
+(cffi:defcfun ("poll" darwin-poll) :int
+  (fds (:pointer (:struct darwin-pollfd)))
+  (nfds :unsigned-int)
+  (timeout :int))
+
+#+(and darwin sbcl)
+(defvar *original-unix-simple-poll* nil)
+
+#+(and darwin sbcl)
+(defun darwin-high-fd-poll (fd direction to-msec)
+  (let ((events (ecase direction
+                  (:input 3)
+                  (:output 4)))
+        (deadline (when (and (integerp to-msec) (>= to-msec 0))
+                    (+ (* (get-internal-real-time)
+                          (/ 1000 internal-time-units-per-second))
+                       to-msec))))
+    (cffi:with-foreign-object (pfd '(:struct darwin-pollfd))
+      (loop
+        (let ((timeout (cond
+                         ((or (null to-msec) (minusp to-msec)) -1)
+                         (t (min #x7fffffff
+                                 (max 0
+                                      (ceiling (- deadline
+                                                  (* (get-internal-real-time)
+                                                     (/ 1000 internal-time-units-per-second))))))))))
+          (setf (cffi:foreign-slot-value pfd '(:struct darwin-pollfd) 'fd) fd
+                (cffi:foreign-slot-value pfd '(:struct darwin-pollfd) 'events) events
+                (cffi:foreign-slot-value pfd '(:struct darwin-pollfd) 'revents) 0)
+          (let ((rc (darwin-poll pfd 1 timeout)))
+            (cond
+              ((plusp rc)
+               (let ((revents (cffi:foreign-slot-value pfd '(:struct darwin-pollfd) 'revents)))
+                 (return (not (zerop (logand revents (logior events 8 16 32)))))))
+              ((zerop rc)
+               (return nil))
+              ((= (sb-alien:get-errno) 4))
+              (t
+               (error "Syscall poll(2) failed on fd ~d: ~a."
+                      fd (sb-int:strerror (sb-alien:get-errno)))))))))))
+
+#+(and darwin sbcl)
+(defun ensure-darwin-high-fd-poll ()
+  (unless *original-unix-simple-poll*
+    (setf *original-unix-simple-poll* (fdefinition 'sb-unix:unix-simple-poll))
+    (sb-ext:without-package-locks
+      (setf (fdefinition 'sb-unix:unix-simple-poll)
+            (lambda (fd direction to-msec)
+              (if (and (integerp fd) (>= fd 1024))
+                  (darwin-high-fd-poll fd direction to-msec)
+                  (funcall *original-unix-simple-poll* fd direction to-msec)))))))
+
 (export-always 'entry-point)
 (defun entry-point ()
   "Read the CLI arguments and start the browser.
@@ -265,11 +349,10 @@ Don't run this from a REPL, prefer `start' instead."
       (flet ((eval-protect (s-exp)
                (with-protect ("Error in s-exp evaluation: ~a" :condition)
                  (eval s-exp))))
-        (let* ((sexps (safe-slurp-stream-forms input))
-               (but-last (butlast sexps))
-               (last (alex:last-elt sexps)))
-          (mapc #'eval-protect but-last)
-          (format t "~&~a~&" (eval-protect last)))))))
+        (with-protect ("Error in s-exp reader: ~a" :condition)
+          (when-let ((sexps (safe-slurp-stream-forms input)))
+            (mapc #'eval-protect (butlast sexps))
+            (format t "~&~a~&" (eval-protect (alex:last-elt sexps)))))))))
 
 (defun parse-urls (expr)
   "Do _not_ evaluate EXPR and try to parse URLs that were sent to it.
@@ -292,19 +375,21 @@ EXPR is expected to be as per the expression sent in `listen-or-query-socket'."
         (log:info "Listening to socket: ~s" socket-path)
         (loop as connection = (iolib:accept-connection s)
               while connection
-              do (when-let
-                     ((expr (alex:read-stream-content-into-string connection)))
-                   (unless (uiop:emptyp expr)
-                     (cond ((remote-execution-p *browser*)
-                            (log:info "External evaluation request: ~s" expr)
-                            (eval-expr expr))
-                           ((parse-urls expr)
-                            (ffi-within-renderer-thread
-                             (lambda () (open-urls (parse-urls expr))))
-                            (when (current-window)
-                                (ffi-window-to-foreground
-                                 (current-window))))
-                           (t (make-window))))))))))
+              do (with-protect ("Error in socket listener: ~a" :condition)
+                   (unwind-protect
+                        (when-let ((expr (uiop:slurp-stream-string connection)))
+                          (unless (uiop:emptyp expr)
+                            (cond ((remote-execution-p *browser*)
+                                   (log:info "External evaluation request: ~s" expr)
+                                   (eval-expr expr))
+                                  ((parse-urls expr)
+                                   (ffi-within-renderer-thread
+                                    (lambda () (open-urls (parse-urls expr))))
+                                   (when (current-window)
+                                     (ffi-window-to-foreground
+                                      (current-window))))
+                                  (t (make-window)))))
+                     (ignore-errors (close connection)))))))))
 
 (defun listening-socket-p ()
   (ignore-errors
@@ -361,6 +446,8 @@ The OPTIONS are the same as the command line options.
 
 ~a" (with-output-to-string (s) (opts:describe :stream s)))
   (declare #.(cons 'ignorable %start-args))
+  #+(and darwin sbcl)
+  (ensure-darwin-high-fd-poll)
   (ensure-ssl-cert-file)
   ;; Nyxt extensions should be made accessible straight from the beginning,
   ;; e.g. before a script is run.
