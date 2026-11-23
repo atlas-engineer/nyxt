@@ -89,29 +89,67 @@ cp -a "$cef_build/locales" "$stage/usr/lib/cef/locales"
 # CFFI loads these by file name. Copy the real object and the name it asks for.
 # Leave glibc, GTK, and the rest of the desktop stack on the host: libcef.so
 # is linked against those, and a second copy on LD_LIBRARY_PATH breaks it.
-find_lib() {
-    name=$1
-    found=$(ldconfig -p | awk -v name="$name" '$1 == name { print $NF; exit }')
-    if [ -n "$found" ]; then
-        printf '%s\n' "$found"
+ldconfig_bin() {
+    if command -v ldconfig >/dev/null 2>&1; then
+        command -v ldconfig
         return 0
     fi
-    for dir in /lib /usr/lib /lib64 /usr/lib64 \
-        /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
-    do
-        if [ -e "$dir/$name" ]; then
-            printf '%s\n' "$dir/$name"
+    for candidate in /sbin/ldconfig /usr/sbin/ldconfig; do
+        if [ -x "$candidate" ]; then
+            printf '%s\n' "$candidate"
             return 0
         fi
     done
-    printf '%s\n' "Could not find shared library $name" >&2
     return 1
+}
+
+elf_class() {
+    od -An -t u1 -j 4 -N 1 "$1" | tr -d ' \n'
+}
+
+find_lib() {
+    name=$1
+    found=""
+    if ldconfig=$(ldconfig_bin); then
+        found=$("$ldconfig" -p | awk -v name="$name" '
+            $1 == name && index($0, "x86-64") && index($0, "hwcap") == 0 {
+                print $NF
+                exit
+            }')
+        if [ -z "$found" ]; then
+            found=$("$ldconfig" -p | awk -v name="$name" '
+                $1 == name && index($0, "x86-64") {
+                    print $NF
+                    exit
+                }')
+        fi
+    fi
+    if [ -z "$found" ]; then
+        for dir in /lib64 /usr/lib64 \
+            /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
+            /lib /usr/lib
+        do
+            if [ -e "$dir/$name" ] && [ "$(elf_class "$dir/$name")" = "2" ]; then
+                found=$dir/$name
+                break
+            fi
+        done
+    fi
+    if [ -z "$found" ]; then
+        printf '%s\n' "Could not find a 64-bit shared library $name" >&2
+        return 1
+    fi
+    printf '%s\n' "$found"
 }
 
 install_lib() {
     name=$1
     path=$(find_lib "$name")
     real=$(readlink -f "$path")
+    if [ "$(elf_class "$real")" != "2" ]; then
+        printf '%s\n' "Refusing to ship $name from $real: not a 64-bit ELF." >&2
+        return 1
+    fi
     base=$(basename "$real")
     cp -f "$real" "$stage/usr/lib/$base"
     if [ "$base" != "$name" ]; then
