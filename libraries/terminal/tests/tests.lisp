@@ -18,6 +18,18 @@
          (assert-true (wait-for-text pty "nyxt-terminal-ok"))
       (terminal:stop pty))))
 
+(define-test controlling-terminal ()
+  (let ((pty (terminal:start
+              (list "/bin/sh" "-c"
+                    (concatenate
+                     'string
+                     "pgid=$(ps -o pgid= -p $$ | tr -d ' '); "
+                     "tpgid=$(ps -o tpgid= -p $$ | tr -d ' '); "
+                     "[ \"$pgid\" = \"$tpgid\" ] && echo ctty-ok")))))
+    (unwind-protect
+         (assert-true (wait-for-text pty "ctty-ok"))
+      (terminal:stop pty))))
+
 (define-test writes-input ()
   (let ((pty (terminal:start '("/bin/cat"))))
     (unwind-protect

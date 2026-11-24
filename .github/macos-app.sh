@@ -295,6 +295,11 @@ cp -f "$clipboard_dir/libcl-clipboard.dylib" "$stage/Contents/MacOS/libcl-clipbo
 chmod 755 "$stage/Contents/MacOS/libcl-clipboard.dylib"
 cp -f "$root/nyxt" "$stage/Contents/MacOS/nyxt"
 chmod 755 "$stage/Contents/MacOS/nyxt"
+clang -O2 -o "$stage/Contents/MacOS/nyxt-login-exec" "$root/libraries/terminal/login-exec.c"
+chmod 755 "$stage/Contents/MacOS/nyxt-login-exec"
+clang -O2 -dynamiclib -o "$stage/Contents/MacOS/libnyxt-terminal.dylib" \
+    "$root/libraries/terminal/login-exec.c"
+chmod 755 "$stage/Contents/MacOS/libnyxt-terminal.dylib"
 dynamic_mb=$(python3 - "$stage/Contents/MacOS/nyxt" "$stage/Contents/Resources/nyxt.core" <<'PY'
 import os, struct, sys
 path, core_path = sys.argv[1], sys.argv[2]

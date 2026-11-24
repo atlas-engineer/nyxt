@@ -3,6 +3,19 @@
 
 (in-package :terminal)
 
+(defvar *terminal-library-file* nil
+  "Path this file was loaded from.")
+
+(defvar *terminal-set-nonblock* nil
+  "Foreign pointer to nyxt_set_nonblock.")
+
+(defvar *terminal-set-winsize* nil
+  "Foreign pointer to nyxt_set_winsize.")
+
+(let ((file (or *load-truename* *compile-file-truename*)))
+  (when file
+    (setf *terminal-library-file* file)))
+
 (defconstant +transcript-limit+ 262144)
 (defconstant +tiocsctty+ #x540E)
 (defconstant +tiocswinsz+ #x5414)
@@ -11,7 +24,14 @@
 (defconstant +pollerr+ #x008)
 (defconstant +pollhup+ #x010)
 (defconstant +eintr+ 4)
+#+linux
 (defconstant +eagain+ 11)
+#+darwin
+(defconstant +posix-spawn-setsigdef+ #x0004)
+#+darwin
+(defconstant +posix-spawn-setsigmask+ #x0008)
+#+darwin
+(defconstant +posix-spawn-cloexec-default+ #x4000)
 
 (cffi:defcstruct pollfd
   (fd :int)
@@ -27,7 +47,11 @@
 (-> errno () (values integer &optional))
 (defun errno ()
   "Return the current thread's errno."
-  (cffi:mem-ref (cffi:foreign-funcall "__errno_location" :pointer) :int))
+  (cffi:mem-ref (cffi:foreign-funcall
+                 #+linux "__errno_location"
+                 #+darwin "__error"
+                 :pointer)
+                :int))
 
 (-> close-fd (integer) (values integer &optional))
 (defun close-fd (fd)
@@ -38,6 +62,11 @@
 
 (defun set-nonblock (fd)
   "Make FD non-blocking."
+  #+darwin
+  (progn
+    (ensure-terminal-dylib)
+    (cffi:foreign-funcall-pointer *terminal-set-nonblock* () :int fd :int))
+  #-darwin
   (let ((flags (cffi:foreign-funcall "fcntl" :int fd :int 3 :int)))
     (when (>= flags 0)
       (cffi:foreign-funcall "fcntl" :int fd :int 4
@@ -124,6 +153,15 @@ This runs in the forked child. It does not return."
 
 (defun set-winsize (fd rows columns)
   "Set the window size of the terminal on FD."
+  #+darwin
+  (progn
+    (ensure-terminal-dylib)
+    (zerop (cffi:foreign-funcall-pointer *terminal-set-winsize* ()
+                                         :int fd
+                                         :unsigned-short rows
+                                         :unsigned-short columns
+                                         :int)))
+  #-darwin
   (cffi:with-foreign-object (size '(:struct winsize))
     (setf (cffi:foreign-slot-value size '(:struct winsize) 'row) rows
           (cffi:foreign-slot-value size '(:struct winsize) 'col) columns
@@ -223,6 +261,11 @@ This runs in the forked child. It does not return."
         (babel:octets-to-string octets :encoding :utf-8 :errorp nil)
         "")))
 
+(defun again-errno-p (err)
+  "Return whether ERR means the caller should wait and retry."
+  (or (= err +eintr+)
+      (= err #+linux +eagain+ #+darwin 35)))
+
 (defun write-fd (fd octets)
   "Write OCTETS to FD. Return how many bytes were written, or NIL on error.
 A short count means the descriptor would block."
@@ -240,7 +283,7 @@ A short count means the descriptor would block."
                (t (let ((err (errno)))
                     (cond
                       ((= err +eintr+) nil)
-                      ((= err +eagain+) (return offset))
+                      ((again-errno-p err) (return offset))
                       (t (return nil))))))
           finally (return offset))))
 
@@ -287,7 +330,7 @@ A short count means the descriptor would block."
            (setf (aref octets index) (cffi:mem-aref scratch :unsigned-char index)))
          octets))
       ((zerop count) :eof)
-      (t (if (or (= (errno) +eintr+) (= (errno) +eagain+))
+      (t (if (again-errno-p (errno))
              nil
              :eof)))))
 
@@ -349,6 +392,225 @@ A short count means the descriptor would block."
                  (when (eq :eof (read-available pty scratch))
                    (pty-exited pty)))))))
 
+#+darwin
+(cffi:defcfun ("posix_spawn" %posix-spawn) :int
+  (pid (:pointer :int))
+  (path :string)
+  (file-actions :pointer)
+  (attr :pointer)
+  (argv :pointer)
+  (envp :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawn_file_actions_init" %spawn-actions-init) :int
+  (actions :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawn_file_actions_destroy" %spawn-actions-destroy) :int
+  (actions :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawn_file_actions_adddup2" %spawn-adddup2) :int
+  (actions :pointer)
+  (fd :int)
+  (newfd :int))
+
+#+darwin
+(cffi:defcfun ("posix_spawnattr_init" %spawnattr-init) :int
+  (attr :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawnattr_destroy" %spawnattr-destroy) :int
+  (attr :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawnattr_setflags" %spawnattr-setflags) :int
+  (attr :pointer)
+  (flags :short))
+
+#+darwin
+(cffi:defcfun ("posix_spawnattr_setsigmask" %spawnattr-setsigmask) :int
+  (attr :pointer)
+  (mask :pointer))
+
+#+darwin
+(cffi:defcfun ("posix_spawnattr_setsigdefault" %spawnattr-setsigdefault) :int
+  (attr :pointer)
+  (mask :pointer))
+
+#+darwin
+(cffi:defcfun ("sigemptyset" %sigemptyset) :int
+  (set :pointer))
+
+#+darwin
+(cffi:defcfun ("sigfillset" %sigfillset) :int
+  (set :pointer))
+
+#+darwin
+(defun library-sibling (name type)
+  "Return NAME.TYPE beside the loaded library file."
+  (when *terminal-library-file*
+    (probe-file (make-pathname :name name
+                               :type type
+                               :defaults *terminal-library-file*))))
+
+#+darwin
+(defun login-exec-source ()
+  "Return the login-exec source, or NIL."
+  (or (library-sibling "login-exec" "c")
+      (ignore-errors
+       (probe-file (asdf:system-relative-pathname :nyxt/terminal "login-exec.c")))))
+
+#+darwin
+(defun bundled-login-exec ()
+  "Return a nyxt-login-exec beside this executable, or NIL."
+  (let ((argv0 (uiop:argv0)))
+    (when (and (stringp argv0) (plusp (length argv0)))
+      (probe-file
+       (uiop:merge-pathnames*
+        "nyxt-login-exec"
+        (uiop:pathname-directory-pathname
+         (uiop:ensure-pathname argv0 :namestring :native)))))))
+
+#+darwin
+(defun login-exec-destination ()
+  "Return the cached nyxt-login-exec path."
+  (uiop:merge-pathnames*
+   "nyxt/nyxt-login-exec"
+   (uiop:ensure-directory-pathname (uiop:xdg-cache-home))))
+
+#+darwin
+(defun fresh-login-exec-p (program source)
+  "Return whether PROGRAM and its library are at least as new as SOURCE."
+  (let ((library (helper-dylib program)))
+    (and (probe-file program)
+         (probe-file library)
+         (or (null source)
+             (and (>= (file-write-date program) (file-write-date source))
+                  (>= (file-write-date library) (file-write-date source)))))))
+
+#+darwin
+(defun compile-c (source output &rest flags)
+  "Compile SOURCE to OUTPUT. Return OUTPUT."
+  (ensure-directories-exist output)
+  (let ((temporary (make-pathname :name (format nil "~a-~a"
+                                                (pathname-name output)
+                                                (random 1000000))
+                                  :type (pathname-type output)
+                                  :defaults output)))
+    (unwind-protect
+         (multiple-value-bind (stdout stderr exit-code)
+             (uiop:run-program
+              (append (list "/usr/bin/cc" "-O2")
+                      flags
+                      (list "-o" (uiop:native-namestring temporary)
+                            (uiop:native-namestring source)))
+              :output :string
+              :error-output :string
+              :ignore-error-status t
+              :force-shell nil)
+           (declare (ignore stdout))
+           (unless (and exit-code (zerop exit-code) (probe-file temporary))
+             (error "Could not build the terminal program: ~a" stderr))
+           (uiop:rename-file-overwriting-target temporary output))
+      (uiop:delete-file-if-exists temporary))
+    output))
+
+#+darwin
+(defun helper-dylib (program)
+  "Return the library that belongs beside PROGRAM."
+  (make-pathname :name "libnyxt-terminal"
+                 :type "dylib"
+                 :defaults program))
+
+#+darwin
+(defun build-login-exec (source destination)
+  "Compile SOURCE to DESTINATION and its library. Return DESTINATION."
+  (compile-c source destination)
+  (compile-c source (helper-dylib destination) "-dynamiclib")
+  destination)
+
+#+darwin
+(defun login-exec-program ()
+  "Return the program that makes a spawned shell own its terminal."
+  (let ((source (login-exec-source)))
+    (uiop:native-namestring
+     (or (bundled-login-exec)
+         (let ((cached (login-exec-destination)))
+           (if (fresh-login-exec-p cached source)
+               cached
+               (if source
+                   (build-login-exec source cached)
+                   (error "Could not find the terminal program."))))))))
+
+#+darwin
+(defun ensure-terminal-dylib ()
+  "Load the library that sets the terminal size and non-blocking mode."
+  (unless (and *terminal-set-nonblock* *terminal-set-winsize*)
+    (cffi:load-foreign-library (helper-dylib (login-exec-program)))
+    (setf *terminal-set-nonblock* (cffi:foreign-symbol-pointer "nyxt_set_nonblock")
+          *terminal-set-winsize* (cffi:foreign-symbol-pointer "nyxt_set_winsize"))
+    (unless (and *terminal-set-nonblock* *terminal-set-winsize*)
+      (error "Could not load the terminal library."))))
+
+#+darwin
+(defun spawn-status (step status)
+  "Signal when STATUS is a non-zero errno from STEP."
+  (unless (zerop status)
+    (error "Could not start a terminal (~a, errno ~a)." step status)))
+
+#+darwin
+(defun spawn (slave master argv)
+  "Run ARGV with SLAVE as its controlling terminal. Return the child pid."
+  (declare (ignore master))
+  (let ((helper (login-exec-program))
+        (argv-pointer nil)
+        (envp nil)
+        (actions-ready nil)
+        (attr-ready nil)
+        (pid -1))
+    (unwind-protect
+         (cffi:with-foreign-objects ((actions :pointer)
+                                     (attr :pointer)
+                                     (pid-slot :int)
+                                     (blocked :unsigned-char 8)
+                                     (defaults :unsigned-char 8))
+           (setf argv-pointer (foreign-string-array (cons helper argv))
+                 envp (foreign-string-array (environment)))
+           (unwind-protect
+                (progn
+                  (spawn-status "file actions" (%spawn-actions-init actions))
+                  (setf actions-ready t)
+                  (spawn-status "attributes" (%spawnattr-init attr))
+                  (setf attr-ready t)
+                  (spawn-status "stdin" (%spawn-adddup2 actions slave 0))
+                  (spawn-status "stdout" (%spawn-adddup2 actions slave 1))
+                  (spawn-status "stderr" (%spawn-adddup2 actions slave 2))
+                  (spawn-status "signals" (%sigemptyset blocked))
+                  (spawn-status "signals" (%sigfillset defaults))
+                  (spawn-status "flags"
+                                (%spawnattr-setflags
+                                 attr
+                                 (logior +posix-spawn-setsigdef+
+                                         +posix-spawn-setsigmask+
+                                         +posix-spawn-cloexec-default+)))
+                  (spawn-status "mask" (%spawnattr-setsigmask attr blocked))
+                  (spawn-status "defaults" (%spawnattr-setsigdefault attr defaults))
+                  (spawn-status "spawn"
+                                (%posix-spawn pid-slot helper actions attr
+                                              argv-pointer envp))
+                  (setf pid (cffi:mem-ref pid-slot :int)))
+             (when actions-ready
+               (%spawn-actions-destroy actions))
+             (when attr-ready
+               (%spawnattr-destroy attr))))
+      (when argv-pointer
+        (free-foreign-string-array argv-pointer))
+      (when envp
+        (free-foreign-string-array envp)))
+    pid))
+
+#-darwin
 (defun spawn (slave master argv)
   "Fork and exec ARGV with SLAVE as its terminal. Return the child pid."
   (let ((program nil)
