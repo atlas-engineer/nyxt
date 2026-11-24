@@ -109,7 +109,7 @@
         :min-width "0"
         :height "28px"
         :gap "12px"
-        :padding "0 8px 0 24px"
+        :padding "0 8px 0 10px"
         :overflow "hidden")
       '("#controls"
         :display "flex"
