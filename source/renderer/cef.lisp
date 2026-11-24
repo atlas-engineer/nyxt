@@ -1542,7 +1542,7 @@ re-enters CEF."
             (setf (url-at-point buffer) (quri:uri "")))
           (progn
             (when-let ((window (window buffer)))
-              (nyxt::print-message (str:concat "→ " url) window))
+              (print-url-message url window))
             (setf (url-at-point buffer) (safe-cef-uri url)))))))
 
 (defvar *context-menu-commands-by-id* (make-hash-table)

@@ -1371,7 +1371,7 @@ non-null pointer."
                     (webkit:webkit-hit-test-result-media-uri hit-test-result))))
     (progn
       (when-let ((window (window buffer)))
-        (nyxt::print-message (str:concat "→ " (render-url url)) window))
+        (print-url-message (render-url url) window))
       (setf (url-at-point buffer) (quri:uri url)))
     (progn
       (when-let ((window (window buffer)))

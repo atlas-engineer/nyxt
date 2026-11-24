@@ -82,7 +82,7 @@
         :align-items "center"
         :height "100%"
         :margin 0
-        :padding "0 8px 0 10px"
+        :padding "0 8px 0 2px"
         :box-sizing "border-box"
         :overflow "hidden"
         :white-space "nowrap"
@@ -91,7 +91,23 @@
         :color ,theme:on-background-color
         :font-family ,theme:font-family
         :font-size "12px"
-        :line-height "12px"))))
+        :line-height "12px")
+      '(".hovered-url"
+        :display "flex"
+        :align-items "center"
+        :gap "5px"
+        :min-width "0"
+        :max-width "100%"
+        :overflow "hidden")
+      '(".hovered-url svg"
+        :display "block"
+        :flex "none"
+        :width "12px"
+        :height "12px")
+      '(".hovered-url-text"
+        :min-width "0"
+        :overflow "hidden"
+        :text-overflow "ellipsis"))))
   (:export-class-name-p t)
   (:export-accessor-names-p t)
   (:export-predicate-name-p t)
@@ -171,3 +187,15 @@ Untrusted content should be given as argument with a format string."
 (defmethod echo-dismiss ()
   "Clean the message buffer from the previous `echo'/`echo-warning' message."
   (%echo ""))
+
+(export-always 'print-url-message)
+(-> print-url-message (string window) *)
+(defun print-url-message (url-string window)
+  "Show URL-STRING in WINDOW's message buffer with a leading arrow."
+  (when window
+    (ffi-print-message
+     (message-buffer window)
+     (spinneret:with-html-string
+       (:span :class "hovered-url"
+              (:raw (gethash "arrow.svg" *static-data*))
+              (:span :class "hovered-url-text" url-string))))))
