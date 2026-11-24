@@ -418,11 +418,13 @@ buffers in the background."
 
 (-> bookmark-row (bookmark-entry buffer) t)
 (defun bookmark-row (bookmark buffer)
-  "Return a row for BOOKMARK: its title, its address, and edit and delete."
+  "Return a row for BOOKMARK: its title, its address, and edit and delete.
+A panel row loads the address in the page beside BUFFER."
   (let* ((url (render-url (url bookmark)))
          (title (title bookmark))
          (heading (if (str:emptyp title) url title))
-         (detail (unless (string= heading url) url)))
+         (detail (unless (string= heading url) url))
+         (panel-p (panel-buffer-p buffer)))
     (make-instance
      'user-interface:element
      :tag :li
@@ -430,7 +432,17 @@ buffers in the background."
      (list (make-instance 'user-interface:element
                           :tag :a
                           :title (or detail heading)
-                          :attributes (list :href url)
+                          :attributes (if panel-p
+                                          '(:href "#")
+                                          (list :href url))
+                          :action (when panel-p
+                                    (ps:ps
+                                      (ps:chain event (prevent-default))
+                                      (nyxt/ps:lisp-eval
+                                       (:title "open-bookmark"
+                                        :buffer buffer)
+                                       (open-url-from-panel buffer url))
+                                      nil))
                           :children
                           (list (make-instance 'user-interface:element
                                                :tag :span
@@ -625,9 +637,15 @@ Splits bookmarks into groups by tags."
           :text-transform "capitalize"
           :margin "0 0 7px"
           :line-height "24px"))
-      (render-menu 'bookmark-mode bookmarks-buffer)
-      (:h1 :class "grouped" "Bookmarks")
+      (when (include-in-buffer-list-p bookmarks-buffer)
+        (render-menu 'bookmark-mode bookmarks-buffer)
+        (:h1 :class "grouped" "Bookmarks"))
       (user-interface:to-html listing))))
+
+(define-buffer-panel bookmark-panel (:title "Bookmarks")
+  "Panel that lists bookmarks."
+  (enable-modes* 'bookmark-mode panel)
+  (ffi-buffer-load panel (quri:uri (nyxt-url 'list-bookmarks))))
 
 (defmethod serialize-object ((entry bookmark-entry) stream)
   (unless (url-empty-p (url entry))

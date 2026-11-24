@@ -91,6 +91,19 @@ A page loaded in the panel does not replace it."
   (apply-panel-geometry panel)
   panel)
 
+(export-always 'open-url-from-panel)
+(-> open-url-from-panel (panel-buffer t) t)
+(defun open-url-from-panel (panel url)
+  "Load URL in the page beside PANEL and focus that page."
+  (when-let* ((window (window panel))
+              (page (buffer window)))
+    (unless (or (eq page panel)
+                (panel-buffer-p page)
+                (dead-buffer-p page))
+      (ffi-buffer-load page (url url))
+      (ffi-focus-buffer page)))
+  nil)
+
 (export-always 'define-buffer-panel)
 (defmacro define-buffer-panel (name initargs &body body)
   "Define a `panel-buffer' subclass NAME and the commands that open it.
@@ -336,10 +349,34 @@ navigation bindings of `base-mode'."
       :outline "2px" "solid" ,(theme:action-color theme)
       :outline-offset "2px")))
 
+(-> panel-content-css (theme:theme) string)
+(defun panel-content-css (theme)
+  "Return the stylesheet for the page a panel shows.
+Row names are 13px, as on the buffer list, over an 11px address. A section
+heading matches the panel title at 17px."
+  (theme:themed-css theme
+    '("ul.list a span:first-of-type"
+      :font-size "13px"
+      :line-height "24px")
+    `("ul.list a span:last-of-type"
+      :font-size "11px"
+      :line-height "17px"
+      :color ,theme:primary-color)
+    '("h2"
+      :font-size "17px"
+      :font-weight "600"
+      :line-height "24px")
+    `("p.empty"
+      :margin "0"
+      :font-size "17px"
+      :line-height "24px"
+      :color ,theme:primary-color)))
+
 (defmethod style :around ((panel panel-buffer))
   (uiop:strcat (call-next-method)
                (if (and *browser* (theme *browser*))
-                   (panel-chrome-css (theme *browser*))
+                   (uiop:strcat (panel-chrome-css (theme *browser*))
+                                (panel-content-css (theme *browser*)))
                    "")))
 
 (-> panel-chrome-script (panel-buffer string string string theme:theme) string)

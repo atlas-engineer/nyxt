@@ -341,28 +341,32 @@ extension URLs."
 (defun import-history-rows (rows)
   "Insert one history entry per new URL in ROWS.
 ROWS are (url-string title). URLs already in `history-vector' are left in place."
-  (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
-    (let ((seen (make-hash-table :test #'equal))
-          (count 0))
-      (loop for entry across (history-vector *browser*)
-            for rendered = (render-url (url entry))
-            unless (str:emptyp rendered)
-              do (setf (gethash rendered seen) t))
-      (loop for (url-string title) in rows
-            for url = (importable-url url-string)
-            for rendered = (and url (render-url url))
-            when (and rendered (not (gethash rendered seen)))
-              do (setf (gethash rendered seen) t)
-                 (incf count)
-                 (vector-push-extend
-                  (make-instance 'history-entry
-                                 :url url
-                                 :title (if (stringp title) title ""))
-                  (history-vector *browser*)))
-      (when (plusp count)
-        (setf (files:content (history-file *browser*))
-              (history-vector *browser*)))
-      count)))
+  (let ((count
+          (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
+            (let ((seen (make-hash-table :test #'equal))
+                  (count 0))
+              (loop for entry across (history-vector *browser*)
+                    for rendered = (render-url (url entry))
+                    unless (str:emptyp rendered)
+                      do (setf (gethash rendered seen) t))
+              (loop for (url-string title) in rows
+                    for url = (importable-url url-string)
+                    for rendered = (and url (render-url url))
+                    when (and rendered (not (gethash rendered seen)))
+                      do (setf (gethash rendered seen) t)
+                         (incf count)
+                         (vector-push-extend
+                          (make-instance 'history-entry
+                                         :url url
+                                         :title (if (stringp title) title ""))
+                          (history-vector *browser*)))
+              (when (plusp count)
+                (setf (files:content (history-file *browser*))
+                      (history-vector *browser*)))
+              count))))
+    (when (plusp count)
+      (note-history-changed))
+    count))
 
 (-> import-firefox-history (pathname) integer)
 (defun import-firefox-history (database-path)

@@ -5,8 +5,23 @@
 
 (define-class history-file (files:data-file nyxt-lisp-file)
   ((files:base-path #p"history/default")
-   (files:name "history"))
+   (files:name "history")
+   (history-revision
+    0
+    :type integer
+    :export t
+    :documentation "How many times history has been recorded.
+Set after `history-vector' grows. A `define-setf-handler' on it redraws
+an open history list."))
   (:export-class-name-p t))
+
+(export-always 'note-history-changed)
+(defun note-history-changed ()
+  "Record that browsing history grew.
+Bumps `history-revision' on `history-file' so an open history list redraws."
+  (when *browser*
+    (incf (history-revision (history-file *browser*))))
+  nil)
 
 (define-class history-entry ()
   ((url

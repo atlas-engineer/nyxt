@@ -83,6 +83,28 @@
         (assert-eq :p (tag))
         (assert-true (search "No bookmarks" (page)))))))
 
+(define-test bookmark-row-in-a-panel-opens-the-page ()
+  (let* ((*browser* (make-instance 'browser))
+         (entry (make-instance 'nyxt/mode/bookmark:bookmark-entry
+                               :url (quri:uri "https://example.com/a")
+                               :title "Alpha"))
+         (panel (make-instance 'panel-buffer))
+         (page (make-instance 'web-buffer))
+         (panel-html (spinneret:with-html-string
+                       (user-interface:to-html
+                        (nyxt/mode/bookmark::bookmark-row entry panel))))
+         (page-html (spinneret:with-html-string
+                      (user-interface:to-html
+                       (nyxt/mode/bookmark::bookmark-row entry page)))))
+    (assert-true (search "Alpha" panel-html))
+    (assert-true (search "href=#" panel-html))
+    (assert-true (search "open-bookmark" panel-html))
+    (assert-true (search "href=\"https://example.com/a\"" page-html))
+    (assert-false (search "open-bookmark" page-html))
+    (assert-true (search "edit" panel-html))
+    (assert-true (fboundp 'nyxt/mode/bookmark:add-bookmark-panel-left))
+    (assert-true (fboundp 'nyxt/mode/bookmark:add-bookmark-panel-right))))
+
 (define-test list-bookmarks-drops-its-handler-when-the-buffer-is-deleted ()
   (let* ((*browser* (make-instance 'browser))
          (buffer (make-instance 'web-buffer))

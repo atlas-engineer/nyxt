@@ -38,6 +38,53 @@
                         (keymaps:get-keymap keyscheme
                                             (keyscheme-map mode)))))
 
+(define-test list-history-follows-the-browser ()
+  (let* ((*browser* (make-instance 'browser
+                                   :history-file
+                                   (make-instance 'history-file
+                                                  :profile (make-instance 'files:virtual-profile))))
+         (buffer (make-instance 'web-buffer)))
+    (enable-modes* 'nyxt/mode/history:history-mode buffer)
+    (enable-modes* 'nyxt/mode/history:history-listing-mode buffer)
+    (let ((history (find-mode buffer 'nyxt/mode/history:history-mode))
+          (mode (find-mode buffer 'nyxt/mode/history:history-listing-mode)))
+      (flet ((page ()
+               (spinneret:with-html-string
+                 (user-interface:to-html
+                  (nyxt/mode/history::listing mode)))))
+        (assert-eq :p (user-interface:tag (nyxt/mode/history::listing mode)))
+        (assert-true (search "No history" (page)))
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://example.com/a") history :title "Alpha")
+        (assert-eq :ul (user-interface:tag (nyxt/mode/history::listing mode)))
+        (assert-true (search "Alpha" (page)))
+        (assert-true (search "https://example.com/a" (page)))
+        (nyxt::buffer-delete (id buffer))
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://example.com/b") history :title "Gamma")
+        (assert-false (search "Gamma" (page)))))))
+
+(define-test history-row-in-a-panel-opens-the-page ()
+  (let* ((*browser* (make-instance 'browser))
+         (entry (make-instance 'history-entry
+                               :url "https://example.com/a"
+                               :title "Alpha"))
+         (panel (make-instance 'panel-buffer))
+         (page (make-instance 'web-buffer))
+         (panel-html (spinneret:with-html-string
+                       (user-interface:to-html
+                        (nyxt/mode/history::history-row entry panel))))
+         (page-html (spinneret:with-html-string
+                      (user-interface:to-html
+                       (nyxt/mode/history::history-row entry page)))))
+    (assert-true (search "Alpha" panel-html))
+    (assert-true (search "href=#" panel-html))
+    (assert-true (search "open-history" panel-html))
+    (assert-true (search "href=\"https://example.com/a\"" page-html))
+    (assert-false (search "open-history" page-html))
+    (assert-true (fboundp 'nyxt/mode/history:add-history-panel-left))
+    (assert-true (fboundp 'nyxt/mode/history:add-history-panel-right))))
+
 (define-test history-mode-keyscheme-bindings ()
   (assert-eq 'nyxt/mode/history:history-backwards
              (history-binding keyscheme:default "M-left"))
