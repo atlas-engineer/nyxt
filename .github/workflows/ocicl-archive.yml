@@ -1,0 +1,46 @@
+name: Ocicl archive
+
+on:
+  workflow_dispatch:
+    inputs:
+      upload_release:
+        description: Attach the archive to the GitHub release for this tag
+        type: boolean
+        default: true
+  push:
+    tags:
+      - "[0-9]*"
+
+permissions:
+  contents: write
+
+jobs:
+  archive:
+    name: Pack ocicl sources
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Check out Nyxt
+        uses: actions/checkout@v7
+
+      - name: Pack the ocicl sources
+        run: sh .github/ocicl-archive.sh
+
+      - name: Upload the archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: nyxt-ocicl
+          path: nyxt-*-ocicl.tar.gz
+          if-no-files-found: error
+
+      - name: Attach the archive to the release
+        if: github.ref_type == 'tag' && (github.event_name == 'push' || inputs.upload_release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          archive=$(echo nyxt-*-ocicl.tar.gz)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$archive"
+          else
+            printf '%s\n' "No GitHub release named ${GITHUB_REF_NAME}; the archive is a workflow artifact."
+          fi
