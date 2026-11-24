@@ -667,7 +667,8 @@ heading matches the panel title at 17px."
 (defmethod (setf page-fullscreen-p) :after (value (window window))
   "Update container insets and corner rounding when page fullscreen state changes."
   (declare (ignore value))
-  (apply-page-container window))
+  (apply-page-container window)
+  (sync-focus-marks window))
 
 (defmethod ffi-window-unfullscreen :after ((window window) &key (user-event-p t) &allow-other-keys)
   (when (and user-event-p (page-fullscreen-p window))
@@ -689,7 +690,8 @@ heading matches the panel title at 17px."
   "The page margin follows the panels beside it."
   (declare (ignore value))
   (when (window panel)
-    (apply-page-container (window panel))))
+    (apply-page-container (window panel))
+    (sync-focus-marks (window panel))))
 
 (defmethod (setf side) :after (value (panel panel-buffer))
   "The page margin follows the side the panel moves to."
@@ -816,15 +818,39 @@ color otherwise."
         (unless (ps:@ mark parent-node)
           (ps:chain document document-element (append-child mark)))))))
 
+(define-parenscript-async remove-focus-mark (buffer)
+  "Take the focus corner off BUFFER."
+  (when (ps:@ document document-element)
+    (ps:let ((mark (nyxt/ps:qs document "#nyxt-focus-mark")))
+      (when mark
+        (ps:chain mark (remove))))))
+
+(-> focus-marks-wanted-p (window) boolean)
+(defun focus-marks-wanted-p (window)
+  "Return whether WINDOW has a panel on screen beside the page.
+The corner is only useful while focus can move between the page and a panel."
+  (and (not (page-fullscreen-p window))
+       (some (lambda (panel)
+               (and (panel-buffer-p panel)
+                    (visible-p panel)
+                    (not (dead-buffer-p panel))))
+             (panel-buffers window))))
+
 (-> sync-focus-marks (window) t)
 (defun sync-focus-marks (window)
-  "Show the accent corner on WINDOW's focused page or panel, and fade the rest."
+  "Show the accent corner on WINDOW's focused page or panel, and fade the rest.
+Remove every corner when no panel is on screen."
   (when (and window *browser* (theme *browser*))
-    (let ((focused (keyboard-buffer window)))
+    (let ((wanted (focus-marks-wanted-p window))
+          (focused (keyboard-buffer window)))
       (dolist (buffer (cons (buffer window) (panel-buffers window)))
         (when (and (web-buffer-p buffer)
                    (not (dead-buffer-p buffer)))
-          (install-focus-mark buffer (eq buffer focused))))))
+          (if (and wanted
+                   (or (not (panel-buffer-p buffer))
+                       (visible-p buffer)))
+              (install-focus-mark buffer (eq buffer focused))
+              (remove-focus-mark buffer))))))
   nil)
 
 (defmethod on-signal-focus :after ((buffer buffer))
@@ -833,7 +859,5 @@ color otherwise."
 
 (defmethod on-signal-load-finished :after ((buffer web-buffer) url title)
   (declare (ignore url title))
-  (unless (dead-buffer-p buffer)
-    (install-focus-mark buffer
-                        (and (window buffer)
-                             (eq buffer (keyboard-buffer (window buffer)))))))
+  (when-let ((window (window buffer)))
+    (sync-focus-marks window)))
