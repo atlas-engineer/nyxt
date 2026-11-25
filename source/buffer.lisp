@@ -120,6 +120,8 @@ inherited from the superclasses.")
         :line-height "24px"
         :margin "0"
         :padding "24px")
+      '("body:has(> .mode-menu)"
+        :padding-top "0")
       '(ul
         :margin-top "0"
         :margin-bottom "0")
@@ -355,8 +357,9 @@ inherited from the superclasses.")
         :z-index "2"
         :top "var(--nyxt-safe-area-top, 0px)"
         :box-sizing "border-box"
-        :margin "-24px -24px 24px"
+        :margin "0 -24px 24px"
         :padding "7px 17px 0"
+        :overflow-anchor "none"
         :background-color "transparent"
         :background-image ,(format nil "linear-gradient(~a, ~a), ~
                                                linear-gradient(~a, ~a), ~
