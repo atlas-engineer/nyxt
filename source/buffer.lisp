@@ -355,7 +355,7 @@ inherited from the superclasses.")
       `(".mode-menu"
         :position "sticky"
         :z-index "2"
-        :top "var(--nyxt-safe-area-top, 0px)"
+        :top "24px"
         :box-sizing "border-box"
         :margin "0 -24px 24px"
         :padding "7px 17px 0"
