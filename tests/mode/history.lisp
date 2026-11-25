@@ -29,7 +29,9 @@
       (assert-false (nyxt/mode/history::add-url-to-history
                      (quri:uri "https://blocked.example/x") mode :title "No"))
       (assert-eq 1 (length (history-vector *browser*)))
-      (assert-string= "OK" (title (aref (history-vector *browser*) 0))))))
+      (assert-string= "OK" (title (aref (history-vector *browser*) 0)))
+      (assert-eq 1 (length (nyxt/mode/history:visits mode)))
+      (assert-string= "OK" (title (aref (nyxt/mode/history:visits mode) 0))))))
 
 (defun history-binding (keyscheme keyspec)
   (let ((mode (make-instance 'nyxt/mode/history:history-mode
@@ -84,6 +86,48 @@
     (assert-false (search "open-history" page-html))
     (assert-true (fboundp 'nyxt/mode/history:add-history-panel-left))
     (assert-true (fboundp 'nyxt/mode/history:add-history-panel-right))))
+
+(define-test buffer-history-panel-follows-the-current-buffer ()
+  (let* ((*browser* (make-instance 'browser
+                                   :history-file
+                                   (make-instance 'history-file
+                                                  :profile (make-instance 'files:virtual-profile))))
+         (alpha (make-instance 'web-buffer))
+         (beta (make-instance 'web-buffer))
+         (panel (make-instance 'panel-buffer :title "Buffer history"))
+         (window (make-instance 'window :buffer alpha)))
+    (setf (window panel) window)
+    (enable-modes* 'nyxt/mode/history:history-mode alpha)
+    (enable-modes* 'nyxt/mode/history:history-mode beta)
+    (enable-modes* 'nyxt/mode/history:buffer-history-listing-mode panel)
+    (let ((alpha-history (find-mode alpha 'nyxt/mode/history:history-mode))
+          (beta-history (find-mode beta 'nyxt/mode/history:history-mode))
+          (mode (find-mode panel 'nyxt/mode/history:buffer-history-listing-mode)))
+      (flet ((page ()
+               (spinneret:with-html-string
+                 (user-interface:to-html
+                  (nyxt/mode/history::listing mode)))))
+        (assert-eq :p (user-interface:tag (nyxt/mode/history::listing mode)))
+        (assert-true (search "No history" (page)))
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://alpha.example/a") alpha-history :title "Alpha")
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://beta.example/b") beta-history :title "Beta")
+        (assert-true (search "Alpha" (page)))
+        (assert-false (search "Beta" (page)))
+        (assert-eq 2 (length (history-vector *browser*)))
+        (setf (slot-value window 'buffer) beta)
+        (nyxt/mode/history::render-buffer-history mode)
+        (assert-true (search "Beta" (page)))
+        (assert-false (search "Alpha" (page)))
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://beta.example/c") beta-history :title "Beta two")
+        (assert-true (search "Beta two" (page)))
+        (nyxt/mode/history::add-url-to-history
+         (quri:uri "https://alpha.example/d") alpha-history :title "Alpha two")
+        (assert-false (search "Alpha two" (page)))))
+    (assert-true (fboundp 'nyxt/mode/history:add-buffer-history-panel-left))
+    (assert-true (fboundp 'nyxt/mode/history:add-buffer-history-panel-right))))
 
 (define-test history-mode-keyscheme-bindings ()
   (assert-eq 'nyxt/mode/history:history-backwards

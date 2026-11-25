@@ -13,6 +13,17 @@
     '()
     :type (or null (list-of string))
     :documentation "A list of URL prefixes that are excluded from history.")
+   (visits
+    (make-array 0 :fill-pointer t :adjustable t)
+    :type vector
+    :documentation "Visits this buffer recorded, oldest first.
+A vector of `history-entry'.")
+   (visit-revision
+    0
+    :type integer
+    :documentation "How many times this buffer's `visits' have grown.
+Set after `visits' grows. A `define-setf-handler' on it redraws an open
+buffer history panel.")
    (keyscheme-map
     (define-keyscheme-map "history-mode" ()
       keyscheme:default
@@ -174,19 +185,131 @@ A value that is not an integer, or not its decimal text, counts as 100."
   "Panel that lists recent history."
   (ffi-buffer-load panel (quri:uri (nyxt-url 'list-history))))
 
+(-> buffer-visits (buffer integer) list)
+(defun buffer-visits (buffer limit)
+  "Return the LIMIT most recent visits BUFFER recorded, newest first."
+  (let ((mode (find-mode buffer 'history-mode)))
+    (if (and mode *browser*)
+        (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
+          (let* ((vector (visits mode))
+                 (end (length vector))
+                 (from (max 0 (- end (max limit 0)))))
+            (nreverse (coerce (subseq vector from end) 'list))))
+        '())))
+
+(define-mode buffer-history-listing-mode ()
+  "Mode for the `list-buffer-history' panel."
+  ((entry-limit
+    100
+    :type integer
+    :documentation "How many visits `list-buffer-history' shows.")
+   (listing
+    (make-instance 'user-interface:dynamic-element
+                   :tag :p
+                   :html-class "empty"
+                   :text "No history."
+                   :item-key #'history-stamp)
+    :export nil
+    :documentation "The list shown on `list-buffer-history'.
+A `user-interface:dynamic-element'."))
+  (:toggler-command-p nil))
+
+(-> listed-buffer (buffer-history-listing-mode) (maybe buffer))
+(defun listed-buffer (mode)
+  "Return the buffer whose visits MODE shows.
+A panel shows the page beside it. Another buffer shows itself."
+  (let ((page (buffer mode)))
+    (when page
+      (if (panel-buffer-p page)
+          (when-let* ((window (window page))
+                      (current (buffer window)))
+            (when (and (not (eq current page))
+                       (not (panel-buffer-p current))
+                       (not (dead-buffer-p current)))
+              current))
+          (unless (dead-buffer-p page)
+            page)))))
+
+(-> render-buffer-history (buffer-history-listing-mode) t)
+(defun render-buffer-history (mode)
+  "Show the current buffer's visits in MODE.
+The list element keeps a row it has already built."
+  (let ((page (buffer mode))
+        (element (listing mode))
+        (source (listed-buffer mode)))
+    (when (and *browser* page element (not (dead-buffer-p page)))
+      (user-interface:batch (element)
+        (setf (user-interface:items element)
+              (if source
+                  (buffer-visits source (entry-limit mode))
+                  '()))
+        (if (plusp (length (user-interface:items element)))
+            (setf (user-interface:tag element) :ul
+                  (user-interface:html-class element) "list"
+                  (user-interface:text element) nil)
+            (setf (user-interface:tag element) :p
+                  (user-interface:html-class element) "empty"
+                  (user-interface:text element) "No history."))))))
+
+(defmethod enable ((mode buffer-history-listing-mode) &key)
+  "Keep MODE's list in step with the page beside it."
+  (setf (user-interface:template (listing mode))
+        (lambda (entry)
+          (history-row entry (buffer mode))))
+  (define-setf-handler history-mode visit-revision mode
+    (lambda (history)
+      (when (eq history (find-mode (listed-buffer mode) 'history-mode))
+        (render-buffer-history mode))))
+  (define-setf-handler window buffer mode
+    (lambda (window)
+      (when (and (buffer mode)
+                 (eq window (window (buffer mode))))
+        (render-buffer-history mode))))
+  (render-buffer-history mode))
+
+(defmethod disable ((mode buffer-history-listing-mode) &key)
+  (user-interface:disconnect (listing mode)))
+
+(define-internal-page list-buffer-history (&key (limit 100))
+    (:title "Buffer history"
+     :page-mode 'buffer-history-listing-mode)
+  "List the visits recorded in the current buffer."
+  (let ((mode (find-mode %buffer% 'buffer-history-listing-mode)))
+    (setf (entry-limit mode) (history-limit limit))
+    (render-buffer-history mode)
+    (let ((listing (listing mode)))
+      (user-interface:connect listing %buffer%)
+      (spinneret:with-html-string
+        (:nstyle
+          `("p.empty"
+            :margin "0"
+            :font-size "17px"
+            :line-height "24px"
+            :color ,theme:primary-color))
+        (when (include-in-buffer-list-p %buffer%)
+          (render-menu 'history-mode %buffer%)
+          (:h1 "Buffer history"))
+        (user-interface:to-html listing)))))
+
+(define-buffer-panel buffer-history-panel (:title "Buffer history")
+  "Panel that lists the current buffer's history."
+  (ffi-buffer-load panel (quri:uri (nyxt-url 'list-buffer-history))))
+
 (defmethod add-url-to-history (url (mode history-mode) &key (title ""))
-  "Push URL to `history-vector'."
+  "Push URL to `history-vector' and to MODE's `visits'."
   (unless (blocked-p url mode)
     (let ((parsed (url url)))
       (unless (url-empty-p parsed)
-        (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
-          (with-slots (history-vector history-file) *browser*
-            (vector-push-extend (make-instance 'history-entry
-                                               :url parsed
-                                               :title (or title ""))
-                                history-vector)
-            (setf (files:content history-file) history-vector)))
+        (let ((entry (make-instance 'history-entry
+                                    :url parsed
+                                    :title (or title ""))))
+          (bt:with-recursive-lock-held ((nyxt::history-lock *browser*))
+            (with-slots (history-vector history-file) *browser*
+              (vector-push-extend entry history-vector)
+              (setf (files:content history-file) history-vector))
+            (vector-push-extend entry (visits mode))))
         (note-history-changed)
+        (incf (visit-revision mode))
         url))))
 
 (defmethod nyxt:on-signal-load-finished ((mode history-mode) url title)
