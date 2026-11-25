@@ -831,9 +831,30 @@ Return ELSE when that buffer has no web view."
                         (prompt-buffer-view (window buffer)))))
     (ffi-buffer-set-background-blur view radius)))
 
+(define-parenscript-async publish-safe-area-top (buffer top)
+  "Expose TOP as the safe-area inset sticky page chrome sticks to.
+The inset shifts the document down and is not a CSS environment variable."
+  (when (ps:@ document document-element)
+    (ps:chain document document-element style
+              (set-property "--nyxt-safe-area-top"
+                            (ps:lisp (format nil "~dpx" (or top 0)))))))
+
 (defmethod ffi-buffer-set-safe-area-insets ((view cef:view) &key (top 0) (left 0) (bottom 0) (right 0))
   (when (plusp (cef:id view))
     (cef:set-safe-area-insets view :top top :left left :bottom bottom :right right)))
+
+(defmethod ffi-buffer-set-safe-area-insets :after
+    ((buffer cef-buffer) &key (top 0) (left 0) (bottom 0) (right 0))
+  "Publish TOP for sticky page chrome."
+  (declare (ignore left bottom right))
+  (publish-safe-area-top buffer top))
+
+(defmethod on-signal-load-finished :after ((buffer cef-buffer) url title)
+  "Publish the page safe-area inset on BUFFER after navigation."
+  (declare (ignore url title))
+  (when-let ((window (window buffer)))
+    (when (eq buffer (buffer window))
+      (publish-safe-area-top buffer (window-safe-area-insets window)))))
 
 (defmethod ffi-buffer-set-safe-area-insets ((buffer prompt-buffer) &key (top 0) (left 0) (bottom 0) (right 0))
   (when-let ((view (and (window buffer)

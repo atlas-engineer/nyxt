@@ -466,6 +466,7 @@ heading matches the panel title at 17px."
 (defvar *push-occluded-page-elements-p* t
   "When non-nil, push page layout and scrollbars clear of floating panels and bars.")
 
+(export-always 'window-safe-area-insets)
 (-> window-safe-area-insets (window) (values integer integer integer integer &optional))
 (defun window-safe-area-insets (window)
   "Return the top, left, bottom, and right safe-area insets for WINDOW's active page."
