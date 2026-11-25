@@ -314,7 +314,7 @@ navigation bindings of `base-mode'."
       :left "11px"
       :box-sizing "border-box"
       :overflow "auto"
-      :padding "54px 0 24px")
+      :padding "46px 0 24px")
     '("#nyxt-panel-content ul.list"
       :margin-left "0"
       :margin-right "0")
@@ -326,7 +326,7 @@ navigation bindings of `base-mode'."
       :justify-content "space-between"
       :gap "7px"
       :width "100%"
-      :padding "13px"
+      :padding "7px"
       :background-color
       ,(format nil "color-mix(in srgb, color-mix(in srgb, ~a 95%, ~a) 70%, transparent)"
                theme:background-color-
@@ -357,12 +357,12 @@ navigation bindings of `base-mode'."
       :display "inline-flex"
       :align-items "center"
       :justify-content "center"
-      :width "28px"
-      :height "28px"
+      :width "32px"
+      :height "32px"
       :margin "0"
       :padding "0"
       :border "none"
-      :border-radius "14px"
+      :border-radius "16px"
       :background-color "transparent"
       :color ,(theme:on-background-color theme)
       :font-size "17px"
@@ -791,35 +791,40 @@ uses the unspecialized method, does not replace it."
 
 (define-parenscript-async install-focus-mark (buffer focused-p)
   "Put a focus corner at the top right of BUFFER.
-The corner eases open when FOCUSED-P, and eases shut when not."
+The arms ease out from the corner when FOCUSED-P, and ease back when not."
   (let ((accent (ps:lisp (theme:action-color (theme *browser*))))
-        (clip (ps:lisp (if focused-p
-                           "inset(0px)"
-                           "inset(0px 0px 100% 100%)"))))
+        (size (ps:lisp (if focused-p "13px" "0px"))))
     (when (ps:@ document document-element)
       (let ((old-style (nyxt/ps:qs document "#nyxt-focus-mark-style")))
         (when old-style
           (ps:chain old-style (remove))))
-      (let ((mark (or (nyxt/ps:qs document "#nyxt-focus-mark")
-                      (ps:chain document (create-element "div")))))
-        (setf (ps:@ mark id) "nyxt-focus-mark")
-        (let ((style (ps:@ mark style)))
-          (setf (ps:@ style position) "fixed"
-                (ps:@ style top) "0"
-                (ps:@ style right) "0"
-                (ps:@ style width) "15px"
-                (ps:@ style height) "15px"
-                (ps:@ style box-sizing) "border-box"
-                (ps:@ style background-color) "transparent"
-                (ps:@ style border-top) "2px solid"
-                (ps:@ style border-right) "2px solid"
-                (ps:@ style border-color) accent
-                (ps:@ style border-top-right-radius) "0"
-                (ps:@ style pointer-events) "none"
-                (ps:@ style z-index) "2147483647"
-                (ps:@ style transition) "clip-path 0.1s ease-in-out"))
+      (let* ((mark (or (nyxt/ps:qs document "#nyxt-focus-mark")
+                       (ps:chain document (create-element "div"))))
+             (fresh (not (ps:@ mark parent-node)))
+             (style (ps:@ mark style)))
+        (setf (ps:@ mark id) "nyxt-focus-mark"
+              (ps:@ style position) "fixed"
+              (ps:@ style top) "0"
+              (ps:@ style right) "0"
+              (ps:@ style box-sizing) "content-box"
+              (ps:@ style background-color) "transparent"
+              (ps:@ style border-top) "2px solid"
+              (ps:@ style border-right) "2px solid"
+              (ps:@ style border-color) accent
+              (ps:@ style border-top-right-radius) "6px"
+              (ps:@ style clip-path) "none"
+              (ps:@ style pointer-events) "none"
+              (ps:@ style z-index) "2147483647"
+              (ps:@ style transition) "width 0.1s ease-in-out, height 0.1s ease-in-out")
+        (when fresh
+          (setf (ps:@ style width) "0px"
+                (ps:@ style height) "0px"))
         (ps:chain document document-element (append-child mark))
-        (setf (ps:@ mark style clip-path) clip)))))
+        (ps:chain window
+                  (request-animation-frame
+                   (lambda ()
+                     (setf (ps:@ mark style width) size
+                           (ps:@ mark style height) size))))))))
 
 (define-parenscript-async remove-focus-mark (buffer)
   "Take the focus corner off BUFFER."
@@ -841,7 +846,7 @@ The corner is only useful while focus can move between the page and a panel."
 
 (-> sync-focus-marks (window) t)
 (defun sync-focus-marks (window)
-  "Show the accent corner on WINDOW's focused page or panel, and ease the rest shut.
+  "Show the accent corner on WINDOW's focused page or panel, and ease the rest back.
 Remove every corner when no panel is on screen."
   (when (and window *browser* (theme *browser*))
     (let ((wanted (focus-marks-wanted-p window))
