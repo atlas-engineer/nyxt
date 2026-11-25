@@ -600,6 +600,20 @@ on may want to have dynamic interactions."))
   (:documentation "A strip that shares the window with the page.
 The status buffer, the message buffer, and the prompt buffer are auxiliary buffers."))
 
+(define-class modable-auxiliary-buffer (modable-buffer auxiliary-buffer)
+  ()
+  (:export-class-name-p t)
+  (:export-predicate-name-p t)
+  (:metaclass user-class)
+  (:documentation "An auxiliary strip with its own modes.
+Page modes such as `base-mode' and `document-mode' are left off.
+The status buffer, the message buffer, and the prompt buffer are instances."))
+
+(defmethod default-modes :around ((buffer modable-auxiliary-buffer))
+  (set-difference (call-next-method)
+                  (list (sym:resolve-symbol :document-mode :mode)
+                        (sym:resolve-symbol :base-mode :mode))))
+
 (define-class document-buffer (buffer)
   ((document-model-delta-threshold
     10

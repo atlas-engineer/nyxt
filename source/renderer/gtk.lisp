@@ -1493,6 +1493,28 @@ non-null pointer."
   (when-let ((widget (slot-value object 'gtk-object)))
     (gtk:gtk-widget-get-allocation widget)))
 
+(defun widget-window-origin (widget toplevel)
+  "Return WIDGET's position in TOPLEVEL, in pixels."
+  (let ((x 0)
+        (y 0)
+        (current widget))
+    (loop while (and current (not (eq current toplevel)))
+          for allocation = (gtk:gtk-widget-get-allocation current)
+          do (incf x (gdk:gdk-rectangle-x allocation))
+             (incf y (gdk:gdk-rectangle-y allocation))
+             (setf current (gtk:gtk-widget-parent current)))
+    (values x y)))
+
+(define-ffi-method ffi-buffer-geometry ((buffer gtk-buffer))
+  (when-let ((widget (gtk-object buffer)))
+    (let ((allocation (gtk:gtk-widget-get-allocation widget))
+          (toplevel (when (window buffer)
+                      (slot-value (window buffer) 'gtk-object))))
+      (multiple-value-bind (x y) (widget-window-origin widget toplevel)
+        (list x y
+              (gdk:gdk-rectangle-width allocation)
+              (gdk:gdk-rectangle-height allocation))))))
+
 (define-ffi-method ffi-height ((buffer gtk-buffer))
   (if-let ((bounds (get-bounds buffer)))
     (gdk:gdk-rectangle-height bounds)

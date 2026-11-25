@@ -410,6 +410,11 @@ Setf-able.  Valid values are determined by the `cookie-policy' type."))
 (define-ffi-generic ffi-focused-p (buffer)
   (:documentation "Return non-nil when BUFFER is focused."))
 
+(define-ffi-generic ffi-buffer-geometry (buffer)
+  (:documentation "Return BUFFER's rectangle in its window.
+The list is (X Y WIDTH HEIGHT), in pixels from the window's top-left corner.
+Return nil when BUFFER has no view."))
+
 (defun buffer-selection-text (buffer)
   "Return the selected text in BUFFER.
 Input and textarea selections are included; `window.getSelection' misses those."

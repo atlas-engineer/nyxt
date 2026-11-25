@@ -198,6 +198,10 @@ navigation bindings of `base-mode'."
        "hyphen" 'narrow-panel
        "C-r" 'reload-current-buffer
        "M-o" 'toggle-prompt-buffer-focus
+       "shift-left" 'focus-buffer-left
+       "shift-right" 'focus-buffer-right
+       "shift-up" 'focus-buffer-up
+       "shift-down" 'focus-buffer-down
        "f1 b" 'describe-bindings
        "C-space" 'execute-command)
       keyscheme:cua
@@ -909,3 +913,222 @@ The page, panels, prompt, status bar, and message bar all flash."
   nil)
 
 (retire-focus-corner)
+
+(defstruct screen-rect
+  buffer
+  (x 0 :type integer)
+  (y 0 :type integer)
+  (width 0 :type integer)
+  (height 0 :type integer))
+
+(define-mode focus-move-mode ()
+  "Move keyboard focus to the buffer in a direction."
+  ((visible-in-status-p nil)
+   (keyscheme-map
+    (define-keyscheme-map "focus-move-mode" ()
+      keyscheme:default
+      (list
+       "shift-left" 'focus-buffer-left
+       "shift-right" 'focus-buffer-right
+       "shift-up" 'focus-buffer-up
+       "shift-down" 'focus-buffer-down
+       "C-M-left" 'focus-buffer-left
+       "C-M-right" 'focus-buffer-right
+       "C-M-up" 'focus-buffer-up
+       "C-M-down" 'focus-buffer-down))))
+  (:toggler-command-p nil))
+
+(defmethod default-modes append ((buffer modable-auxiliary-buffer))
+  '(focus-move-mode))
+
+(-> buffer-screen-rect (buffer) (maybe screen-rect))
+(defun buffer-screen-rect (buffer)
+  "Return BUFFER's on-screen rectangle, or nil when it occupies no area."
+  (when-let ((geometry (ffi-buffer-geometry buffer)))
+    (destructuring-bind (x y width height) geometry
+      (when (and (plusp width) (plusp height))
+        (make-screen-rect :buffer buffer :x x :y y :width width :height height)))))
+
+(-> clip-rect-to-height (screen-rect integer) (maybe screen-rect))
+(defun clip-rect-to-height (rect bottom)
+  "Return RECT with its bottom edge limited to BOTTOM, or nil when nothing remains."
+  (let ((height (min (screen-rect-height rect)
+                     (- bottom (screen-rect-y rect)))))
+    (when (plusp height)
+      (make-screen-rect :buffer (screen-rect-buffer rect)
+                        :x (screen-rect-x rect)
+                        :y (screen-rect-y rect)
+                        :width (screen-rect-width rect)
+                        :height height))))
+
+(-> layout-screen-rects (t integer integer &key (:left-panels list) (:right-panels list) (:bars list))
+    (list-of screen-rect))
+(defun layout-screen-rects (page window-width window-height &key left-panels right-panels bars)
+  "Return the visible rectangles of PAGE, the side panels, and the bars.
+Panels are clipped to the area above the bars. PAGE fills what the panels leave."
+  (let* ((bottom (if bars
+                     (reduce #'min bars :key #'screen-rect-y)
+                     window-height))
+         (left-edge (reduce #'max
+                            (cons 0
+                                  (mapcar (lambda (rect)
+                                            (+ (screen-rect-x rect)
+                                               (screen-rect-width rect)))
+                                          left-panels))))
+         (right-edge (reduce #'min
+                             (cons window-width
+                                   (mapcar #'screen-rect-x right-panels))))
+         (page-width (- right-edge left-edge))
+         (page-rect (when (and page (plusp page-width) (plusp bottom))
+                      (make-screen-rect :buffer page
+                                        :x left-edge
+                                        :y 0
+                                        :width page-width
+                                        :height bottom))))
+    (delete nil
+            (append (list page-rect)
+                    (mapcar (lambda (rect) (clip-rect-to-height rect bottom))
+                            (append left-panels right-panels))
+                    bars))))
+
+(-> window-bar-buffers (window) list)
+(defun window-bar-buffers (window)
+  "Return the prompt, status, and message buffers WINDOW may be showing."
+  (remove nil (list (first (active-prompt-buffers window))
+                    (status-buffer window)
+                    (message-buffer window))))
+
+(-> window-screen-rects (window) (list-of screen-rect))
+(defun window-screen-rects (window)
+  "Return a rectangle for every buffer WINDOW is showing."
+  (let* ((panels (sera:filter #'visible-p (panel-buffers window)))
+         (panel-rects (delete nil (mapcar #'buffer-screen-rect panels)))
+         (left (sera:filter (lambda (rect)
+                              (eq :left (side (screen-rect-buffer rect))))
+                            panel-rects))
+         (right (sera:filter (lambda (rect)
+                               (eq :right (side (screen-rect-buffer rect))))
+                             panel-rects))
+         (bars (delete nil (mapcar #'buffer-screen-rect (window-bar-buffers window))))
+         (width (ffi-width window))
+         (height (ffi-height window)))
+    (if (and (integerp width) (integerp height) (plusp width) (plusp height))
+        (layout-screen-rects (buffer window) width height
+                             :left-panels left
+                             :right-panels right
+                             :bars bars)
+        (delete nil (append panel-rects bars)))))
+
+(-> screen-rect-contains-p (screen-rect integer integer) boolean)
+(defun screen-rect-contains-p (rect x y)
+  (and (<= (screen-rect-x rect) x (+ (screen-rect-x rect) (screen-rect-width rect) -1))
+       (<= (screen-rect-y rect) y (+ (screen-rect-y rect) (screen-rect-height rect) -1))))
+
+(-> edge-probe (screen-rect (member :left :right :up :down)) (values integer integer))
+(defun edge-probe (rect direction)
+  "Return a point one pixel outside RECT, at the middle of the edge facing DIRECTION."
+  (let* ((x (screen-rect-x rect))
+         (y (screen-rect-y rect))
+         (mx (+ x (floor (screen-rect-width rect) 2)))
+         (my (+ y (floor (screen-rect-height rect) 2))))
+    (ecase direction
+      (:left (values (1- x) my))
+      (:right (values (+ x (screen-rect-width rect)) my))
+      (:up (values mx (1- y)))
+      (:down (values mx (+ y (screen-rect-height rect)))))))
+
+(-> ahead-p (screen-rect screen-rect (member :left :right :up :down)) boolean)
+(defun ahead-p (origin other direction)
+  (ecase direction
+    (:right (>= (screen-rect-x other)
+                (+ (screen-rect-x origin) (screen-rect-width origin))))
+    (:left (<= (+ (screen-rect-x other) (screen-rect-width other))
+               (screen-rect-x origin)))
+    (:down (>= (screen-rect-y other)
+               (+ (screen-rect-y origin) (screen-rect-height origin))))
+    (:up (<= (+ (screen-rect-y other) (screen-rect-height other))
+             (screen-rect-y origin)))))
+
+(-> primary-gap (screen-rect screen-rect (member :left :right :up :down)) integer)
+(defun primary-gap (origin other direction)
+  (ecase direction
+    (:right (- (screen-rect-x other)
+               (+ (screen-rect-x origin) (screen-rect-width origin))))
+    (:left (- (screen-rect-x origin)
+              (+ (screen-rect-x other) (screen-rect-width other))))
+    (:down (- (screen-rect-y other)
+              (+ (screen-rect-y origin) (screen-rect-height origin))))
+    (:up (- (screen-rect-y origin)
+            (+ (screen-rect-y other) (screen-rect-height other))))))
+
+(-> cross-contains-probe-p (screen-rect (member :left :right :up :down) integer integer)
+    boolean)
+(defun cross-contains-probe-p (rect direction probe-x probe-y)
+  (ecase direction
+    ((:left :right)
+     (<= (screen-rect-y rect) probe-y
+         (+ (screen-rect-y rect) (screen-rect-height rect) -1)))
+    ((:up :down)
+     (<= (screen-rect-x rect) probe-x
+         (+ (screen-rect-x rect) (screen-rect-width rect) -1)))))
+
+(-> screen-rect-in-direction (screen-rect list (member :left :right :up :down))
+    (maybe screen-rect))
+(defun screen-rect-in-direction (origin rects direction)
+  "Return the rectangle in RECTS that lies in DIRECTION from ORIGIN.
+The rectangle that contains the point just outside ORIGIN's edge wins.
+When a gap separates them, the nearest rectangle on that line wins."
+  (multiple-value-bind (probe-x probe-y) (edge-probe origin direction)
+    (let ((hits (remove origin
+                        (sera:filter (lambda (rect)
+                                       (screen-rect-contains-p rect probe-x probe-y))
+                                     rects))))
+      (flet ((nearest (candidates)
+               (first (stable-sort candidates #'<
+                                   :key (lambda (rect)
+                                          (primary-gap origin rect direction))))))
+        (or (first (stable-sort hits #'< :key (lambda (rect)
+                                                (* (screen-rect-width rect)
+                                                   (screen-rect-height rect)))))
+            (nearest (sera:filter (lambda (rect)
+                                    (and (not (eq rect origin))
+                                         (ahead-p origin rect direction)
+                                         (cross-contains-probe-p rect direction
+                                                                 probe-x probe-y)))
+                                  rects)))))))
+
+(-> direction-phrase ((member :left :right :up :down)) string)
+(defun direction-phrase (direction)
+  (ecase direction
+    (:left "to the left")
+    (:right "to the right")
+    (:up "above")
+    (:down "below")))
+
+(-> focus-buffer-in-direction (buffer (member :left :right :up :down)) (maybe buffer))
+(defun focus-buffer-in-direction (buffer direction)
+  "Focus the buffer in DIRECTION from BUFFER. Return it, or nil when there is none."
+  (let* ((window (or (window buffer) (current-window)))
+         (rects (when window (window-screen-rects window)))
+         (origin (find buffer rects :key #'screen-rect-buffer))
+         (target (when origin (screen-rect-in-direction origin rects direction))))
+    (cond
+      (target (ffi-focus-buffer (screen-rect-buffer target)))
+      (t (echo "No buffer ~a." (direction-phrase direction))
+         nil))))
+
+(define-command focus-buffer-left (buffer)
+  "Focus the buffer to the left of BUFFER."
+  (focus-buffer-in-direction buffer :left))
+
+(define-command focus-buffer-right (buffer)
+  "Focus the buffer to the right of BUFFER."
+  (focus-buffer-in-direction buffer :right))
+
+(define-command focus-buffer-up (buffer)
+  "Focus the buffer above BUFFER."
+  (focus-buffer-in-direction buffer :up))
+
+(define-command focus-buffer-down (buffer)
+  "Focus the buffer below BUFFER."
+  (focus-buffer-in-direction buffer :down))

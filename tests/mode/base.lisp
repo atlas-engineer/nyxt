@@ -8,6 +8,20 @@
     (assert-true (enable-modes* 'nyxt:base-mode buffer))
     (assert-true (disable-modes* 'nyxt:base-mode buffer))))
 
+(define-test focus-buffer-bindings ()
+  (assert-eq 'focus-buffer-left
+             (mode-keyscheme-binding 'nyxt:base-mode keyscheme:default "shift-left"))
+  (assert-eq 'focus-buffer-right
+             (mode-keyscheme-binding 'nyxt:base-mode keyscheme:cua "shift-right"))
+  (assert-eq 'focus-buffer-up
+             (mode-keyscheme-binding 'nyxt:base-mode keyscheme:emacs "shift-up"))
+  (assert-eq 'focus-buffer-down
+             (mode-keyscheme-binding 'nyxt:base-mode keyscheme:vi-normal "shift-down"))
+  (assert-eq 'focus-buffer-up
+             (mode-keyscheme-binding 'nyxt:focus-move-mode keyscheme:cua "C-M-up"))
+  (assert-eq 'focus-buffer-down
+             (mode-keyscheme-binding 'nyxt:focus-move-mode keyscheme:emacs "shift-down")))
+
 (defun mode-keyscheme-binding (mode-class keyscheme keyspec)
   (let ((mode (make-instance mode-class)))
     (keymaps:lookup-key keyspec

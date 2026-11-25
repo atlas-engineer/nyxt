@@ -943,6 +943,20 @@ The inset shifts the document down and is not a CSS environment variable."
                       :height (assoc-value window-bounds :height)))
     (nyxt::apply-page-container window)))
 
+(defun cef-bounds-geometry (bounds)
+  (when bounds
+    (list (truncate (or (assoc-value bounds :x) 0))
+          (truncate (or (assoc-value bounds :y) 0))
+          (truncate (or (assoc-value bounds :width) 0))
+          (truncate (or (assoc-value bounds :height) 0)))))
+
+(defmethod ffi-buffer-geometry ((buffer cef-buffer))
+  (cef-bounds-geometry (cef:get-bounds buffer)))
+
+(defmethod ffi-buffer-geometry ((buffer prompt-buffer))
+  (when-let ((view (and (window buffer) (prompt-buffer-view (window buffer)))))
+    (cef-bounds-geometry (cef:get-bounds view))))
+
 (defmethod ffi-height ((buffer cef-buffer))
   (assoc-value (cef:get-bounds buffer) :height))
 

@@ -20,6 +20,10 @@ This mode is a good candidate to be passed to `make-buffer'."
        "C-T" 'reopen-buffer
        "C-t" 'make-buffer-focus
        "M-o" 'toggle-prompt-buffer-focus
+       "shift-left" 'focus-buffer-left
+       "shift-right" 'focus-buffer-right
+       "shift-up" 'focus-buffer-up
+       "shift-down" 'focus-buffer-down
        "f1 r" 'manual
        "f1 t" 'tutorial
        "f1 a" 'describe-any

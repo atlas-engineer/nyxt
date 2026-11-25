@@ -506,11 +506,6 @@ Only available if `prompter:enable-marks-p' is non-nil."
 
 (defmethod default-modes append ((buffer prompt-buffer)) '(prompt-buffer-mode))
 
-(defmethod default-modes :around ((buffer prompt-buffer))
-  (set-difference (call-next-method)
-                  (list (sym:resolve-symbol :document-mode :mode)
-                        (sym:resolve-symbol :base-mode :mode))))
-
 (define-command-prompt describe-prompt-buffer (prompt-buffer)
   "Describe a prompt buffer instance."
   (describe-bindings prompt-buffer))

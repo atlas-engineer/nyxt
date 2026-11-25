@@ -3,7 +3,7 @@
 
 (in-package :nyxt)
 
-(define-class status-buffer (input-buffer auxiliary-buffer)
+(define-class status-buffer (modable-auxiliary-buffer input-buffer)
   ((window
     nil
     :type (maybe window)
