@@ -789,56 +789,37 @@ uses the unspecialized method, does not replace it."
       (ffi-focus-buffer (buffer window))))
   nil)
 
-(-> focus-mark-css (theme:theme) string)
-(defun focus-mark-css (theme)
-  "Return the stylesheet for the focus corner.
-A top and right border rests in the theme background and eases to the accent
-color while its buffer has the keyboard."
-  (theme:themed-css theme
-    `("#nyxt-focus-mark"
-      :position "fixed"
-      :top "0"
-      :right "0"
-      :width "15px"
-      :height "15px"
-      :box-sizing "border-box"
-      :border-top "2px solid"
-      :border-right "2px solid"
-      :border-top-color ,(theme:background-color theme)
-      :border-right-color ,(theme:background-color theme)
-      :border-top-right-radius "6px"
-      :background-color "transparent"
-      :pointer-events "none"
-      :z-index "2147483646"
-      :transition "border-top-color 0.45s ease, border-right-color 0.45s ease")
-    `("#nyxt-focus-mark.focused"
-      :border-top-color ,(theme:action-color theme)
-      :border-right-color ,(theme:action-color theme))))
-
 (define-parenscript-async install-focus-mark (buffer focused-p)
   "Put a focus corner at the top right of BUFFER.
-The border is the accent color when FOCUSED-P, and eases back to the background
-color otherwise."
-  (let ((css (ps:lisp (focus-mark-css (theme *browser*))))
-        (focused (ps:lisp (if focused-p "focused" ""))))
+The corner eases open when FOCUSED-P, and eases shut when not."
+  (let ((accent (ps:lisp (theme:action-color (theme *browser*))))
+        (clip (ps:lisp (if focused-p
+                           "inset(0px)"
+                           "inset(0px 0px 100% 100%)"))))
     (when (ps:@ document document-element)
-      (let ((style (or (nyxt/ps:qs document "#nyxt-focus-mark-style")
-                       (ps:chain document (create-element "style")))))
-        (setf (ps:@ style id) "nyxt-focus-mark-style")
-        (unless (= (ps:@ style text-content) css)
-          (setf (ps:@ style text-content) css))
-        (unless (ps:@ style parent-node)
-          (ps:chain (or (ps:@ document head)
-                        (ps:@ document document-element))
-                    (append-child style))))
+      (let ((old-style (nyxt/ps:qs document "#nyxt-focus-mark-style")))
+        (when old-style
+          (ps:chain old-style (remove))))
       (let ((mark (or (nyxt/ps:qs document "#nyxt-focus-mark")
                       (ps:chain document (create-element "div")))))
         (setf (ps:@ mark id) "nyxt-focus-mark")
-        (if focused
-            (ps:chain mark class-list (add focused))
-            (ps:chain mark class-list (remove "focused")))
-        (unless (ps:@ mark parent-node)
-          (ps:chain document document-element (append-child mark)))))))
+        (let ((style (ps:@ mark style)))
+          (setf (ps:@ style position) "fixed"
+                (ps:@ style top) "0"
+                (ps:@ style right) "0"
+                (ps:@ style width) "15px"
+                (ps:@ style height) "15px"
+                (ps:@ style box-sizing) "border-box"
+                (ps:@ style background-color) "transparent"
+                (ps:@ style border-top) "2px solid"
+                (ps:@ style border-right) "2px solid"
+                (ps:@ style border-color) accent
+                (ps:@ style border-top-right-radius) "0"
+                (ps:@ style pointer-events) "none"
+                (ps:@ style z-index) "2147483647"
+                (ps:@ style transition) "clip-path 0.1s ease-in-out"))
+        (ps:chain document document-element (append-child mark))
+        (setf (ps:@ mark style clip-path) clip)))))
 
 (define-parenscript-async remove-focus-mark (buffer)
   "Take the focus corner off BUFFER."
@@ -860,7 +841,7 @@ The corner is only useful while focus can move between the page and a panel."
 
 (-> sync-focus-marks (window) t)
 (defun sync-focus-marks (window)
-  "Show the accent corner on WINDOW's focused page or panel, and fade the rest.
+  "Show the accent corner on WINDOW's focused page or panel, and ease the rest shut.
 Remove every corner when no panel is on screen."
   (when (and window *browser* (theme *browser*))
     (let ((wanted (focus-marks-wanted-p window))
