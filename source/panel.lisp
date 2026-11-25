@@ -692,11 +692,12 @@ heading matches the panel title at 17px."
       (enable-panel-buffers window)))
   nil)
 
+(declaim (ftype (function (window) t) clear-focus-beacons))
 (defmethod (setf page-fullscreen-p) :after (value (window window))
   "Update container insets and corner rounding when page fullscreen state changes."
   (declare (ignore value))
   (apply-page-container window)
-  (sync-focus-marks window))
+  (clear-focus-beacons window))
 
 (defmethod ffi-window-unfullscreen :after ((window window) &key (user-event-p t) &allow-other-keys)
   (when (and user-event-p (page-fullscreen-p window))
@@ -718,8 +719,7 @@ heading matches the panel title at 17px."
   "The page margin follows the panels beside it."
   (declare (ignore value))
   (when (window panel)
-    (apply-page-container (window panel))
-    (sync-focus-marks (window panel))))
+    (apply-page-container (window panel))))
 
 (defmethod (setf side) :after (value (panel panel-buffer))
   "The page margin follows the side the panel moves to."
@@ -795,83 +795,117 @@ uses the unspecialized method, does not replace it."
       (ffi-focus-buffer (buffer window))))
   nil)
 
-(define-parenscript-async install-focus-mark (buffer focused-p)
-  "Put a focus corner at the top right of BUFFER.
-The arms ease out from the corner when FOCUSED-P, and ease back when not."
-  (let ((accent (ps:lisp (theme:action-color (theme *browser*))))
-        (size (ps:lisp (if focused-p "13px" "0px"))))
+(define-parenscript-async flash-focus-beacon (buffer)
+  "Show a thin line across the top of BUFFER.
+The line starts dim, rises to full opacity, then flashes away."
+  (let ((accent (ps:lisp (theme:action-color (theme *browser*)))))
     (when (ps:@ document document-element)
-      (let ((old-style (nyxt/ps:qs document "#nyxt-focus-mark-style")))
-        (when old-style
-          (ps:chain old-style (remove))))
-      (let* ((mark (or (nyxt/ps:qs document "#nyxt-focus-mark")
-                       (ps:chain document (create-element "div"))))
-             (fresh (not (ps:@ mark parent-node)))
+      (let ((old (nyxt/ps:qs document "#nyxt-focus-beacon")))
+        (when old
+          (ps:chain old (remove))))
+      (let* ((mark (ps:chain document (create-element "div")))
              (style (ps:@ mark style)))
-        (setf (ps:@ mark id) "nyxt-focus-mark"
+        (setf (ps:@ mark id) "nyxt-focus-beacon"
               (ps:@ style position) "fixed"
               (ps:@ style top) "0"
+              (ps:@ style left) "0"
               (ps:@ style right) "0"
-              (ps:@ style box-sizing) "content-box"
-              (ps:@ style background-color) "transparent"
-              (ps:@ style border-top) "2px solid"
-              (ps:@ style border-right) "2px solid"
-              (ps:@ style border-color) accent
-              (ps:@ style border-top-right-radius) "6px"
-              (ps:@ style clip-path) "none"
+              (ps:@ style height) "2px"
+              (ps:@ style background-color) accent
+              (ps:@ style opacity) "0.35"
               (ps:@ style pointer-events) "none"
-              (ps:@ style z-index) "2147483647"
-              (ps:@ style transition) "width 0.1s ease-in-out, height 0.1s ease-in-out")
-        (when fresh
-          (setf (ps:@ style width) "0px"
-                (ps:@ style height) "0px"))
+              (ps:@ style z-index) "2147483647")
         (ps:chain document document-element (append-child mark))
+        (ps:chain mark
+                  (add-event-listener
+                   "transitionend"
+                   (lambda (event)
+                     (when (and (ps:@ mark parent-node)
+                                (eql (ps:@ event property-name) "opacity"))
+                       (if (eql (ps:@ style opacity) "0")
+                           (ps:chain mark (remove))
+                           (ps:chain window
+                                     (set-timeout
+                                      (lambda ()
+                                        (when (ps:@ mark parent-node)
+                                          (setf (ps:@ style transition) "opacity 0.1s linear"
+                                                (ps:@ style opacity) "0")))
+                                      40)))))))
         (ps:chain window
                   (request-animation-frame
                    (lambda ()
-                     (setf (ps:@ mark style width) size
-                           (ps:@ mark style height) size))))))))
+                     (ps:chain window
+                               (request-animation-frame
+                                (lambda ()
+                                  (setf (ps:@ style transition) "opacity 0.22s ease"
+                                        (ps:@ style opacity) "1")))))))))))
 
-(define-parenscript-async remove-focus-mark (buffer)
-  "Take the focus corner off BUFFER."
+(define-parenscript-async remove-focus-beacon (buffer)
+  "Take the focus flash off BUFFER."
   (when (ps:@ document document-element)
-    (ps:let ((mark (nyxt/ps:qs document "#nyxt-focus-mark")))
+    (let ((beacon (nyxt/ps:qs document "#nyxt-focus-beacon"))
+          (mark (nyxt/ps:qs document "#nyxt-focus-mark"))
+          (style (nyxt/ps:qs document "#nyxt-focus-mark-style")))
+      (when beacon
+        (ps:chain beacon (remove)))
       (when mark
-        (ps:chain mark (remove))))))
+        (ps:chain mark (remove)))
+      (when style
+        (ps:chain style (remove))))))
 
-(-> focus-marks-wanted-p (window) boolean)
-(defun focus-marks-wanted-p (window)
-  "Return whether WINDOW has a panel on screen beside the page.
-The corner is only useful while focus can move between the page and a panel."
-  (and (not (page-fullscreen-p window))
-       (some (lambda (panel)
-               (and (panel-buffer-p panel)
-                    (visible-p panel)
-                    (not (dead-buffer-p panel))))
-             (panel-buffers window))))
+(defgeneric focus-beacon-buffer-p (buffer)
+  (:method ((buffer buffer))
+    (not (dead-buffer-p buffer)))
+  (:method ((buffer message-buffer))
+    t)
+  (:documentation "Return non-nil when BUFFER's view can draw the focus line.
+The status bar and the message bar are kept out of the buffer table, so
+`dead-buffer-p' does not mean their view is gone."))
 
-(-> sync-focus-marks (window) t)
-(defun sync-focus-marks (window)
-  "Show the accent corner on WINDOW's focused page or panel, and ease the rest back.
-Remove every corner when no panel is on screen."
-  (when (and window *browser* (theme *browser*))
-    (let ((wanted (focus-marks-wanted-p window))
-          (focused (keyboard-buffer window)))
-      (dolist (buffer (cons (buffer window) (panel-buffers window)))
-        (when (and (web-buffer-p buffer)
-                   (not (dead-buffer-p buffer)))
-          (if (and wanted
-                   (or (not (panel-buffer-p buffer))
-                       (visible-p buffer)))
-              (install-focus-mark buffer (eq buffer focused))
-              (remove-focus-mark buffer))))))
+(-> clear-focus-beacons (window) t)
+(defun clear-focus-beacons (window)
+  "Take every focus flash off WINDOW."
+  (dolist (buffer (append (list (buffer window)
+                                (status-buffer window)
+                                (message-buffer window))
+                          (panel-buffers window)
+                          (active-prompt-buffers window)))
+    (when (and buffer (focus-beacon-buffer-p buffer))
+      (remove-focus-beacon buffer)))
   nil)
 
-(defmethod on-signal-focus :after ((buffer buffer))
-  (when-let ((window (window buffer)))
-    (sync-focus-marks window)))
+(defmethod on-signal-focus :around ((buffer buffer))
+  "Flash BUFFER when the keyboard arrives from another buffer.
+The page, panels, prompt, status bar, and message bar all flash."
+  (let ((previous (when-let ((window (window buffer)))
+                    (keyboard-buffer window))))
+    (prog1 (call-next-method)
+      (when (and previous
+                 (not (eq previous buffer))
+                 *browser*
+                 (theme *browser*)
+                 (focus-beacon-buffer-p buffer))
+        (when (focus-beacon-buffer-p previous)
+          (remove-focus-beacon previous))
+        (flash-focus-beacon buffer)))))
 
-(defmethod on-signal-load-finished :after ((buffer web-buffer) url title)
-  (declare (ignore url title))
-  (when-let ((window (window buffer)))
-    (sync-focus-marks window)))
+(-> retire-focus-corner () t)
+(defun retire-focus-corner ()
+  "Drop the persistent top-right corner from an image that still draws it."
+  (when (fboundp 'sync-focus-marks)
+    (flet ((drop (generic qualifiers specializers)
+             (when-let ((method (find-method generic qualifiers specializers nil)))
+               (remove-method generic method))))
+      (drop #'on-signal-focus '(:after) (list (find-class 'buffer)))
+      (drop #'on-signal-load-finished
+            '(:after)
+            (list (find-class 'web-buffer) (find-class 't) (find-class 't))))
+    (dolist (name '(sync-focus-marks focus-marks-wanted-p
+                    install-focus-mark remove-focus-mark))
+      (when (fboundp name)
+        (fmakunbound name))))
+  (dolist (window (window-list))
+    (clear-focus-beacons window))
+  nil)
+
+(retire-focus-corner)

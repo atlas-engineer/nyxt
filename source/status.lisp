@@ -332,6 +332,9 @@
   "A status buffer is not one of the window's tabs."
   nil)
 
+(defmethod focus-beacon-buffer-p ((buffer status-buffer))
+  t)
+
 (defmethod (setf height) (value (status-buffer status-buffer))
   (let ((height (max 0 value)))
     (setf (ffi-height status-buffer) height
