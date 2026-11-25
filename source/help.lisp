@@ -95,7 +95,7 @@ to the next."
     (spinneret:with-html-string
       (:nstyle
         `(body
-          :padding "37px"
+          :padding "10px"
           :color-scheme ,(if (theme:dark-p theme:theme) "dark" "light"))
         '("h1"
           :margin-bottom "17px")
@@ -469,7 +469,7 @@ The value is saved to clipboard."
       (:nstyle
         `(body
           :min-height "100vh"
-          :padding "37px"
+          :padding "10px"
           :padding-bottom "112px"
           :background-color ,(if (theme:dark-p theme:theme)
                                  theme:background-color

@@ -358,7 +358,7 @@ inherited from the superclasses.")
         :top "24px"
         :box-sizing "border-box"
         :margin "0 -24px 24px"
-        :padding "7px 17px 0"
+        :padding "4px 22px 0"
         :overflow-anchor "none"
         :background-color "transparent"
         :background-image ,(format nil "linear-gradient(~a, ~a), ~
