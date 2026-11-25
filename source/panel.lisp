@@ -284,34 +284,61 @@ navigation bindings of `base-mode'."
 
 (-> panel-chrome-css (theme:theme) string)
 (defun panel-chrome-css (theme)
-  "Return the stylesheet for a panel's header and buttons."
+  "Return the stylesheet for a panel's fixed menu bar and its buttons."
   (theme:themed-css theme
     '(html
       :background-color "transparent"
-      :height "100%")
+      :height "100%"
+      :overflow "hidden")
     `(body
+      :position "relative"
       :box-sizing "border-box"
       :background-color ,theme:surface-color
       :margin "0"
-      :min-height "100vh")
+      :padding "0"
+      :height "100%"
+      :overflow "hidden")
+    '("#nyxt-panel-chrome"
+      :position "absolute"
+      :z-index "2"
+      :top "11px"
+      :right "11px"
+      :left "11px"
+      :pointer-events "none"
+      :background "none")
+    '("#nyxt-panel-content"
+      :position "absolute"
+      :top "11px"
+      :right "11px"
+      :bottom "0"
+      :left "11px"
+      :box-sizing "border-box"
+      :overflow "auto"
+      :padding "54px 0 24px")
+    '("#nyxt-panel-content ul.list"
+      :margin-left "0"
+      :margin-right "0")
     `("#nyxt-panel-header"
-      :position "fixed"
-      :top "4px"
-      :left "0"
-      :right "0"
-      :z-index "6"
+      :pointer-events "auto"
       :box-sizing "border-box"
       :display "flex"
-      :align-items "flex-start"
+      :align-items "center"
       :justify-content "space-between"
       :gap "7px"
-      :padding "24px" "24px" "0"
-      :background-color "transparent"
+      :width "100%"
+      :padding "13px"
+      :background-color
+      ,(format nil "color-mix(in srgb, color-mix(in srgb, ~a 95%, ~a) 70%, transparent)"
+               theme:background-color-
+               theme:on-background-color)
+      :backdrop-filter "saturate(180%) blur(20px)"
+      :-webkit-backdrop-filter "saturate(180%) blur(20px)"
+      :border-radius "7px"
       :color ,(theme:on-background-color theme)
       :font-family ,(format nil "~s" (theme:font-family theme)))
     '("#nyxt-panel-title"
+      :flex "1"
       :min-width "0"
-      :margin-top "-3px"
       :overflow "hidden"
       :white-space "nowrap"
       :text-overflow "ellipsis"
@@ -322,8 +349,7 @@ navigation bindings of `base-mode'."
       :display "flex"
       :flex "none"
       :align-items "center"
-      :gap "2px"
-      :margin "-6px" "0" "0" "0")
+      :gap "2px")
     `(".nyxt-panel-button"
       :flex "none"
       :box-sizing "border-box"
@@ -344,7 +370,7 @@ navigation bindings of `base-mode'."
       :line-height "17px"
       :cursor "pointer")
     `(".nyxt-panel-button:hover"
-      :background-color ,(theme:background-color- theme))
+      :background-color ,(theme:background-color theme))
     `(".nyxt-panel-button:focus-visible"
       :outline "2px" "solid" ,(theme:action-color theme)
       :outline-offset "2px")))
@@ -426,20 +452,15 @@ heading matches the panel title at 17px."
              (ps:chain chrome (append-child header))
              (let ((root (or (ps:@ document body)
                              (ps:@ document document-element))))
-               (when (and root (ps:@ root dataset nyxt-panel-offset))
-                 (setf (ps:@ root style padding-top) "")
-                 (delete (ps:@ root dataset nyxt-panel-offset)))
-               (when (and root (not (ps:@ root dataset nyxt-panel-pad)))
-                 (setf (ps:@ root dataset nyxt-panel-pad)
-                       (*string (or (parse-float
-                                     (ps:@ (ps:chain window (get-computed-style root))
-                                           padding-top))
-                                    0))))
-               (ps:chain root (append-child chrome))
                (when root
-                 (let ((base (or (parse-float (ps:@ root dataset nyxt-panel-pad)) 0)))
-                   (setf (ps:@ root style padding-top)
-                         (+ (max base (+ (ps:@ header offset-height) 24)) "px"))))))))))))
+                 (let ((content (ps:chain document (get-element-by-id "nyxt-panel-content"))))
+                   (unless content
+                     (setf content (ps:chain document (create-element "div")))
+                     (setf (ps:@ content id) "nyxt-panel-content")
+                     (ps:loop while (ps:@ root first-child)
+                        do (ps:chain content (append-child (ps:@ root first-child))))
+                     (ps:chain root (append-child content)))
+                   (ps:chain root (insert-before chrome content))))))))))))
 
 (export-always '*push-occluded-page-elements-p*)
 (defvar *push-occluded-page-elements-p* t
