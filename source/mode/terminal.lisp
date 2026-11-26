@@ -30,41 +30,131 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
 (defun terminal-script (buffer)
   "Return the script that builds the terminal for BUFFER."
   (let ((theme (theme *browser*)))
-    (uiop:strcat
-     "(function(){var tries=0;function boot(){"
-     "var node=document.getElementById(\"terminal\");"
-     "if(!node||!window.Terminal||!window.FitAddon){"
-     "if(tries++<50) window.setTimeout(boot,30);return;}"
-     "var term=new Terminal({cursorBlink:false,fontSize:15,scrollback:5000,fontFamily:"
-     (js-string (theme:monospace-font-family theme))
-     ",theme:{background:"
-     (js-string (theme:background-color theme))
-     ",foreground:"
-     (js-string (theme:on-background-color theme))
-     ",cursor:"
-     (js-string (theme:action-color theme))
-     ",selectionBackground:"
-     (js-string (theme:primary-color theme))
-     "}});"
-     "var fit=new FitAddon.FitAddon();term.loadAddon(fit);term.open(node);"
-     "var id=" (princ-to-string (id buffer)) ";"
-     "function send(action,query){"
-     "fetch(\"nyxt-terminal://session/\"+action+\"?\"+query,{mode:\"no-cors\"});}"
-     "function encodeData(text){var bytes=new TextEncoder().encode(text);var binary=\"\";"
-     "for(var i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);"
-     "return btoa(binary).replace(/\\+/g,\"-\").replace(/\\//g,\"_\").replace(/=+$/g,\"\");}"
-     "term.onData(function(data){var step=1024;"
-     "for(var start=0;start<data.length;start+=step)"
-     "send(\"write\",\"buffer=\"+id+\"&data=\"+"
-     "encodeURIComponent(encodeData(data.slice(start,start+step))));});"
-     "term.onResize(function(size){"
-     "send(\"resize\",\"buffer=\"+id+\"&columns=\"+size.cols+\"&rows=\"+size.rows);});"
-     "fit.fit();window.addEventListener(\"resize\",function(){fit.fit();});"
-     "window.nyxtTerminal={write:function(b64){var binary=atob(b64);"
-     "var bytes=new Uint8Array(binary.length);"
-     "for(var i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);term.write(bytes);},"
-     "focus:function(){term.focus();}};term.focus();send(\"ready\",\"buffer=\"+id);}"
-     "boot();})();")))
+    (ps:ps
+      ((lambda ()
+         (let* ((tries 0)
+                (opened ps:false)
+                (buffer-id (ps:lisp (id buffer)))
+                (font-family (ps:lisp (theme:monospace-font-family theme)))
+                (background (ps:lisp (theme:background-color theme)))
+                (foreground (ps:lisp (theme:on-background-color theme)))
+                (cursor (ps:lisp (theme:action-color theme)))
+                (selection (ps:lisp (theme:primary-color theme)))
+                (face (ps:+ "15px \""
+                            (ps:chain font-family (split "\"") (join ""))
+                            "\""))
+                (font-ready (when (and (ps:@ document fonts)
+                                       (ps:@ document fonts load))
+                              (ps:chain document fonts (load face))))
+                (term nil)
+                (fit nil))
+           (defun send (action query)
+             (ps:chain window
+                       (fetch (ps:+ "nyxt-terminal://session/" action "?" query)
+                              (ps:create mode "no-cors"))))
+           (defun encode-data (text)
+             (let* ((bytes (ps:chain (ps:new (-text-encoder)) (encode text)))
+                    (binary ""))
+               (loop for i from 0 below (ps:@ bytes length)
+                     do (setf binary
+                              (ps:+ binary
+                                    (ps:chain -string
+                                              (from-char-code (aref bytes i))))))
+               (ps:chain (ps:chain (ps:chain ((ps:@ window btoa) binary)
+                                             (split "+")
+                                             (join "-"))
+                                   (split "/")
+                                   (join "_"))
+                         (split "=")
+                         (join ""))))
+           (defun remeasure ()
+             (when term
+               (let ((size (ps:@ term options font-size)))
+                 (setf (ps:@ term options font-size) (ps:+ size 1))
+                 (setf (ps:@ term options font-size) size)
+                 (ps:chain fit (fit)))))
+           (defun open-terminal (node)
+             (unless opened
+               (setf opened t
+                     term (ps:new ((ps:@ window "Terminal")
+                                   (ps:create cursor-blink ps:false
+                                              font-size 15
+                                              scrollback 5000
+                                              font-family font-family
+                                              theme (ps:create background background
+                                                               foreground foreground
+                                                               cursor cursor
+                                                               selection-background selection))))
+                     fit (ps:new ((ps:@ (ps:@ window "FitAddon") "FitAddon"))))
+               (ps:chain term (load-addon fit))
+               (ps:chain term (open node))
+               (ps:chain term
+                         (on-data
+                          (lambda (data)
+                            (let ((start 0)
+                                  (step 1024))
+                              (loop while (< start (ps:@ data length))
+                                    do (send "write"
+                                             (ps:+ "buffer="
+                                                   buffer-id
+                                                   "&data="
+                                                   (encode-u-r-i-component
+                                                    (encode-data
+                                                     (ps:chain data
+                                                               (slice start
+                                                                      (ps:+ start step)))))))
+                                       (setf start (ps:+ start step)))))))
+               (ps:chain term
+                         (on-resize
+                          (lambda (size)
+                            (send "resize"
+                                  (ps:+ "buffer="
+                                        buffer-id
+                                        "&columns="
+                                        (ps:@ size cols)
+                                        "&rows="
+                                        (ps:@ size rows))))))
+               (ps:chain fit (fit))
+               (ps:chain window
+                         (add-event-listener "resize"
+                                             (lambda () (ps:chain fit (fit)))))
+               (setf (ps:@ window nyxt-terminal)
+                     (ps:create
+                      write (lambda (b64)
+                              (let* ((binary ((ps:@ window atob) b64))
+                                     (bytes (ps:new (-uint8-array
+                                                     (ps:@ binary length)))))
+                                (loop for i from 0 below (ps:@ binary length)
+                                      do (setf (aref bytes i)
+                                               (ps:chain binary (char-code-at i))))
+                                (ps:chain term (write bytes))))
+                      focus (lambda () (ps:chain term (focus)))))
+               (ps:chain term (focus))
+               (send "ready" (ps:+ "buffer=" buffer-id))))
+           (defun boot ()
+             (let ((node (ps:chain document (get-element-by-id "terminal"))))
+               (cond
+                 ((and node
+                       (ps:@ window "Terminal")
+                       (ps:@ window "FitAddon"))
+                  (if font-ready
+                      (progn
+                        (ps:chain font-ready
+                                  (then (lambda ()
+                                          (if opened
+                                              (remeasure)
+                                              (open-terminal node)))
+                                        (lambda ()
+                                          (open-terminal node))))
+                        (ps:chain window
+                                  (set-timeout (lambda ()
+                                                 (open-terminal node))
+                                               400)))
+                      (open-terminal node)))
+                 ((< tries 50)
+                  (incf tries)
+                  (ps:chain window (set-timeout boot 30))))))
+           (boot)))))))
 
 (defun install-terminal-ui (mode)
   "Load xterm.js into MODE's buffer and connect it to the shell."
