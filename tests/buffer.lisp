@@ -36,6 +36,16 @@
                       (keymaps:lookup-key
                        "shift-left"
                        (keymaps:get-keymap keyscheme:cua
+                                           (keyscheme-map (find-mode panel 'panel-mode)))))
+           (assert-eq 'shift-panel-left
+                      (keymaps:lookup-key
+                       "M-shift-left"
+                       (keymaps:get-keymap keyscheme:cua
+                                           (keyscheme-map (find-mode panel 'panel-mode)))))
+           (assert-eq 'shift-panel-right
+                      (keymaps:lookup-key
+                       "M-shift-right"
+                       (keymaps:get-keymap keyscheme:cua
                                            (keyscheme-map (find-mode panel 'panel-mode))))))
       (nyxt::buffer-delete (id panel)))))
 
@@ -86,3 +96,56 @@
     (assert-eq :near
                (nyxt::screen-rect-buffer
                 (nyxt::screen-rect-in-direction origin (list origin near far) :right)))))
+
+(define-test shift-panel-placement-moves-through-the-row ()
+  (let* ((*browser* (make-instance 'browser))
+         (outer (make-instance 'panel-buffer :side :left))
+         (inner (make-instance 'panel-buffer :side :left))
+         (across (make-instance 'panel-buffer :side :right))
+         (other "not-a-panel"))
+    (let ((panels (list outer inner across other)))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels inner :right)
+        (assert-eq :right side)
+        (assert-eq :right (side inner))
+        (assert-equal (list outer across inner other) moved)
+        (setf panels moved))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels inner :right)
+        (assert-eq :right side)
+        (assert-equal (list outer inner across other) moved)
+        (setf panels moved))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels inner :right)
+        (assert-eq :right side)
+        (assert-equal panels moved))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels inner :left)
+        (assert-eq :right side)
+        (assert-equal (list outer across inner other) moved)
+        (setf panels moved))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels inner :left)
+        (assert-eq :left side)
+        (assert-eq :left (side inner))
+        (assert-eq :right (side across))
+        (assert-equal (list outer inner across other) moved)))
+    (let ((panels (list outer inner)))
+      (assert-equal panels (nyxt::shift-panel-placement panels outer :left))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement panels outer :right)
+        (assert-eq :left side)
+        (assert-equal (list inner outer) moved))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement (list outer) outer :right)
+        (assert-eq :right side)
+        (assert-eq :right (side outer))
+        (assert-equal (list outer) moved)))
+    (let ((alone (make-instance 'panel-buffer :side :right)))
+      (multiple-value-bind (moved side)
+          (nyxt::shift-panel-placement (list alone) alone :left)
+        (assert-eq :left side)
+        (assert-eq :left (side alone))
+        (assert-equal (list alone) moved))
+      (assert-equal (list across)
+                    (nyxt::shift-panel-placement (list across) alone :right)))))

@@ -106,10 +106,10 @@ A page loaded in the panel does not replace it."
 
 (export-always 'define-buffer-panel)
 (defmacro define-buffer-panel (name initargs &body body)
-  "Define a `panel-buffer' subclass NAME and the commands that open it.
-INITARGS are passed to `make-instance'. `:side' is set by the command.
+  "Define a `panel-buffer' subclass NAME and the command that opens it.
+INITARGS are passed to `make-instance'. The command places the panel on the left.
 The first string in BODY documents the class.
-The commands are `add-NAME-left' and `add-NAME-right'. Each takes WINDOW.
+The command is `add-NAME'. It takes WINDOW.
 BODY runs with PANEL bound to the new panel and WINDOW bound to that argument.
 
 Example:
@@ -125,19 +125,17 @@ Example:
       (alex:parse-body body :documentation t)
     (unless documentation
       (error "Panel ~a requires documentation." name))
-    (flet ((command-name (suffix)
+    (flet ((command-name ()
              (without-package-locks
-               (intern (str:concat "ADD-" (symbol-name name) suffix)
+               (intern (str:concat "ADD-" (symbol-name name))
                        (symbol-package name))))
-           (command-documentation (side)
+           (command-documentation ()
              (let* ((base (string-right-trim ". " documentation))
                     (base (if (uiop:string-prefix-p "Panel" base)
                               (str:concat "Add a panel"
                                           (subseq base (length "Panel")))
                               base)))
-               (format nil "~a on the ~a of WINDOW."
-                       base
-                       (string-downcase (symbol-name side)))))
+               (format nil "~a on the left of WINDOW." base)))
            (symbol-from-caller (string)
              (without-package-locks
                (or (find-symbol string *package*)
@@ -147,39 +145,27 @@ Example:
                               (when (eq status :external)
                                 (return symbol))))
                    (intern string *package*)))))
-      (alex:with-gensyms (side)
-        (let ((left (command-name "-LEFT"))
-              (right (command-name "-RIGHT"))
-              (helper (without-package-locks
-                       (intern (str:concat "%ADD-" (symbol-name name))
-                               (symbol-package name))))
-              (panel-var (symbol-from-caller "PANEL"))
-              (window-var (symbol-from-caller "WINDOW")))
-          `(progn
-             (eval-always
-               (define-class ,name (panel-buffer)
-                 ()
-                 (:export-class-name-p t)
-                 (:export-accessor-names-p t)
-                 (:export-predicate-name-p t)
-                 (:metaclass user-class)
-                 (:documentation ,documentation)))
-             (-> ,helper (window (member :left :right)) (values ,name &optional))
-             (defun ,helper (,window-var ,side)
-               ,(format nil "Open a `~(~a~)' on SIDE of WINDOW." name)
-               (let ((,panel-var (add-panel-buffer ,window-var
-                                                   (make-instance ',name
-                                                                  :side ,side
-                                                                  ,@initargs))))
-                 ,@declarations
-                 ,@forms
-                 ,panel-var))
-             (define-command-global ,left ((,window-var window))
-               ,(command-documentation :left)
-               (,helper ,window-var :left))
-             (define-command-global ,right ((,window-var window))
-               ,(command-documentation :right)
-               (,helper ,window-var :right))))))))
+      (let ((command (command-name))
+            (panel-var (symbol-from-caller "PANEL"))
+            (window-var (symbol-from-caller "WINDOW")))
+        `(progn
+           (eval-always
+             (define-class ,name (panel-buffer)
+               ()
+               (:export-class-name-p t)
+               (:export-accessor-names-p t)
+               (:export-predicate-name-p t)
+               (:metaclass user-class)
+               (:documentation ,documentation)))
+           (define-command-global ,command ((,window-var window))
+             ,(command-documentation)
+             (let ((,panel-var (add-panel-buffer ,window-var
+                                                 (make-instance ',name
+                                                                :side :left
+                                                                ,@initargs))))
+               ,@declarations
+               ,@forms
+               ,panel-var)))))))
 
 (define-mode panel-mode ()
   "Base mode for `panel-buffer'.
@@ -202,6 +188,8 @@ navigation bindings of `base-mode'."
        "shift-right" 'focus-buffer-right
        "shift-up" 'focus-buffer-up
        "shift-down" 'focus-buffer-down
+       "M-shift-left" 'shift-panel-left
+       "M-shift-right" 'shift-panel-right
        "f1 b" 'describe-bindings
        "C-space" 'execute-command)
       keyscheme:cua
@@ -731,6 +719,68 @@ heading matches the panel title at 17px."
   (when (window panel)
     (apply-page-container (window panel))))
 
+(-> panel-visual-row (list) list)
+(defun panel-visual-row (panels)
+  "Return PANELS from the left edge to the right edge.
+Left panels keep their order. Right panels run from the page toward the edge."
+  (let ((live (remove-if-not #'panel-buffer-p panels)))
+    (append (remove-if-not (lambda (panel) (eql :left (side panel))) live)
+            (reverse (remove-if-not (lambda (panel) (eql :right (side panel))) live)))))
+
+(-> panel-buffers-from-row (list list) list)
+(defun panel-buffers-from-row (row rest)
+  "Return `panel-buffers' order for a left-to-right ROW, followed by REST.
+Right panels are stored from the edge toward the page."
+  (let ((split (or (position :right row :key #'side) (length row))))
+    (append (subseq row 0 split)
+            (reverse (subseq row split))
+            rest)))
+
+(-> shift-panel-placement (list panel-buffer (member :left :right))
+    (values list (member :left :right) &optional))
+(defun shift-panel-placement (panels panel direction)
+  "Return PANELS with PANEL moved one place in DIRECTION, and PANEL's side.
+The row runs from the left edge to the right edge. A step past the page puts
+PANEL on the other side, against the page. A step past either edge leaves
+PANEL where it is. PANEL's `side' changes when the step crosses the page."
+  (let* ((row (panel-visual-row panels))
+         (rest (remove-if #'panel-buffer-p panels))
+         (index (position panel row))
+         (left-count (count :left row :key #'side))
+         (next (and index
+                    (+ index (ecase direction
+                               (:left -1)
+                               (:right 1))))))
+    (flet ((place (row)
+             (values (panel-buffers-from-row row rest) (side panel))))
+      (cond
+        ((null index)
+         (values panels (side panel)))
+        ((and next
+              (<= 0 next (1- (length row)))
+              (eql (< index left-count) (< next left-count)))
+         (let ((reordered (copy-list row)))
+           (rotatef (nth index reordered) (nth next reordered))
+           (place reordered)))
+        ((and (eql direction :right)
+              (= index (1- left-count))
+              (plusp left-count))
+         (setf (slot-value panel 'side) :right)
+         (let ((without (remove panel row)))
+           (place (append (subseq without 0 index)
+                          (list panel)
+                          (subseq without index)))))
+        ((and (eql direction :left)
+              (= index left-count)
+              (< left-count (length row)))
+         (setf (slot-value panel 'side) :left)
+         (let ((without (remove panel row)))
+           (place (append (subseq without 0 left-count)
+                          (list panel)
+                          (subseq without left-count)))))
+        (t
+         (values panels (side panel)))))))
+
 (defmethod (setf buffer) :after ((buffer web-buffer) (window window))
   "The panels float on the page that just became active.
 Specialized on `web-buffer' so the status bar's `buffer' handler, which
@@ -1104,6 +1154,34 @@ When a gap separates them, the nearest rectangle on that line wins."
     (:right "to the right")
     (:up "above")
     (:down "below")))
+
+(export-always 'shift-panel)
+(-> shift-panel (panel-buffer (member :left :right)) (values panel-buffer &optional))
+(defun shift-panel (panel direction)
+  "Move PANEL one place DIRECTION along its window.
+The panels run from the left edge to the right edge. A step past the page
+puts PANEL on the other side."
+  (alex:if-let ((window (window panel)))
+    (let ((previous-side (side panel))
+          (previous (panel-buffers window)))
+      (multiple-value-bind (next side)
+          (shift-panel-placement previous panel direction)
+        (if (and (eql side previous-side)
+                 (equal next previous))
+            (echo "No panel ~a." (direction-phrase direction))
+            (progn
+              (setf (panel-buffers window) next)
+              (enable-panel-buffers window))))
+      panel)
+    panel))
+
+(define-command shift-panel-left ((panel panel-buffer))
+  "Move PANEL one place to the left."
+  (shift-panel panel :left))
+
+(define-command shift-panel-right ((panel panel-buffer))
+  "Move PANEL one place to the right."
+  (shift-panel panel :right))
 
 (-> focus-buffer-in-direction (buffer (member :left :right :up :down)) (maybe buffer))
 (defun focus-buffer-in-direction (buffer direction)

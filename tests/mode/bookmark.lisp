@@ -102,8 +102,7 @@
     (assert-true (search "href=\"https://example.com/a\"" page-html))
     (assert-false (search "open-bookmark" page-html))
     (assert-true (search "edit" panel-html))
-    (assert-true (fboundp 'nyxt/mode/bookmark:add-bookmark-panel-left))
-    (assert-true (fboundp 'nyxt/mode/bookmark:add-bookmark-panel-right))))
+    (assert-true (fboundp 'nyxt/mode/bookmark:add-bookmark-panel))))
 
 (define-test list-bookmarks-drops-its-handler-when-the-buffer-is-deleted ()
   (let* ((*browser* (make-instance 'browser))

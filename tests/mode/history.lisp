@@ -84,8 +84,7 @@
     (assert-true (search "open-history" panel-html))
     (assert-true (search "href=\"https://example.com/a\"" page-html))
     (assert-false (search "open-history" page-html))
-    (assert-true (fboundp 'nyxt/mode/history:add-history-panel-left))
-    (assert-true (fboundp 'nyxt/mode/history:add-history-panel-right))))
+    (assert-true (fboundp 'nyxt/mode/history:add-history-panel))))
 
 (define-test buffer-history-panel-follows-the-current-buffer ()
   (let* ((*browser* (make-instance 'browser
@@ -126,8 +125,7 @@
         (nyxt/mode/history::add-url-to-history
          (quri:uri "https://alpha.example/d") alpha-history :title "Alpha two")
         (assert-false (search "Alpha two" (page)))))
-    (assert-true (fboundp 'nyxt/mode/history:add-buffer-history-panel-left))
-    (assert-true (fboundp 'nyxt/mode/history:add-buffer-history-panel-right))))
+    (assert-true (fboundp 'nyxt/mode/history:add-buffer-history-panel))))
 
 (define-test history-mode-keyscheme-bindings ()
   (assert-eq 'nyxt/mode/history:history-backwards
