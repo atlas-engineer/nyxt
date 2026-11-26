@@ -18,6 +18,7 @@
 
 (defconstant +transcript-limit+ 262144)
 (defconstant +tiocsctty+ #x540E)
+(defconstant +tiocgpgrp+ #x540F)
 (defconstant +tiocswinsz+ #x5414)
 (defconstant +pollin+ #x001)
 (defconstant +pollout+ #x004)
@@ -208,6 +209,39 @@ This runs in the forked child. It does not return."
   (:export-class-name-p t)
   (:predicate-name-transformer #'nclasses:always-dashed-predicate-name-transformer)
   (:documentation "A pseudoterminal and the program running on it."))
+
+(defun process-name (pid)
+  "Return the name PID was invoked as."
+  (let ((command (format nil "/proc/~d/cmdline" pid))
+        (comm (format nil "/proc/~d/comm" pid)))
+    (or (and (uiop:file-exists-p command)
+             (let* ((text (uiop:read-file-string command))
+                    (end (position #\Nul text)))
+               (when (and end (plusp end))
+                 (file-namestring (subseq text 0 end)))))
+        (and (uiop:file-exists-p comm)
+             (string-trim '(#\newline #\return)
+                          (uiop:read-file-string comm))))))
+
+(export-always 'foreground-name)
+(-> foreground-name (pty) (values (or null string) &optional))
+(defun foreground-name (pty)
+  "Return the name of the program in the foreground of PTY."
+  #+linux
+  (cffi:with-foreign-object (group :int)
+    (when (and (plusp (master pty))
+               (zerop (cffi:foreign-funcall "ioctl"
+                                            :int (master pty)
+                                            :unsigned-long +tiocgpgrp+
+                                            :pointer group
+                                            :int)))
+      (let ((pid (cffi:mem-ref group :int)))
+        (when (plusp pid)
+          (process-name pid)))))
+  #-linux
+  (declare (ignore pty))
+  #-linux
+  nil)
 
 (defun transcript-octets (chunks)
   "Concatenate CHUNKS into one octet vector."

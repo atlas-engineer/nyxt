@@ -16,16 +16,26 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
 
 (defun terminal-markup ()
   "Return the terminal page body."
-  (let ((theme (theme *browser*)))
-    (spinneret:with-html-string
-      (:style
-       (:raw (or (gethash "xterm.css" *static-data*) ""))
-       (:raw (format nil
-                     "html,body{height:100%;margin:0;padding:0;overflow:hidden;~
-                      background:~a;color:~a}#terminal{height:100vh;width:100%;}"
-                     (theme:background-color theme)
-                     (theme:on-background-color theme))))
-      (:div :id "terminal"))))
+  (spinneret:with-html-string
+    (:nstyle
+      (or (gethash "xterm.css" *static-data*) "")
+      `("html, body"
+        :height "100%"
+        :margin 0
+        :padding 0
+        :overflow "hidden"
+        :background ,theme:background-color
+        :color ,theme:on-background-color)
+      '("#terminal, .xterm"
+        :height "100%"
+        :width "100%")
+      '(".xterm .xterm-viewport"
+        :background-color "transparent"
+        :scrollbar-width "none")
+      '(".xterm .xterm-viewport::-webkit-scrollbar"
+        :width 0
+        :height 0))
+    (:div :id "terminal")))
 
 (defun terminal-script (buffer)
   "Return the script that builds the terminal for BUFFER."
@@ -67,12 +77,19 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
                                    (join "_"))
                          (split "=")
                          (join ""))))
+           (defun fill ()
+             (when (and term fit)
+               (let ((viewport (and (ps:@ term _core)
+                                    (ps:@ term _core viewport))))
+                 (when viewport
+                   (setf (ps:@ viewport scroll-bar-width) 0)))
+               (ps:chain fit (fit))))
            (defun remeasure ()
              (when term
                (let ((size (ps:@ term options font-size)))
                  (setf (ps:@ term options font-size) (ps:+ size 1))
                  (setf (ps:@ term options font-size) size)
-                 (ps:chain fit (fit)))))
+                 (fill))))
            (defun open-terminal (node)
              (unless opened
                (setf opened t
@@ -114,10 +131,19 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
                                         (ps:@ size cols)
                                         "&rows="
                                         (ps:@ size rows))))))
-               (ps:chain fit (fit))
+               (ps:chain term
+                         (on-title-change
+                          (lambda (title)
+                            (setf (ps:@ document title) (or title "*Terminal*"))
+                            (send "title"
+                                  (ps:+ "buffer="
+                                        buffer-id
+                                        "&title="
+                                        (encode-u-r-i-component (or title "")))))))
+               (fill)
                (ps:chain window
                          (add-event-listener "resize"
-                                             (lambda () (ps:chain fit (fit)))))
+                                             (lambda () (fill))))
                (setf (ps:@ window nyxt-terminal)
                      (ps:create
                       write (lambda (b64)
@@ -213,8 +239,17 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
   (let ((octets (terminal:take-transcript (pty mode))))
     (send-terminal-output mode octets)))
 
+(defun terminal-title (text)
+  "Return TEXT as a buffer title.
+A blank TEXT names the terminal itself."
+  (let ((title (string-trim '(#\space #\tab #\newline #\return)
+                            (or text ""))))
+    (if (plusp (length title))
+        title
+        "*Terminal*")))
+
 (defun handle-terminal-request (url)
-  "Apply a write, resize, or ready request from the terminal page."
+  "Apply a write, resize, title, or ready request from the terminal page."
   (let* ((params (quri:uri-query-params (quri:uri url)))
          (buffer (buffer-by-id (assoc-value params "buffer" :test #'equal)))
          (mode (and buffer (find-mode buffer 'terminal-mode)))
@@ -231,6 +266,8 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
                  (rows (query-integer params "rows")))
              (when (and columns rows (plusp columns) (plusp rows))
                (terminal:resize pty rows columns))))
+          ((string= action "title")
+           (note-terminal-title mode (assoc-value params "title" :test #'equal)))
           ((string= action "ready")
            (attach-terminal mode)))))))
 
@@ -249,6 +286,8 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
 (define-mode terminal-mode ()
   "A terminal in the buffer.
 The shell runs on a pseudoterminal in this process. Output is drawn with xterm.js.
+The buffer title is the title the program sets. While another program is in the
+foreground, the title is that program's name.
 Keys go to the terminal. C-M-z runs `toggle-terminal-keys', which gives the keys
 to Nyxt instead. The same binding sends them back."
   ((keyscheme-map
@@ -273,6 +312,15 @@ The binding on this mode stays available in both states.")
     nil
     :export nil
     :documentation "The pseudoterminal for this buffer.")
+   (foreground-name
+    nil
+    :export nil
+    :documentation "Name of the program last seen in the foreground.")
+   (title-from-program-p
+    nil
+    :type boolean
+    :export nil
+    :documentation "Whether the buffer title was set by the program itself.")
    (delete-handler
     nil
     :export nil
@@ -291,6 +339,33 @@ The binding on this mode stays available in both states.")
                      (uiop:getenv "SHELL")
                      "/bin/sh")))
     (list program "-i")))
+
+(defun shell-command-name (mode)
+  "Return the file name of the shell MODE starts."
+  (file-namestring (first (program-argv mode))))
+
+(defun note-terminal-title (mode text)
+  "Set MODE's buffer title from the title TEXT the program chose."
+  (when (buffer mode)
+    (setf (title-from-program-p mode) t
+          (title (buffer mode)) (terminal-title text))))
+
+(defun note-foreground-program (mode)
+  "Name MODE's buffer after a foreground program other than its shell."
+  (handler-case
+      (when-let ((pty (pty mode)))
+        (let ((name (terminal:foreground-name pty)))
+          (when (and name (not (equal name (foreground-name mode))))
+            (setf (foreground-name mode) name
+                  (title-from-program-p mode) nil))
+          (when (and name
+                     (not (title-from-program-p mode))
+                     (not (string= name (shell-command-name mode)))
+                     (buffer mode)
+                     (not (string= name (title (buffer mode)))))
+            (setf (title (buffer mode)) name))))
+    (error (condition)
+      (log:debug "Terminal title was not updated: ~a" condition))))
 
 (defun detach-terminal-handlers (mode)
   "Remove MODE's buffer-delete and browser-exit hook handlers."
@@ -342,7 +417,8 @@ The shell is its own session, so it outlives the process unless it is reaped."
           (setf (pty mode)
                 (terminal:start (program-argv mode)
                                 :on-output (lambda (octets)
-                                             (send-terminal-output mode octets))
+                                             (send-terminal-output mode octets)
+                                             (note-foreground-program mode))
                                 :on-exit (lambda ()
                                            (echo "Terminal exited."))))
           (ensure-delete-handler mode)

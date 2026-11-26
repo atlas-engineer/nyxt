@@ -19,6 +19,12 @@
            (assert-true (forward-input-events-p buffer)))
       (disable-modes* 'nyxt/mode/terminal:terminal-mode buffer))))
 
+(define-test terminal-title-uses-the-program-title ()
+  (assert-string= "emacs" (nyxt/mode/terminal::terminal-title "emacs"))
+  (assert-string= "user@host:~/src" (nyxt/mode/terminal::terminal-title " user@host:~/src "))
+  (assert-string= "*Terminal*" (nyxt/mode/terminal::terminal-title "  "))
+  (assert-string= "*Terminal*" (nyxt/mode/terminal::terminal-title nil)))
+
 (define-test terminal-open-bindings ()
   (let* ((buffer (make-instance 'input-and-modable-buffer))
          (base (make-instance 'base-mode :buffer buffer)))
