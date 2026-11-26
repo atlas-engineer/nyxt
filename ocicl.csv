@@ -57,6 +57,7 @@ cl-gobject-introspection-test, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7
 cl-gopher, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-gopher/cl-gopher.asd
 cl-interpol, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-interpol/cl-interpol.asd
 cl-json, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-json/cl-json.asd
+cl-libghostty, git+https://github.com/atlas-engineer/cl-libghostty@b63df4b0b2e3e68f689d40bc4e26f0abf01985c3#ref=b63df4b0b2e3e68f689d40bc4e26f0abf01985c3, cl-libghostty-b63df4b/cl-libghostty.asd
 cl-postgres_plus_local-time, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/local-time/cl-postgres+local-time.asd
 cl-ppcre, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-ppcre/cl-ppcre.asd
 cl-ppcre-unicode, ghcr.io/ocicl/nyxt@sha256:115d02e83b0c7aa40c034a7d1e17e14220a27c1430f7b9c23d78bcfed5e347c2, nyxt-20251214-9276cf1/_build/cl-ppcre/cl-ppcre-unicode.asd

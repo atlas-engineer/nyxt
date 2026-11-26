@@ -68,6 +68,7 @@
                nyxt/text-buffer
                nyxt/terminal
                nyxt/theme
+               cl-libghostty
                nyxt/user-interface)
   :pathname #p"NYXT:source;"
   :components ((:file "utilities")
