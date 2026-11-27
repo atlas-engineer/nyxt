@@ -49,9 +49,14 @@ lisp_files := nyxt.asd $(shell find source libraries tests -type f -name '*.lisp
 nyxt: $(lisp_files) ocicl-install
 	if [ "$(NYXT_RENDERER)" = "cef" ] && [ -n "$(CEF_ROOT)" ]; then \
 		cef_dir="$(call ocicl_system_dir,cl-cef)"; \
+		cef_arch=""; \
+		case "$$(uname -m)" in \
+			aarch64|arm64) cef_arch="-DPROJECT_ARCH=arm64" ;; \
+		esac; \
 		cmake -S "$$cef_dir" \
 			-B "$$cef_dir/build" \
-			-DCEF_ROOT="$(CEF_ROOT)" && \
+			-DCEF_ROOT="$(CEF_ROOT)" \
+			$$cef_arch && \
 		cmake --build "$$cef_dir/build"; \
 	fi
 	$(lisp_eval) '(asdf:load-system :nyxt/$(NYXT_RENDERER)-application)' \

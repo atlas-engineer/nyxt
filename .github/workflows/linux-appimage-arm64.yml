@@ -1,0 +1,66 @@
+name: Linux AppImage ARM64
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  appimage:
+    name: Build CEF AppImage
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    env:
+      OCICL_HTTP_RETRIES: "6"
+      OCICL_DOWNLOAD_CONCURRENCY: "2"
+    steps:
+      - name: Check out Nyxt
+        uses: actions/checkout@v7
+
+      - name: Install build packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            bzip2 \
+            ca-certificates \
+            cmake \
+            curl \
+            git \
+            libenchant-2-dev \
+            libfixposix-dev \
+            libsqlite3-dev \
+            libssl-dev \
+            libwayland-dev \
+            libx11-dev \
+            pkg-config
+
+      - name: Install SBCL
+        run: |
+          version=2.6.10
+          sha256=f783ef62f4a469598fc425ffe1df69818114af7327e0539af9cf6e11b57747f7
+          curl -fL --retry 3 -o /tmp/sbcl.tar.bz2 \
+            "https://github.com/roswell/sbcl_bin/releases/download/${version}/sbcl-${version}-arm64-linux-glibc2.39-binary.tar.bz2"
+          echo "${sha256}  /tmp/sbcl.tar.bz2" | sha256sum -c -
+          tar -xjf /tmp/sbcl.tar.bz2 -C /tmp
+          cd "/tmp/sbcl-${version}-arm64-linux-glibc2.39"
+          sudo sh install.sh
+          sbcl --version
+
+      - name: Install Ocicl
+        run: |
+          git clone --depth 1 --branch v2.21.0 https://github.com/ocicl/ocicl.git /tmp/ocicl
+          cd /tmp/ocicl
+          sbcl --non-interactive --load setup.lisp
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Build the AppImage
+        run: sh .github/linux-appimage.sh
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v7
+        with:
+          name: Nyxt-aarch64.AppImage
+          path: build/appimage/Nyxt-aarch64.AppImage
+          if-no-files-found: error

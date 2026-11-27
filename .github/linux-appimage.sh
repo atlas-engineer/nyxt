@@ -15,8 +15,10 @@
 #   AppDir/usr/lib/cef/             libcl-cef, the helper, and CEF resources
 #
 # CEF_ROOT may point at an unpacked CEF binary distribution (the directory
-# that contains include/, Release/, and cmake/). When unset, this downloads
-# the CEF 150 build from the atlas-engineer/cef release.
+# that contains include/, Release/, and cmake/). When unset, x86_64 downloads
+# the CEF 150 build from the atlas-engineer/cef release. aarch64 downloads
+# that same version from cef-builds.spotifycdn.com. The upstream aarch64
+# archive does not include the Atlas CEF patches.
 
 set -eu
 
@@ -24,19 +26,42 @@ root=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 cd "$root"
 
 CEF_VERSION="${CEF_VERSION:-150.0.22+gc1a097e+chromium-150.0.7871.256}"
-CEF_SHA1="${CEF_SHA1:-00f5a3278faa74570026f34216087248831078ba}"
+case $(uname -m) in
+    x86_64)
+        cef_platform=linux64
+        appimage_arch=x86_64
+        ld_arch=x86-64
+        multiarch=x86_64-linux-gnu
+        CEF_SHA1="${CEF_SHA1:-00f5a3278faa74570026f34216087248831078ba}"
+        ;;
+    aarch64|arm64)
+        cef_platform=linuxarm64
+        appimage_arch=aarch64
+        ld_arch=AArch64
+        multiarch=aarch64-linux-gnu
+        CEF_SHA1="${CEF_SHA1:-dca12dae6fb104fef4c614e990eaeb1c0a6e263f}"
+        ;;
+    *)
+        printf '%s\n' "Unsupported architecture $(uname -m)." >&2
+        exit 1
+        ;;
+esac
 jobs=$(nproc 2>/dev/null || echo 2)
 export CMAKE_BUILD_PARALLEL_LEVEL="$jobs"
 
 if [ -z "${CEF_ROOT:-}" ]; then
-    name="cef_binary_${CEF_VERSION}_linux64_minimal"
+    name="cef_binary_${CEF_VERSION}_${cef_platform}_minimal"
     archive="$root/build/appimage/${name}.tar.bz2"
     mkdir -p "$root/build/appimage"
     if [ ! -f "$archive" ]; then
-        tag=$(printf '%s' "$CEF_VERSION" | sed 's/+/%2B/g')
         file=$(printf '%s' "${name}.tar.bz2" | sed 's/+/%2B/g')
-        curl -fL --retry 3 -o "$archive" \
-            "https://github.com/atlas-engineer/cef/releases/download/${tag}/${file}"
+        if [ "$cef_platform" = "linux64" ]; then
+            tag=$(printf '%s' "$CEF_VERSION" | sed 's/+/%2B/g')
+            url="https://github.com/atlas-engineer/cef/releases/download/${tag}/${file}"
+        else
+            url="https://cef-builds.spotifycdn.com/${file}"
+        fi
+        curl -fL --retry 3 -o "$archive" "$url"
     fi
     echo "$CEF_SHA1  $archive" | sha1sum -c -
     tar -xjf "$archive" -C "$root/build/appimage"
@@ -111,14 +136,14 @@ find_lib() {
     name=$1
     found=""
     if ldconfig=$(ldconfig_bin); then
-        found=$("$ldconfig" -p | awk -v name="$name" '
-            $1 == name && index($0, "x86-64") && index($0, "hwcap") == 0 {
+        found=$("$ldconfig" -p | awk -v name="$name" -v arch="$ld_arch" '
+            $1 == name && index($0, arch) && index($0, "hwcap") == 0 {
                 print $NF
                 exit
             }')
         if [ -z "$found" ]; then
-            found=$("$ldconfig" -p | awk -v name="$name" '
-                $1 == name && index($0, "x86-64") {
+            found=$("$ldconfig" -p | awk -v name="$name" -v arch="$ld_arch" '
+                $1 == name && index($0, arch) {
                     print $NF
                     exit
                 }')
@@ -126,7 +151,7 @@ find_lib() {
     fi
     if [ -z "$found" ]; then
         for dir in /lib64 /usr/lib64 \
-            /lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu \
+            "/lib/${multiarch}" "/usr/lib/${multiarch}" \
             /lib /usr/lib
         do
             if [ -e "$dir/$name" ] && [ "$(elf_class "$dir/$name")" = "2" ]; then
@@ -222,15 +247,15 @@ exec "$APPDIR/usr/bin/nyxt" "$@"
 EOF
 chmod 755 "$stage/AppRun"
 
-tool="$root/build/appimage/appimagetool-x86_64.AppImage"
+tool="$root/build/appimage/appimagetool-${appimage_arch}.AppImage"
 if [ ! -x "$tool" ]; then
     curl -fL --retry 3 -o "$tool" \
-        "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+        "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-${appimage_arch}.AppImage"
     chmod 755 "$tool"
 fi
 
-output="$root/build/appimage/Nyxt-x86_64.AppImage"
+output="$root/build/appimage/Nyxt-${appimage_arch}.AppImage"
 rm -f "$output"
-ARCH=x86_64 NO_APPSTREAM=1 "$tool" --appimage-extract-and-run "$stage" "$output"
+ARCH="$appimage_arch" NO_APPSTREAM=1 "$tool" --appimage-extract-and-run "$stage" "$output"
 chmod 755 "$output"
 printf '%s\n' "Wrote $output"
