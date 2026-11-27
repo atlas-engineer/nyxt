@@ -18,6 +18,9 @@
    (glyph-mode-presentation-p
     nil
     :documentation "Display the modes as a list of glyphs.")
+   (show-tabs-p
+    t
+    :documentation "Whether the status buffer lists open buffers as tabs.")
    (glyph-left (gethash "left.svg" *static-data*))
    (glyph-right (gethash "right.svg" *static-data*))
    (glyph-reload (gethash "reload.svg" *static-data*))
@@ -200,6 +203,8 @@
         :flex "1 1 auto"
         :min-width "0"
         :overflow "hidden")
+      '("#buffers.tabs-hidden"
+        :flex "none")
       '("#tabs"
         :display "flex"
         :align-items "center"
@@ -517,10 +522,11 @@ or in the path under `page'."
 
 (defmethod update-status-tabs ((status status-buffer))
   "Update ONLY the status tabs to avoid redrawing the whole status buffer."
-  (ps-eval :async t :buffer status
-    (setf (ps:@ (nyxt/ps:qs document "#tabs") |innerHTML|)
-          (ps:lisp
-           (spinneret:with-html-string (format-status-tabs status))))))
+  (when (show-tabs-p status)
+    (ps-eval :async t :buffer status
+      (setf (ps:@ (nyxt/ps:qs document "#tabs") |innerHTML|)
+            (ps:lisp
+             (spinneret:with-html-string (format-status-tabs status)))))))
 
 (defmethod update-status-url ((status status-buffer))
   "Update ONLY the URL to avoid redrawing the whole status buffer."
@@ -549,7 +555,9 @@ or in the path under `page'."
 
 To override all that is displayed on STATUS, redefine this method. To partially
 override it, redefine methods such as `format-status-url',
-`format-status-tabs', or `format-status-new-buffer'."
+`format-status-tabs', or `format-status-new-buffer'.
+
+The tab list is omitted when `show-tabs-p' is nil."
   (let* ((buffer (buffer (window status))))
     (spinneret:with-html-string
       (:div :id "container"
@@ -559,8 +567,10 @@ override it, redefine methods such as `format-status-url',
                   (format-status-load-status status)
                   (format-status-url status))
             (:div :id "buffers"
-                  (:div :id "tabs"
-                        (format-status-tabs status))
+                  :class (unless (show-tabs-p status) "tabs-hidden")
+                  (when (show-tabs-p status)
+                    (:div :id "tabs"
+                          (format-status-tabs status)))
                   (format-status-new-buffer status))
             (:div :id "modes"
                   :title (modes-string buffer)
@@ -583,6 +593,13 @@ override it, redefine methods such as `format-status-url',
     (clrhash (lisp-url-callbacks status-buffer)))
   (ffi-print-status status-buffer (format-status status-buffer))
   (show-selected-tab status-buffer))
+
+(define-command toggle-status-buffer-tabs ((window window))
+  "Toggle the buffer tabs in WINDOW's status buffer."
+  (let ((status (status-buffer window)))
+    (setf (show-tabs-p status) (not (show-tabs-p status)))
+    (print-status status)
+    (show-tabs-p status)))
 
 (defun install-status-handlers (window)
   "Redraw WINDOW's status buffer when the page it shows changes.

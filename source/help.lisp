@@ -349,6 +349,34 @@ to the next."
                                :form '(define-configuration (web-buffer)
                                        ((default-modes (pushnew 'nyxt/mode/style:dark-mode
                                                                 %slot-value%)))))))))
+                     (:tr
+                      (:td :class "setting"
+                           (:span :class "name" "Buffer tabs")
+                           (:span :class "detail" "Open buffers in the status bar."))
+                      (:td :class "control"
+                           (:nradio
+                            :name "buffer-tabs"
+                            :checked (if (show-tabs-p (status-buffer (or (window buffer)
+                                                                         (current-window))))
+                                         'shown
+                                         'hidden)
+                            :buffer buffer
+                            '(shown "Shown"
+                              (progn
+                                (nyxt::auto-configure
+                                 :form '(define-configuration status-buffer
+                                         ((show-tabs-p t))))
+                                (dolist (window (window-list))
+                                  (setf (show-tabs-p (status-buffer window)) t)
+                                  (print-status (status-buffer window)))))
+                            '(hidden "Hidden"
+                              (progn
+                                (nyxt::auto-configure
+                                 :form '(define-configuration status-buffer
+                                         ((show-tabs-p nil))))
+                                (dolist (window (window-list))
+                                  (setf (show-tabs-p (status-buffer window)) nil)
+                                  (print-status (status-buffer window))))))))
                      (:tr :class "group"
                           (:th :colspan 2 :scope "rowgroup" "Buffers"))
                      (:tr
