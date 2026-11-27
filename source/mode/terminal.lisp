@@ -108,9 +108,9 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
                (ps:chain term
                          (on-data
                           (lambda (data)
-                            (let ((start 0)
+                            (let ((offset 0)
                                   (step 1024))
-                              (loop while (< start (ps:@ data length))
+                              (loop while (< offset (ps:@ data length))
                                     do (send "write"
                                              (ps:+ "buffer="
                                                    buffer-id
@@ -118,9 +118,9 @@ xterm.js. Keys go to the terminal. C-M-z runs `toggle-terminal-keys'."))
                                                    (encode-u-r-i-component
                                                     (encode-data
                                                      (ps:chain data
-                                                               (slice start
-                                                                      (ps:+ start step)))))))
-                                       (setf start (ps:+ start step)))))))
+                                                               (slice offset
+                                                                      (ps:+ offset step)))))))
+                                       (setf offset (ps:+ offset step)))))))
                (ps:chain term
                          (on-resize
                           (lambda (size)
