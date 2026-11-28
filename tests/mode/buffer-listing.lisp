@@ -8,6 +8,61 @@
     (assert-true (enable-modes* 'nyxt/mode/buffer-listing:buffer-listing-mode buffer))
     (assert-true (disable-modes* 'nyxt/mode/buffer-listing:buffer-listing-mode buffer))))
 
+(define-test list-buffers-marks-the-windows-buffer ()
+  (let* ((*browser* (make-instance 'browser))
+         (alpha (make-instance 'web-buffer
+                               :title "Alpha"
+                               :url (quri:uri "https://example.com/a")))
+         (beta (make-instance 'web-buffer
+                              :title "Beta"
+                              :url (quri:uri "https://example.com/b")))
+         (gamma (make-instance 'web-buffer
+                               :title "Gamma"
+                               :url (quri:uri "https://example.com/c")))
+         (window (make-instance 'window :buffer alpha))
+         (elsewhere (make-instance 'window :buffer gamma))
+         (panel (make-instance 'panel-buffer :title "Buffers")))
+    (setf (window panel) window)
+    (assert-eq window (window panel))
+    (assert-false (eq window elsewhere))
+    (enable-modes* 'nyxt/mode/buffer-listing:buffer-listing-mode panel)
+    (let ((mode (find-mode panel 'nyxt/mode/buffer-listing:buffer-listing-mode)))
+      (labels ((page ()
+                 (spinneret:with-html-string
+                   (user-interface:to-html
+                    (nyxt/mode/buffer-listing::listing mode))))
+               (current-row (html)
+                 (let ((start (search "class=current" html)))
+                   (assert-true start)
+                   (if start
+                       (subseq html start (search "</li>" html :start2 start))
+                       "")))
+               (current-count (html)
+                 (loop for start = 0 then (+ position (length "class=current"))
+                       for position = (search "class=current" html :start2 start)
+                       while position
+                       count t)))
+        (let ((html (page)))
+          (assert-eq 1 (current-count html))
+          (assert-true (search "Alpha" (current-row html)))
+          (assert-true (search "aria-current=true" (current-row html)))
+          (assert-false (search "Beta" (current-row html)))
+          (assert-false (search "Gamma" (current-row html)))
+          (assert-true (search "Gamma" html)))
+        (setf (slot-value window 'buffer) beta)
+        (nyxt/mode/buffer-listing::render-buffers mode)
+        (let ((html (page)))
+          (assert-eq 1 (current-count html))
+          (assert-true (search "Beta" (current-row html)))
+          (assert-false (search "Alpha" (current-row html)))
+          (assert-false (search "Gamma" (current-row html))))
+        (setf (slot-value window 'buffer) alpha)
+        (handler-case (setf (buffer window) beta)
+          (error ()))
+        (let ((html (page)))
+          (assert-true (search "Beta" (current-row html)))
+          (assert-false (search "Alpha" (current-row html))))))))
+
 (define-test list-buffers-follows-the-buffers ()
   (let* ((*browser* (make-instance 'browser))
          (buffer (make-instance 'web-buffer

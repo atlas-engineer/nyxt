@@ -5,22 +5,39 @@
   (:documentation "Package for `buffer-listing-mode', mode for buffer listing."))
 (in-package :nyxt/mode/buffer-listing)
 
-(-> buffer-stamp (buffer) list)
-(defun buffer-stamp (buffer)
-  "Return the parts of BUFFER the list shows."
-  (list (title buffer) (render-url (url buffer))))
+(-> shown-buffer (buffer) (maybe buffer))
+(defun shown-buffer (page)
+  "Return the buffer shown in the window PAGE belongs to.
+A panel belongs to the window it is attached to. Any other page belongs to
+the window that shows it."
+  (when-let ((window (and page (window page))))
+    (let ((current (buffer window)))
+      (when (and current (not (dead-buffer-p current)))
+        current))))
+
+(-> buffer-stamp (buffer buffer) list)
+(defun buffer-stamp (buffer page)
+  "Return the parts of BUFFER the list shows.
+Includes whether BUFFER is the one shown in PAGE's window."
+  (list (title buffer)
+        (render-url (url buffer))
+        (eq buffer (shown-buffer page))))
 
 (-> buffer-row (buffer buffer) t)
 (defun buffer-row (buffer page)
-  "Return a row for BUFFER: its title, its address, and a close control."
+  "Return a row for BUFFER: its title, its address, and a close control.
+The row of the buffer shown in PAGE's window is marked current."
   (let* ((url (render-url (url buffer)))
          (title (title buffer))
          (heading (if (str:emptyp title) url title))
          (detail (unless (string= heading url)
-                   url)))
+                   url))
+         (current-p (eq buffer (shown-buffer page))))
     (make-instance
      'user-interface:element
      :tag :li
+     :html-class (when current-p "current")
+     :attributes (when current-p '(:aria-current "true"))
      :children
      (list (make-instance 'user-interface:element
                           :tag :a
@@ -58,8 +75,7 @@ Hosts `list-buffers' page."
     (make-instance 'user-interface:dynamic-element
                    :tag :p
                    :html-class "empty"
-                   :text "No buffers."
-                   :item-key #'buffer-stamp)
+                   :text "No buffers.")
     :export nil
     :documentation "The list shown on `list-buffers'.
 A `user-interface:dynamic-element'."))
@@ -88,6 +104,9 @@ The handlers are the ones `status-buffer' uses for its tabs."
   (setf (user-interface:template (listing mode))
         (lambda (buffer)
           (buffer-row buffer (buffer mode))))
+  (setf (user-interface:item-key (listing mode))
+        (lambda (buffer)
+          (buffer-stamp buffer (buffer mode))))
   (define-setf-handler document-buffer url mode
     (lambda (_)
       (declare (ignore _))
@@ -100,6 +119,11 @@ The handlers are the ones `status-buffer' uses for its tabs."
     (lambda (_)
       (declare (ignore _))
       (render-buffers mode)))
+  (define-setf-handler window buffer mode
+    (lambda (window)
+      (when-let ((page (buffer mode)))
+        (when (eq window (window page))
+          (render-buffers mode)))))
   (render-buffers mode))
 
 (defmethod disable ((mode buffer-listing-mode) &key)
@@ -124,6 +148,15 @@ The handlers are the ones `status-buffer' uses for its tabs."
         '("ul.list > li:hover::after"
           :background-color "transparent")
         '("ul.list > li:has(+ li:hover)::after"
+          :background-color "transparent")
+        `("ul.list > li.current > a"
+          :background-color ,theme:background-color-
+          :opacity "1")
+        '("ul.list > li.current > a span:first-of-type"
+          :font-weight "600")
+        '("ul.list > li.current::after"
+          :background-color "transparent")
+        '("ul.list > li:has(+ li.current)::after"
           :background-color "transparent")
         `("ul.list button.close"
           :position "absolute"
