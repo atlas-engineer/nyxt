@@ -43,6 +43,9 @@
                        while position
                        count t)))
         (let ((html (page)))
+          (assert-true (< (search "Alpha" html)
+                          (search "Beta" html)
+                          (search "Gamma" html)))
           (assert-eq 1 (current-count html))
           (assert-true (search "Alpha" (current-row html)))
           (assert-true (search "aria-current=true" (current-row html)))

@@ -83,13 +83,13 @@ A `user-interface:dynamic-element'."))
 
 (-> render-buffers (buffer-listing-mode) t)
 (defun render-buffers (mode)
-  "Show the buffers in MODE.
+  "Show the buffers in MODE, oldest first.
 The list element keeps a row it has already built."
   (let ((page (buffer mode))
         (element (listing mode)))
     (when (and *browser* page (not (dead-buffer-p page)))
       (user-interface:batch (element)
-        (setf (user-interface:items element) (buffer-list))
+        (setf (user-interface:items element) (reverse (buffer-list)))
         (if (plusp (length (user-interface:items element)))
             (setf (user-interface:tag element) :ul
                   (user-interface:html-class element) "list"
